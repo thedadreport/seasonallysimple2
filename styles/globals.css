@@ -1,0 +1,80 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --sage-green: #87a96b;
+    --sage-green-dark: #6b8e5a;
+    --warm-brown: #8b4513;
+    --cream: #fff8dc;
+    --charcoal: #36454f;
+    --soft-white: #fafaf8;
+    --clay: #c4a57b;
+    --olive: #708238;
+    --rust: #b7410e;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-slate-50 to-gray-100 text-charcoal;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .paper-texture {
+    background-image: 
+      radial-gradient(circle at 1px 1px, rgba(139, 69, 19, 0.1) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  .organic-shadow {
+    box-shadow: 
+      0 4px 6px -1px rgba(139, 69, 19, 0.1),
+      0 2px 4px -1px rgba(139, 69, 19, 0.06);
+  }
+
+  .organic-shadow-lg {
+    box-shadow: 
+      0 10px 15px -3px rgba(139, 69, 19, 0.1),
+      0 4px 6px -2px rgba(139, 69, 19, 0.05);
+  }
+
+  .btn-primary {
+    @apply bg-sage-500 hover:bg-sage-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 organic-shadow hover:organic-shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply bg-brown-500 hover:bg-brown-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 organic-shadow hover:organic-shadow-lg;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-sage-50 text-sage-600 hover:text-sage-700 font-medium py-3 px-6 rounded-xl transition-all duration-200 border border-sage-300 hover:border-sage-400;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl organic-shadow border border-gray-200 paper-texture;
+  }
+
+  .card-content {
+    @apply p-6;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 bg-cream border border-sage-300 rounded-xl text-charcoal placeholder-gray-500 focus:ring-2 focus:ring-sage-500 focus:border-transparent transition-all outline-none;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-charcoal mb-2;
+  }
+}
