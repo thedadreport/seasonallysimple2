@@ -1,0 +1,123 @@
+// Core data models for the application
+
+export interface Recipe {
+  id: string;
+  title: string;
+  description: string;
+  cookTime: string;
+  servings: string;
+  difficulty: 'Easy' | 'Intermediate' | 'Advanced';
+  tags: string[];
+  situation: string;
+  ingredients: string[];
+  instructions: string[];
+  tips: string[];
+  dateAdded: string;
+  notes: string;
+}
+
+export interface MealPlan {
+  id: string;
+  title: string;
+  description: string;
+  totalCost: string;
+  prepTime: string;
+  servings: string;
+  focus: string;
+  numMeals: number;
+  meals: MealPlanDay[];
+  shoppingList: ShoppingList;
+  prepSchedule: string[];
+  dateAdded: string;
+  notes: string;
+}
+
+export interface MealPlanDay {
+  day: string;
+  recipe: string;
+  prepTime: string;
+  cookTime: string;
+  cost: string;
+  ingredients: string[];
+  prepNotes: string;
+}
+
+export interface ShoppingList {
+  [category: string]: string[];
+}
+
+// Form data interfaces
+export interface RecipeFormData {
+  familySize: string;
+  availableTime: string;
+  cookingSituation: string;
+  protein: string;
+  vegetables: string;
+  dietaryRestrictions: string[];
+}
+
+export interface MealPlanFormData {
+  planningFocus: string;
+  numDinners: number;
+  familySize: string;
+  weeklyBudget: string;
+  prepTime: string;
+  skillLevel: string;
+  dietaryRestrictions: string[];
+  pantryItems: string;
+}
+
+// Subscription interfaces
+export type SubscriptionTier = 'free' | 'pro' | 'family';
+
+export interface Subscription {
+  tier: SubscriptionTier;
+  status: 'active' | 'cancelled' | 'expired';
+  startDate: string;
+  endDate: string | null;
+  autoRenew: boolean;
+}
+
+export interface UsageStats {
+  recipesGenerated: number;
+  mealPlansGenerated: number;
+  currentMonth: string; // YYYY-MM format
+  lastReset: string;
+}
+
+export interface SubscriptionLimits {
+  recipesPerMonth: number;
+  mealPlansPerMonth: number;
+  canEditRecipes: boolean;
+  canAccessMealPlans: boolean;
+  canSaveUnlimited: boolean;
+}
+
+// Context interfaces
+export interface AppState {
+  recipes: Recipe[];
+  mealPlans: MealPlan[];
+  subscription: Subscription;
+  usage: UsageStats;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface AppContextType extends AppState {
+  addRecipe: (recipe: Recipe) => void;
+  updateRecipe: (id: string, updates: Partial<Recipe>) => void;
+  deleteRecipe: (id: string) => void;
+  addMealPlan: (mealPlan: MealPlan) => void;
+  updateMealPlan: (id: string, updates: Partial<MealPlan>) => void;
+  deleteMealPlan: (id: string) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  // Subscription methods
+  incrementRecipeUsage: () => boolean;
+  incrementMealPlanUsage: () => boolean;
+  updateSubscription: (subscription: Subscription) => void;
+  getSubscriptionLimits: () => SubscriptionLimits;
+  canGenerateRecipe: () => boolean;
+  canGenerateMealPlan: () => boolean;
+  canEditRecipe: () => boolean;
+}

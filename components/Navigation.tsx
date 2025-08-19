@@ -3,11 +3,15 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Leaf } from 'lucide-react';
+import { Menu, X, Leaf, Crown, User, LogOut, LogIn } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
+import { useSession, signOut } from 'next-auth/react';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { subscription } = useApp();
+  const { data: session, status } = useSession();
 
   const navItems = [
     { href: '/recipe', label: 'Recipes' },
@@ -44,9 +48,68 @@ const Navigation = () => {
                 {item.label}
               </Link>
             ))}
-            <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
-              Try Free
-            </button>
+            
+            {/* Subscription Status */}
+            <Link
+              href="/subscription"
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                isActive('/subscription') 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`}
+            >
+              {subscription.tier === 'free' ? (
+                <User className="h-4 w-4" />
+              ) : (
+                <Crown className="h-4 w-4" />
+              )}
+              <span className="font-medium capitalize">{subscription.tier}</span>
+            </Link>
+            
+            {/* Authentication */}
+            {status === 'loading' ? (
+              <div className="px-4 py-2 text-gray-500">Loading...</div>
+            ) : session ? (
+              <div className="flex items-center space-x-4">
+                {subscription.tier === 'free' && (
+                  <Link 
+                    href="/subscription"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                  >
+                    Upgrade
+                  </Link>
+                )}
+                
+                <div className="flex items-center space-x-2">
+                  {session.user?.image && (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || 'User'}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  )}
+                  <span className="text-sm font-medium text-gray-700">
+                    {session.user?.name?.split(' ')[0]}
+                  </span>
+                </div>
+                
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Sign In</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -78,11 +141,76 @@ const Navigation = () => {
                 {item.label}
               </Link>
             ))}
-            <div className="pt-2">
-              <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
-                Try Free
-              </button>
-            </div>
+            
+            <Link
+              href="/subscription"
+              onClick={() => setIsOpen(false)}
+              className={`flex items-center space-x-2 py-2 text-gray-900 hover:text-green-700 transition-colors font-medium ${
+                isActive('/subscription') ? 'text-green-700 font-semibold' : ''
+              }`}
+            >
+              {subscription.tier === 'free' ? (
+                <User className="h-4 w-4" />
+              ) : (
+                <Crown className="h-4 w-4" />
+              )}
+              <span className="capitalize">{subscription.tier} Plan</span>
+            </Link>
+            
+            {/* Mobile Authentication */}
+            {session ? (
+              <>
+                <div className="flex items-center space-x-3 py-3 border-t border-gray-200">
+                  {session.user?.image && (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || 'User'}
+                      className="w-10 h-10 rounded-full"
+                    />
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900">{session.user?.name}</p>
+                    <p className="text-sm text-gray-600">{session.user?.email}</p>
+                  </div>
+                </div>
+                
+                {subscription.tier === 'free' && (
+                  <div className="pt-2">
+                    <Link 
+                      href="/subscription"
+                      onClick={() => setIsOpen(false)}
+                      className="block w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors text-center"
+                    >
+                      Upgrade
+                    </Link>
+                  </div>
+                )}
+                
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      signOut({ callbackUrl: '/' });
+                    }}
+                    className="flex items-center justify-center w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="pt-4 border-t border-gray-200">
+                <Link
+                  href="/auth/signin"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -17,12 +17,10 @@
     --rust: #b7410e;
   }
 
-  * {
-    @apply border-border;
-  }
 
   body {
-    @apply bg-gradient-to-br from-slate-50 to-gray-100 text-charcoal;
+    background: linear-gradient(to bottom right, #f8fafc, #f3f4f6);
+    color: #36454f;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
@@ -51,30 +49,78 @@
   }
 
   .btn-primary {
-    @apply bg-sage-500 hover:bg-sage-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 organic-shadow hover:organic-shadow-lg;
+    background-color: #87a96b;
+    color: white;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 200ms;
+  }
+  
+  .btn-primary:hover {
+    background-color: #5c7b5c;
   }
 
   .btn-secondary {
-    @apply bg-brown-500 hover:bg-brown-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 organic-shadow hover:organic-shadow-lg;
+    background-color: #8b4513;
+    color: white;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 200ms;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #5a2a0b;
   }
 
   .btn-ghost {
-    @apply bg-transparent hover:bg-sage-50 text-sage-600 hover:text-sage-700 font-medium py-3 px-6 rounded-xl transition-all duration-200 border border-sage-300 hover:border-sage-400;
+    background-color: transparent;
+    color: #87a96b;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 200ms;
+    border: 1px solid #b0c5b0;
+  }
+  
+  .btn-ghost:hover {
+    background-color: #f7f9f7;
+    color: #5c7b5c;
+    border-color: #87a987;
   }
 
   .card {
-    @apply bg-white rounded-2xl organic-shadow border border-gray-200 paper-texture;
+    background-color: white;
+    border-radius: 1rem;
+    border: 1px solid #e5e7eb;
   }
 
   .card-content {
-    @apply p-6;
+    padding: 1.5rem;
   }
 
   .input {
-    @apply w-full px-4 py-3 bg-cream border border-sage-300 rounded-xl text-charcoal placeholder-gray-500 focus:ring-2 focus:ring-sage-500 focus:border-transparent transition-all outline-none;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #fff8dc;
+    border: 1px solid #b0c5b0;
+    border-radius: 0.75rem;
+    color: #36454f;
+    outline: none;
+    transition: all 200ms;
+  }
+  
+  .input:focus {
+    border-color: #87a96b;
+    box-shadow: 0 0 0 2px rgba(135, 169, 107, 0.2);
   }
 
   .label {
-    @apply block text-sm font-medium text-charcoal mb-2;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #36454f;
+    margin-bottom: 0.5rem;
   }
 }
