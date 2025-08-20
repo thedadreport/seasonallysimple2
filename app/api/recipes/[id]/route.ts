@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { PrismaClient } from '@prisma/client';
 import { Recipe } from '@/types';
-
-// Initialize Prisma client with proper singleton pattern
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+import { prisma } from '@/lib/prisma';
 
 // GET /api/recipes/[id] - Get a specific recipe
 export async function GET(
@@ -18,6 +9,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!prisma) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
+    
     const session = await getServerSession();
     
     if (!session?.user?.email) {
@@ -73,6 +68,10 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!prisma) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
+    
     const session = await getServerSession();
     
     if (!session?.user?.email) {
@@ -152,6 +151,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!prisma) {
+      return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
+    }
+    
     const session = await getServerSession();
     
     if (!session?.user?.email) {
