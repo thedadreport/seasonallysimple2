@@ -1,16 +1,16 @@
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
+// Initialize Anthropic client
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
 // Validate API key availability
-export function validateOpenAIConfig(): boolean {
-  return !!process.env.OPENAI_API_KEY;
+export function validateAnthropicConfig(): boolean {
+  return !!process.env.ANTHROPIC_API_KEY;
 }
 
-// Generate recipe using OpenAI
+// Generate recipe using Claude
 export async function generateRecipeWithAI(formData: {
   familySize: string;
   availableTime: string;
@@ -19,8 +19,8 @@ export async function generateRecipeWithAI(formData: {
   vegetables: string;
   dietaryRestrictions: string[];
 }) {
-  if (!validateOpenAIConfig()) {
-    throw new Error('OpenAI API key not configured');
+  if (!validateAnthropicConfig()) {
+    throw new Error('Anthropic API key not configured');
   }
 
   const prompt = `Create a detailed, family-friendly recipe based on these requirements:
@@ -62,25 +62,22 @@ Format the response as valid JSON with this exact structure:
 }`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+    const completion = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 2000,
+      temperature: 0.7,
+      system: 'You are a professional chef and cookbook author who specializes in practical, family-friendly recipes. You understand real cooking situations and provide helpful, achievable recipes with clear instructions.',
       messages: [
-        {
-          role: 'system',
-          content: 'You are a professional chef and cookbook author who specializes in practical, family-friendly recipes. You understand real cooking situations and provide helpful, achievable recipes with clear instructions.'
-        },
         {
           role: 'user',
           content: prompt
         }
-      ],
-      max_tokens: 2000,
-      temperature: 0.7,
+      ]
     });
 
-    const responseText = completion.choices[0]?.message?.content;
+    const responseText = completion.content[0]?.type === 'text' ? completion.content[0].text : null;
     if (!responseText) {
-      throw new Error('No response from OpenAI');
+      throw new Error('No response from Claude');
     }
 
     // Parse JSON response
@@ -96,12 +93,12 @@ Format the response as valid JSON with this exact structure:
 
     return recipe;
   } catch (error) {
-    console.error('OpenAI recipe generation error:', error);
+    console.error('Claude recipe generation error:', error);
     throw new Error('Failed to generate recipe with AI');
   }
 }
 
-// Generate meal plan using OpenAI
+// Generate meal plan using Claude
 export async function generateMealPlanWithAI(formData: {
   planningFocus: string;
   numDinners: number;
@@ -112,8 +109,8 @@ export async function generateMealPlanWithAI(formData: {
   dietaryRestrictions: string[];
   pantryItems: string;
 }) {
-  if (!validateOpenAIConfig()) {
-    throw new Error('OpenAI API key not configured');
+  if (!validateAnthropicConfig()) {
+    throw new Error('Anthropic API key not configured');
   }
 
   const prompt = `Create a comprehensive ${formData.numDinners}-day meal plan based on these requirements:
@@ -181,25 +178,22 @@ Format the response as valid JSON with this exact structure:
 }`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+    const completion = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 3000,
+      temperature: 0.7,
+      system: 'You are a meal planning expert and nutritionist who specializes in practical, budget-friendly meal plans for busy families. You understand real-world constraints and provide achievable, well-organized meal plans.',
       messages: [
-        {
-          role: 'system',
-          content: 'You are a meal planning expert and nutritionist who specializes in practical, budget-friendly meal plans for busy families. You understand real-world constraints and provide achievable, well-organized meal plans.'
-        },
         {
           role: 'user',
           content: prompt
         }
-      ],
-      max_tokens: 3000,
-      temperature: 0.7,
+      ]
     });
 
-    const responseText = completion.choices[0]?.message?.content;
+    const responseText = completion.content[0]?.type === 'text' ? completion.content[0].text : null;
     if (!responseText) {
-      throw new Error('No response from OpenAI');
+      throw new Error('No response from Claude');
     }
 
     // Parse JSON response
@@ -215,7 +209,7 @@ Format the response as valid JSON with this exact structure:
 
     return mealPlan;
   } catch (error) {
-    console.error('OpenAI meal plan generation error:', error);
+    console.error('Claude meal plan generation error:', error);
     throw new Error('Failed to generate meal plan with AI');
   }
 }

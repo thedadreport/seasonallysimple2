@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateMealPlanWithAI, validateOpenAIConfig } from '@/lib/openai';
+import { generateMealPlanWithAI, validateAnthropicConfig } from '@/lib/claude';
 import { generateId, formatDate } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if OpenAI is configured
-    if (!validateOpenAIConfig()) {
+    // Check if Claude is configured
+    if (!validateAnthropicConfig()) {
       return NextResponse.json(
-        { success: false, error: 'AI service not configured. Please add OPENAI_API_KEY to environment variables.' },
+        { success: false, error: 'AI service not configured. Please add ANTHROPIC_API_KEY to environment variables.' },
         { status: 503 }
       );
     }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error) {
       if (error.message.includes('API key')) {
         return NextResponse.json(
-          { success: false, error: 'OpenAI API key is invalid or missing' },
+          { success: false, error: 'Anthropic API key is invalid or missing' },
           { status: 503 }
         );
       }
