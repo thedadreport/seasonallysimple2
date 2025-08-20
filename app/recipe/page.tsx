@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Clock, Users, ChefHat, Utensils, CheckCircle, BookOpen, Star, Lock } from 'lucide-react';
+import { Clock, Users, ChefHat, Utensils, CheckCircle, BookOpen, Star, Lock, Loader2 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { getRemainingRecipes } from '../../lib/subscription';
+import { Recipe } from '@/types';
 
-const testRecipe = {
+const generatedRecipe = {
   title: "One-Pot Chicken & Rice with Whatever's in Your Fridge",
   description: "Perfect for those 'protein + random stuff' situations. This forgiving recipe works with whatever vegetables you have on hand.",
   cookTime: "25 minutes",
@@ -67,9 +68,21 @@ const dietaryRestrictions = [
 ];
 
 const RecipePage = () => {
-  const { subscription, usage, canGenerateRecipe, incrementRecipeUsage } = useApp();
+  const { subscription, usage, canGenerateRecipe, incrementRecipeUsage, addRecipe } = useApp();
   const [showRecipe, setShowRecipe] = useState(false);
   const [selectedDiets, setSelectedDiets] = useState(['None']);
+  const [generatedRecipe, setGeneratedRecipe] = useState<Recipe | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    familySize: '4 people',
+    availableTime: '30 minutes',
+    cookingSituation: "Tonight's Dinner",
+    protein: 'Chicken',
+    vegetables: ''
+  });
 
   const toggleDiet = (diet: string) => {
     if (diet === 'None') {
@@ -87,8 +100,48 @@ const RecipePage = () => {
 
   const handleGenerateRecipe = async () => {
     const success = await incrementRecipeUsage();
-    if (success) {
+    if (!success) return;
+
+    setIsGenerating(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/generate-recipe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          dietaryRestrictions: selectedDiets.filter(d => d !== 'None')
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to generate recipe');
+      }
+
+      setGeneratedRecipe(data.recipe);
       setShowRecipe(true);
+    } catch (error) {
+      console.error('Recipe generation error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate recipe');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSaveRecipe = async () => {
+    if (generatedRecipe) {
+      try {
+        await addRecipe(generatedRecipe);
+        // Could show a success message here
+      } catch (error) {
+        console.error('Failed to save recipe:', error);
+        setError('Failed to save recipe');
+      }
     }
   };
 
@@ -105,6 +158,12 @@ const RecipePage = () => {
           </p>
         </div>
         
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
+
         {!showRecipe ? (
           // Recipe Generation Form
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
@@ -114,11 +173,17 @@ const RecipePage = () => {
               {/* Cooking Situation - Full Width at Top */}
               <div className="mb-6">
                 <label className="label">Cooking Situation</label>
-                <select className="input">
-                  <option>Protein + random stuff in fridge</option>
-                  <option>Need to stretch small portions</option>
-                  <option>Want minimal cleanup</option>
-                  <option>Making tomorrow's lunch too</option>
+                <select 
+                  className="input" 
+                  value={formData.cookingSituation}
+                  onChange={(e) => setFormData({...formData, cookingSituation: e.target.value})}
+                >
+                  <option value="Tonight's Dinner">Tonight's Dinner</option>
+                  <option value="Protein + random stuff in fridge">Protein + random stuff in fridge</option>
+                  <option value="Need to stretch small portions">Need to stretch small portions</option>
+                  <option value="Want minimal cleanup">Want minimal cleanup</option>
+                  <option value="Making tomorrow's lunch too">Making tomorrow's lunch too</option>
+                  <option value="Special occasion meal">Special occasion meal</option>
                 </select>
               </div>
 
@@ -127,19 +192,29 @@ const RecipePage = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="label">Family Size</label>
-                    <select className="input">
-                      <option>2-3 people</option>
-                      <option>4-5 people</option>
-                      <option>6+ people</option>
+                    <select 
+                      className="input"
+                      value={formData.familySize}
+                      onChange={(e) => setFormData({...formData, familySize: e.target.value})}
+                    >
+                      <option value="2 people">2 people</option>
+                      <option value="3-4 people">3-4 people</option>
+                      <option value="4-5 people">4-5 people</option>
+                      <option value="6+ people">6+ people</option>
                     </select>
                   </div>
                   
                   <div>
                     <label className="label">Available Time</label>
-                    <select className="input">
-                      <option>15-20 minutes</option>
-                      <option>30-45 minutes</option>
-                      <option>1 hour+</option>
+                    <select 
+                      className="input"
+                      value={formData.availableTime}
+                      onChange={(e) => setFormData({...formData, availableTime: e.target.value})}
+                    >
+                      <option value="15 minutes">15 minutes</option>
+                      <option value="30 minutes">30 minutes</option>
+                      <option value="45 minutes">45 minutes</option>
+                      <option value="1 hour">1 hour</option>
                     </select>
                   </div>
                 </div>
@@ -147,12 +222,23 @@ const RecipePage = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="label">What protein do you have?</label>
-                    <input type="text" className="input" placeholder="Chicken thighs, ground beef, etc." />
+                    <input 
+                      type="text" 
+                      className="input" 
+                      placeholder="Chicken thighs, ground beef, etc." 
+                      value={formData.protein}
+                      onChange={(e) => setFormData({...formData, protein: e.target.value})}
+                    />
                   </div>
 
                   <div>
                     <label className="label">Vegetables in your fridge</label>
-                    <textarea className="input h-24 resize-none" placeholder="Carrots, bell peppers, onions, frozen peas..."></textarea>
+                    <textarea 
+                      className="input h-24 resize-none" 
+                      placeholder="Carrots, bell peppers, onions, frozen peas..."
+                      value={formData.vegetables}
+                      onChange={(e) => setFormData({...formData, vegetables: e.target.value})}
+                    ></textarea>
                   </div>
                 </div>
               </div>
@@ -206,13 +292,22 @@ const RecipePage = () => {
             <div className="flex justify-center space-x-4">
               <button 
                 onClick={handleGenerateRecipe}
-                disabled={!canGenerate}
+                disabled={!canGenerate || isGenerating}
                 className={`btn-primary flex items-center space-x-3 ${
-                  !canGenerate ? 'opacity-50 cursor-not-allowed' : ''
+                  (!canGenerate || isGenerating) ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                <ChefHat className="h-5 w-5" />
-                <span>{canGenerate ? 'Generate My Recipe' : 'Limit Reached'}</span>
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Creating Your Recipe...</span>
+                  </>
+                ) : (
+                  <>
+                    <ChefHat className="h-5 w-5" />
+                    <span>{canGenerate ? 'Generate My Recipe' : 'Limit Reached'}</span>
+                  </>
+                )}
               </button>
               <button className="btn-ghost">
                 <BookOpen className="h-5 w-5 mr-2" />
@@ -220,7 +315,7 @@ const RecipePage = () => {
               </button>
             </div>
           </div>
-        ) : (
+        ) : generatedRecipe ? (
           // Recipe Display
           <div className="space-y-6">
             {/* Recipe Header */}
@@ -229,13 +324,13 @@ const RecipePage = () => {
                 <div className="flex-1">
                   <div className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-4">
                     <Utensils className="h-4 w-4 mr-2" />
-                    {testRecipe.situation}
+                    {generatedRecipe?.situation}
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{testRecipe.title}</h1>
-                  <p className="text-lg text-gray-700 mb-6">{testRecipe.description}</p>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{generatedRecipe?.title}</h1>
+                  <p className="text-lg text-gray-700 mb-6">{generatedRecipe?.description}</p>
                   
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {testRecipe.tags.map((tag, index) => (
+                    {generatedRecipe.tags?.map((tag, index) => (
                       <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
                         {tag}
                       </span>
@@ -246,15 +341,15 @@ const RecipePage = () => {
                 <div className="ml-6 text-right">
                   <div className="flex items-center text-gray-600 mb-2">
                     <Clock className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{testRecipe.cookTime}</span>
+                    <span className="font-medium">{generatedRecipe.cookTime}</span>
                   </div>
                   <div className="flex items-center text-gray-600 mb-2">
                     <Users className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{testRecipe.servings}</span>
+                    <span className="font-medium">{generatedRecipe.servings}</span>
                   </div>
                   <div className="flex items-center text-green-600">
                     <Star className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{testRecipe.difficulty}</span>
+                    <span className="font-medium">{generatedRecipe.difficulty}</span>
                   </div>
                 </div>
               </div>
@@ -266,7 +361,10 @@ const RecipePage = () => {
                 >
                   ← Generate Another
                 </button>
-                <button className="btn-primary">
+                <button 
+                  onClick={handleSaveRecipe}
+                  className="btn-primary"
+                >
                   Save Recipe
                 </button>
               </div>
@@ -280,7 +378,7 @@ const RecipePage = () => {
                   Ingredients
                 </h2>
                 <ul className="space-y-3">
-                  {testRecipe.ingredients.map((ingredient, index) => (
+                  {generatedRecipe.ingredients?.map((ingredient, index) => (
                     <li key={index} className="flex items-start">
                       <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                       <span className="text-gray-700">{ingredient}</span>
@@ -296,7 +394,7 @@ const RecipePage = () => {
                   Instructions
                 </h2>
                 <ol className="space-y-4">
-                  {testRecipe.instructions.map((step, index) => (
+                  {generatedRecipe.instructions?.map((step, index) => (
                     <li key={index} className="flex items-start">
                       <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-sm font-medium flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
                         {index + 1}
@@ -315,7 +413,7 @@ const RecipePage = () => {
                 Pro Tips & Variations
               </h2>
               <ul className="space-y-3">
-                {testRecipe.tips.map((tip, index) => (
+                {generatedRecipe.tips?.map((tip, index) => (
                   <li key={index} className="flex items-start">
                     <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                     <span className="text-gray-700">{tip}</span>
@@ -323,6 +421,11 @@ const RecipePage = () => {
                 ))}
               </ul>
             </div>
+          </div>
+        ) : (
+          // Loading or error state
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-center">
+            <p className="text-gray-600">Generate a recipe to see it here!</p>
           </div>
         )}
       </div>

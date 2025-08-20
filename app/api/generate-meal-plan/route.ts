@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateRecipeWithAI, validateOpenAIConfig } from '@/lib/openai';
+import { generateMealPlanWithAI, validateOpenAIConfig } from '@/lib/openai';
 import { generateId, formatDate } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.json();
     
     // Validate required form data
-    const requiredFields = ['familySize', 'availableTime', 'cookingSituation', 'protein', 'vegetables'];
+    const requiredFields = ['planningFocus', 'numDinners', 'familySize', 'weeklyBudget', 'prepTime', 'skillLevel'];
     for (const field of requiredFields) {
       if (!formData[field]) {
         return NextResponse.json(
@@ -25,33 +25,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate recipe using AI
-    const aiRecipe = await generateRecipeWithAI(formData);
+    // Generate meal plan using AI
+    const aiMealPlan = await generateMealPlanWithAI(formData);
     
-    // Format recipe for frontend compatibility
-    const recipe = {
+    // Format meal plan for frontend compatibility
+    const mealPlan = {
       id: generateId(),
-      title: aiRecipe.title,
-      description: aiRecipe.description,
-      cookTime: aiRecipe.cookTime,
-      servings: aiRecipe.servings,
-      difficulty: aiRecipe.difficulty,
-      tags: aiRecipe.tags,
-      situation: aiRecipe.situation || formData.cookingSituation,
-      ingredients: aiRecipe.ingredients,
-      instructions: aiRecipe.instructions,
-      tips: aiRecipe.tips,
-      notes: aiRecipe.notes || '',
+      title: aiMealPlan.title,
+      description: aiMealPlan.description,
+      totalCost: aiMealPlan.totalCost,
+      prepTime: aiMealPlan.prepTime,
+      servings: aiMealPlan.servings,
+      focus: aiMealPlan.focus || formData.planningFocus,
+      numMeals: aiMealPlan.numMeals || formData.numDinners,
+      meals: aiMealPlan.meals,
+      shoppingList: aiMealPlan.shoppingList,
+      prepSchedule: aiMealPlan.prepSchedule,
+      notes: aiMealPlan.notes || '',
       dateAdded: formatDate(new Date())
     };
 
     return NextResponse.json({
       success: true,
-      recipe
+      mealPlan
     });
 
   } catch (error) {
-    console.error('Recipe generation error:', error);
+    console.error('Meal plan generation error:', error);
     
     // Return specific error messages for better debugging
     if (error instanceof Error) {
@@ -63,14 +63,14 @@ export async function POST(request: NextRequest) {
       }
       if (error.message.includes('JSON')) {
         return NextResponse.json(
-          { success: false, error: 'AI returned invalid recipe format' },
+          { success: false, error: 'AI returned invalid meal plan format' },
           { status: 502 }
         );
       }
     }
 
     return NextResponse.json(
-      { success: false, error: 'Failed to generate recipe. Please try again.' },
+      { success: false, error: 'Failed to generate meal plan. Please try again.' },
       { status: 500 }
     );
   }
