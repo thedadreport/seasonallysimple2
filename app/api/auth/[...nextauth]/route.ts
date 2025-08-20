@@ -2,20 +2,8 @@ import NextAuth from 'next-auth';
 import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { PrismaClient } from '@prisma/client';
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 const authOptions: NextAuthOptions = {
-  // Temporarily disable database adapter for deployment
-  // adapter: process.env.POSTGRES_PRISMA_URL ? PrismaAdapter(prisma) : undefined,
   providers: [
     // For development, we'll include a demo credentials provider
     ...(process.env.NODE_ENV === 'development' ? [
@@ -72,7 +60,6 @@ const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 };
 
