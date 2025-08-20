@@ -2,8 +2,22 @@ import NextAuth from 'next-auth';
 import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import { PrismaClient } from '@prisma/client';
+
+// Lazy Prisma client initialization to prevent build-time issues
+let prisma: PrismaClient | undefined;
+
+function getPrisma() {
+  if (!prisma) {
+    prisma = new PrismaClient();
+  }
+  return prisma;
+}
 
 const authOptions: NextAuthOptions = {
+  // Conditionally use database adapter based on environment
+  adapter: process.env.POSTGRES_PRISMA_URL ? PrismaAdapter(getPrisma()) : undefined,
   providers: [
     // For development, we'll include a demo credentials provider
     ...(process.env.NODE_ENV === 'development' ? [
@@ -59,7 +73,8 @@ const authOptions: NextAuthOptions = {
     error: '/auth/error',
   },
   session: {
-    strategy: 'jwt',
+    // Use database sessions when adapter is available, otherwise JWT
+    strategy: process.env.POSTGRES_PRISMA_URL ? 'database' : 'jwt',
   },
 };
 

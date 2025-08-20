@@ -104,18 +104,18 @@ export interface AppState {
 }
 
 export interface AppContextType extends AppState {
-  addRecipe: (recipe: Recipe) => void;
-  updateRecipe: (id: string, updates: Partial<Recipe>) => void;
-  deleteRecipe: (id: string) => void;
-  addMealPlan: (mealPlan: MealPlan) => void;
-  updateMealPlan: (id: string, updates: Partial<MealPlan>) => void;
-  deleteMealPlan: (id: string) => void;
+  addRecipe: (recipe: Recipe) => Promise<void>;
+  updateRecipe: (id: string, updates: Partial<Recipe>) => Promise<void>;
+  deleteRecipe: (id: string) => Promise<void>;
+  addMealPlan: (mealPlan: MealPlan) => Promise<void>;
+  updateMealPlan: (id: string, updates: Partial<MealPlan>) => Promise<void>;
+  deleteMealPlan: (id: string) => Promise<void>;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   // Subscription methods
-  incrementRecipeUsage: () => boolean;
-  incrementMealPlanUsage: () => boolean;
-  updateSubscription: (subscription: Subscription) => void;
+  incrementRecipeUsage: () => Promise<boolean>;
+  incrementMealPlanUsage: () => Promise<boolean>;
+  updateSubscription: (subscription: Subscription) => Promise<void>;
   getSubscriptionLimits: () => SubscriptionLimits;
   canGenerateRecipe: () => boolean;
   canGenerateMealPlan: () => boolean;

@@ -85,8 +85,8 @@ const RecipePage = () => {
     }
   };
 
-  const handleGenerateRecipe = () => {
-    const success = incrementRecipeUsage();
+  const handleGenerateRecipe = async () => {
+    const success = await incrementRecipeUsage();
     if (success) {
       setShowRecipe(true);
     }

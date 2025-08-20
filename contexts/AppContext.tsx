@@ -1,17 +1,22 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useReducer, ReactNode } from 'react';
+import { useSession } from 'next-auth/react';
 import { Recipe, MealPlan, AppState, AppContextType, Subscription, UsageStats, SubscriptionLimits } from '@/types';
 import {
-  getRecipes,
-  getMealPlans,
-  addRecipe as saveRecipe,
-  updateRecipe as saveRecipeUpdate,
-  deleteRecipe as removeRecipe,
-  addMealPlan as saveMealPlan,
-  updateMealPlan as saveMealPlanUpdate,
-  deleteMealPlan as removeMealPlan,
-} from '@/lib/storage';
+  apiGetRecipes,
+  apiCreateRecipe,
+  apiUpdateRecipe,
+  apiDeleteRecipe,
+  apiGetMealPlans,
+  apiCreateMealPlan,
+  apiUpdateMealPlan,
+  apiDeleteMealPlan,
+  apiGetSubscription,
+  apiUpdateSubscription,
+  apiGetUsage,
+  apiIncrementUsage,
+} from '@/lib/api';
 import {
   getSubscription,
   getUsageStats,
@@ -24,6 +29,16 @@ import {
   canEditRecipe,
   getSubscriptionLimits,
 } from '@/lib/subscription';
+import {
+  getRecipes,
+  getMealPlans,
+  addRecipe as saveRecipe,
+  updateRecipe as saveRecipeUpdate,
+  deleteRecipe as removeRecipe,
+  addMealPlan as saveMealPlan,
+  updateMealPlan as saveMealPlanUpdate,
+  deleteMealPlan as removeMealPlan,
+} from '@/lib/storage';
 
 // Action types
 type AppAction =
@@ -153,72 +168,167 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 // Provider component
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const { data: session, status } = useSession();
 
-  // Load data on mount
+  // Load data when session is available
   useEffect(() => {
-    try {
-      const recipes = getRecipes();
-      const mealPlans = getMealPlans();
-      const subscription = getSubscription();
-      const usage = getUsageStats();
-      dispatch({ type: 'LOAD_DATA', payload: { recipes, mealPlans, subscription, usage } });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to load saved data' });
-    }
-  }, []);
+    const loadData = async () => {
+      if (status === 'loading') return; // Still loading session
+      
+      dispatch({ type: 'SET_LOADING', payload: true });
+
+      try {
+        if (session?.user) {
+          // User is signed in - load from database
+          const [recipes, mealPlans, subscription, usage] = await Promise.all([
+            apiGetRecipes().catch(() => []), // Fallback to empty array on error
+            apiGetMealPlans().catch(() => []),
+            apiGetSubscription().catch(() => ({ tier: 'free' as const, status: 'active' as const, startDate: new Date().toISOString(), endDate: null, autoRenew: false })),
+            apiGetUsage().catch(() => ({ recipesGenerated: 0, mealPlansGenerated: 0, currentMonth: new Date().toISOString().slice(0, 7), lastReset: new Date().toISOString() }))
+          ]);
+          
+          dispatch({ type: 'LOAD_DATA', payload: { recipes, mealPlans, subscription, usage } });
+        } else {
+          // User is not signed in - load from localStorage for demo/offline usage
+          const recipes = getRecipes();
+          const mealPlans = getMealPlans();
+          const subscription = getSubscription();
+          const usage = getUsageStats();
+          dispatch({ type: 'LOAD_DATA', payload: { recipes, mealPlans, subscription, usage } });
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to load saved data' });
+      }
+    };
+
+    loadData();
+  }, [session, status]);
 
   // Action creators
-  const addRecipe = (recipe: Recipe) => {
+  const addRecipe = async (recipe: Recipe) => {
     try {
-      saveRecipe(recipe);
-      dispatch({ type: 'ADD_RECIPE', payload: recipe });
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      if (session?.user) {
+        // Use database API
+        const savedRecipe = await apiCreateRecipe(recipe);
+        dispatch({ type: 'ADD_RECIPE', payload: savedRecipe });
+      } else {
+        // Use localStorage
+        saveRecipe(recipe);
+        dispatch({ type: 'ADD_RECIPE', payload: recipe });
+      }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to save recipe' });
+      console.error('Error saving recipe:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to save recipe' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  const updateRecipe = (id: string, updates: Partial<Recipe>) => {
+  const updateRecipe = async (id: string, updates: Partial<Recipe>) => {
     try {
-      saveRecipeUpdate(id, updates);
-      dispatch({ type: 'UPDATE_RECIPE', payload: { id, updates } });
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      if (session?.user) {
+        // Use database API
+        const updatedRecipe = await apiUpdateRecipe(id, updates);
+        dispatch({ type: 'UPDATE_RECIPE', payload: { id, updates: updatedRecipe } });
+      } else {
+        // Use localStorage
+        saveRecipeUpdate(id, updates);
+        dispatch({ type: 'UPDATE_RECIPE', payload: { id, updates } });
+      }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update recipe' });
+      console.error('Error updating recipe:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to update recipe' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  const deleteRecipe = (id: string) => {
+  const deleteRecipe = async (id: string) => {
     try {
-      removeRecipe(id);
-      dispatch({ type: 'DELETE_RECIPE', payload: id });
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      if (session?.user) {
+        // Use database API
+        await apiDeleteRecipe(id);
+        dispatch({ type: 'DELETE_RECIPE', payload: id });
+      } else {
+        // Use localStorage
+        removeRecipe(id);
+        dispatch({ type: 'DELETE_RECIPE', payload: id });
+      }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to delete recipe' });
+      console.error('Error deleting recipe:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to delete recipe' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  const addMealPlan = (mealPlan: MealPlan) => {
+  const addMealPlan = async (mealPlan: MealPlan) => {
     try {
-      saveMealPlan(mealPlan);
-      dispatch({ type: 'ADD_MEAL_PLAN', payload: mealPlan });
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      if (session?.user) {
+        // Use database API
+        const savedMealPlan = await apiCreateMealPlan(mealPlan);
+        dispatch({ type: 'ADD_MEAL_PLAN', payload: savedMealPlan });
+      } else {
+        // Use localStorage
+        saveMealPlan(mealPlan);
+        dispatch({ type: 'ADD_MEAL_PLAN', payload: mealPlan });
+      }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to save meal plan' });
+      console.error('Error saving meal plan:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to save meal plan' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  const updateMealPlan = (id: string, updates: Partial<MealPlan>) => {
+  const updateMealPlan = async (id: string, updates: Partial<MealPlan>) => {
     try {
-      saveMealPlanUpdate(id, updates);
-      dispatch({ type: 'UPDATE_MEAL_PLAN', payload: { id, updates } });
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      if (session?.user) {
+        // Use database API
+        const updatedMealPlan = await apiUpdateMealPlan(id, updates);
+        dispatch({ type: 'UPDATE_MEAL_PLAN', payload: { id, updates: updatedMealPlan } });
+      } else {
+        // Use localStorage
+        saveMealPlanUpdate(id, updates);
+        dispatch({ type: 'UPDATE_MEAL_PLAN', payload: { id, updates } });
+      }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update meal plan' });
+      console.error('Error updating meal plan:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to update meal plan' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  const deleteMealPlan = (id: string) => {
+  const deleteMealPlan = async (id: string) => {
     try {
-      removeMealPlan(id);
-      dispatch({ type: 'DELETE_MEAL_PLAN', payload: id });
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      if (session?.user) {
+        // Use database API
+        await apiDeleteMealPlan(id);
+        dispatch({ type: 'DELETE_MEAL_PLAN', payload: id });
+      } else {
+        // Use localStorage
+        removeMealPlan(id);
+        dispatch({ type: 'DELETE_MEAL_PLAN', payload: id });
+      }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to delete meal plan' });
+      console.error('Error deleting meal plan:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to delete meal plan' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
@@ -231,40 +341,70 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Subscription methods
-  const incrementRecipeUsage = (): boolean => {
+  const incrementRecipeUsage = async (): Promise<boolean> => {
     try {
       if (!canGenerateRecipe(state.subscription, state.usage)) {
         return false;
       }
-      const updatedUsage = incrementRecipeUsageStorage();
-      dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+      
+      if (session?.user) {
+        // Use database API
+        const updatedUsage = await apiIncrementUsage('recipe');
+        dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+      } else {
+        // Use localStorage
+        const updatedUsage = incrementRecipeUsageStorage();
+        dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+      }
       return true;
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update usage' });
+      console.error('Error updating usage:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to update usage' });
       return false;
     }
   };
 
-  const incrementMealPlanUsage = (): boolean => {
+  const incrementMealPlanUsage = async (): Promise<boolean> => {
     try {
       if (!canGenerateMealPlan(state.subscription, state.usage)) {
         return false;
       }
-      const updatedUsage = incrementMealPlanUsageStorage();
-      dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+      
+      if (session?.user) {
+        // Use database API
+        const updatedUsage = await apiIncrementUsage('mealPlan');
+        dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+      } else {
+        // Use localStorage
+        const updatedUsage = incrementMealPlanUsageStorage();
+        dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+      }
       return true;
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update usage' });
+      console.error('Error updating usage:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to update usage' });
       return false;
     }
   };
 
-  const updateSubscription = (subscription: Subscription) => {
+  const updateSubscription = async (subscription: Subscription) => {
     try {
-      saveSubscription(subscription);
-      dispatch({ type: 'UPDATE_SUBSCRIPTION', payload: subscription });
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      if (session?.user) {
+        // Use database API
+        const updatedSubscription = await apiUpdateSubscription(subscription);
+        dispatch({ type: 'UPDATE_SUBSCRIPTION', payload: updatedSubscription });
+      } else {
+        // Use localStorage
+        saveSubscription(subscription);
+        dispatch({ type: 'UPDATE_SUBSCRIPTION', payload: subscription });
+      }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update subscription' });
+      console.error('Error updating subscription:', error);
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to update subscription' });
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 

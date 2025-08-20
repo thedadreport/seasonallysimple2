@@ -131,8 +131,8 @@ const MealPlanPage = () => {
     }
   };
 
-  const handleGenerateMealPlan = () => {
-    const success = incrementMealPlanUsage();
+  const handleGenerateMealPlan = async () => {
+    const success = await incrementMealPlanUsage();
     if (success) {
       setShowMealPlan(true);
     }
