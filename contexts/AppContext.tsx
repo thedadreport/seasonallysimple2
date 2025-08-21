@@ -179,21 +179,77 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
       try {
         if (session?.user) {
-          // User is signed in - load from database
-          const [recipes, mealPlans, subscription, usage] = await Promise.all([
-            apiGetRecipes().catch(() => []), // Fallback to empty array on error
-            apiGetMealPlans().catch(() => []),
+          // User is signed in - load from database with localStorage fallback
+          const [dbRecipes, dbMealPlans, dbSubscription, dbUsage] = await Promise.all([
+            apiGetRecipes().catch((error) => {
+              console.warn('Failed to load recipes from database, will merge with localStorage:', error);
+              return [];
+            }),
+            apiGetMealPlans().catch((error) => {
+              console.warn('Failed to load meal plans from database, will merge with localStorage:', error);
+              return [];
+            }),
             apiGetSubscription().catch(() => ({ tier: 'free' as const, status: 'active' as const, startDate: new Date().toISOString(), endDate: null, autoRenew: false })),
             apiGetUsage().catch(() => ({ recipesGenerated: 0, mealPlansGenerated: 0, currentMonth: new Date().toISOString().slice(0, 7), lastReset: new Date().toISOString() }))
           ]);
           
-          dispatch({ type: 'LOAD_DATA', payload: { recipes, mealPlans, subscription, usage } });
+          // Always merge with localStorage to ensure no data is lost
+          const localRecipes = getRecipes();
+          const localMealPlans = getMealPlans();
+          
+          // Merge database and localStorage data, avoiding duplicates
+          const mergedRecipes = [...dbRecipes];
+          localRecipes.forEach(localRecipe => {
+            if (!mergedRecipes.find(dbRecipe => dbRecipe.id === localRecipe.id)) {
+              mergedRecipes.push(localRecipe);
+            }
+          });
+          
+          const mergedMealPlans = [...dbMealPlans];
+          localMealPlans.forEach(localPlan => {
+            if (!mergedMealPlans.find(dbPlan => dbPlan.id === localPlan.id)) {
+              mergedMealPlans.push(localPlan);
+            }
+          });
+          
+          console.log('AppContext: Loaded and merged data:', {
+            dbRecipes: dbRecipes.length,
+            localRecipes: localRecipes.length,
+            totalRecipes: mergedRecipes.length,
+            dbMealPlans: dbMealPlans.length,
+            localMealPlans: localMealPlans.length,
+            totalMealPlans: mergedMealPlans.length
+          });
+          
+          dispatch({ type: 'LOAD_DATA', payload: { 
+            recipes: mergedRecipes, 
+            mealPlans: mergedMealPlans, 
+            subscription: dbSubscription, 
+            usage: dbUsage 
+          } });
+          
+          // Optionally sync localStorage recipes to database in background
+          if (localRecipes.length > 0) {
+            console.log('AppContext: Attempting to sync localStorage recipes to database...');
+            localRecipes.forEach(async (recipe) => {
+              try {
+                await apiCreateRecipe(recipe);
+                console.log('AppContext: Successfully synced recipe to database:', recipe.title);
+              } catch (error) {
+                console.log('AppContext: Recipe already exists in database or sync failed:', recipe.title);
+              }
+            });
+          }
         } else {
           // User is not signed in - load from localStorage for demo/offline usage
           const recipes = getRecipes();
           const mealPlans = getMealPlans();
           const subscription = getSubscription();
           const usage = getUsageStats();
+          console.log('AppContext: Loaded localStorage data:', {
+            recipes: recipes.length,
+            mealPlans: mealPlans.length
+          });
           dispatch({ type: 'LOAD_DATA', payload: { recipes, mealPlans, subscription, usage } });
         }
       } catch (error) {
