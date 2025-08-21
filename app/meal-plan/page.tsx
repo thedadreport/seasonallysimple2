@@ -140,7 +140,15 @@ const MealPlanPage = () => {
     }
   };
 
-  const handleGenerateRecipe = async (meal) => {
+  const handleGenerateRecipe = async (meal: {
+    day: string;
+    recipe: string;
+    prepTime: string;
+    cookTime: string;
+    cost: string;
+    ingredients: string[];
+    prepNotes: string;
+  }) => {
     setGeneratingRecipe(meal.day);
     setError(null);
     
