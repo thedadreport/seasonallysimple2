@@ -4,13 +4,20 @@ import React, { useState } from 'react';
 import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
-import { SubscriptionTier } from '@/types';
+import { SubscriptionTier, Recipe } from '@/types';
 
 
 const SavedPage = () => {
-  const { recipes, mealPlans, deleteRecipe, deleteMealPlan, addRecipe, addMealPlan, subscription, usage, canEditRecipe, updateSubscription } = useApp();
+  const { recipes, mealPlans, deleteRecipe, deleteMealPlan, addRecipe, addMealPlan, subscription, usage, canEditRecipe, updateSubscription, updateRecipe } = useApp();
   const [activeTab, setActiveTab] = useState('recipes');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [editedRecipe, setEditedRecipe] = useState<Recipe | null>(null);
+
+  // Debug logging
+  console.log('SavedPage: Current recipes count:', recipes.length);
+  console.log('SavedPage: Current recipes:', recipes);
 
   const handleAddTestData = () => {
     addRecipe(createTestRecipe());
@@ -29,6 +36,101 @@ const SavedPage = () => {
   };
 
   const canEdit = canEditRecipe();
+
+  const handleViewRecipe = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+  };
+
+  const handleEditRecipe = (recipe: Recipe) => {
+    if (canEdit) {
+      setEditingRecipe(recipe);
+      setEditedRecipe({ ...recipe }); // Create a copy for editing
+    }
+  };
+
+  const handleSaveRecipe = async () => {
+    if (editedRecipe && editingRecipe) {
+      try {
+        await updateRecipe(editingRecipe.id, editedRecipe);
+        setEditingRecipe(null);
+        setEditedRecipe(null);
+      } catch (error) {
+        console.error('Error updating recipe:', error);
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRecipe(null);
+    setEditedRecipe(null);
+  };
+
+  const updateEditedRecipe = (field: keyof Recipe, value: any) => {
+    if (editedRecipe) {
+      setEditedRecipe({
+        ...editedRecipe,
+        [field]: value
+      });
+    }
+  };
+
+  const addIngredient = () => {
+    if (editedRecipe) {
+      setEditedRecipe({
+        ...editedRecipe,
+        ingredients: [...editedRecipe.ingredients, '']
+      });
+    }
+  };
+
+  const removeIngredient = (index: number) => {
+    if (editedRecipe) {
+      setEditedRecipe({
+        ...editedRecipe,
+        ingredients: editedRecipe.ingredients.filter((_, i) => i !== index)
+      });
+    }
+  };
+
+  const updateIngredient = (index: number, value: string) => {
+    if (editedRecipe) {
+      const newIngredients = [...editedRecipe.ingredients];
+      newIngredients[index] = value;
+      setEditedRecipe({
+        ...editedRecipe,
+        ingredients: newIngredients
+      });
+    }
+  };
+
+  const addInstruction = () => {
+    if (editedRecipe) {
+      setEditedRecipe({
+        ...editedRecipe,
+        instructions: [...editedRecipe.instructions, '']
+      });
+    }
+  };
+
+  const removeInstruction = (index: number) => {
+    if (editedRecipe) {
+      setEditedRecipe({
+        ...editedRecipe,
+        instructions: editedRecipe.instructions.filter((_, i) => i !== index)
+      });
+    }
+  };
+
+  const updateInstruction = (index: number, value: string) => {
+    if (editedRecipe) {
+      const newInstructions = [...editedRecipe.instructions];
+      newInstructions[index] = value;
+      setEditedRecipe({
+        ...editedRecipe,
+        instructions: newInstructions
+      });
+    }
+  };
 
   const filteredRecipes = recipes.filter(recipe =>
     recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,8 +220,13 @@ const SavedPage = () => {
                 <p className="text-gray-600">Try adjusting your search or save some recipes from the recipe generator.</p>
               </div>
             ) : (
-              filteredRecipes.map((recipe) => (
-                <div key={recipe.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow">
+              filteredRecipes.map((recipe) => {
+                // Check if recipe was added recently (within last 5 minutes)
+                const isRecentlyAdded = new Date(recipe.dateAdded).getTime() > Date.now() - 5 * 60 * 1000;
+                return (
+                <div key={recipe.id} className={`bg-white rounded-2xl shadow-lg border p-6 hover:shadow-xl transition-shadow ${
+                  isRecentlyAdded ? 'border-green-300 bg-green-50' : 'border-gray-200'
+                }`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center mb-3">
@@ -166,11 +273,15 @@ const SavedPage = () => {
                     </div>
 
                     <div className="ml-6 flex flex-col space-y-2">
-                      <button className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">
+                      <button 
+                        onClick={() => handleViewRecipe(recipe)}
+                        className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                      >
                         <BookOpen className="h-4 w-4 inline mr-2" />
                         View Recipe
                       </button>
                       <button 
+                        onClick={() => handleEditRecipe(recipe)}
                         disabled={!canEdit}
                         className={`px-4 py-2 border rounded-lg transition-colors text-sm ${
                           canEdit 
@@ -191,7 +302,8 @@ const SavedPage = () => {
                     </div>
                   </div>
                 </div>
-              ))
+                );
+              })
             )}
           </div>
         ) : (
@@ -286,6 +398,251 @@ const SavedPage = () => {
                 <Calendar className="h-5 w-5 mr-2" />  
                 Plan My Week
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* View Recipe Modal */}
+        {selectedRecipe && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{selectedRecipe.title}</h1>
+                    <p className="text-gray-600 mb-4">{selectedRecipe.description}</p>
+                    <div className="flex items-center space-x-6 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {selectedRecipe.cookTime}
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-1" />
+                        {selectedRecipe.servings}
+                      </div>
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 mr-1" />
+                        {selectedRecipe.difficulty}
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedRecipe(null)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Ingredients</h2>
+                    <ul className="space-y-2">
+                      {selectedRecipe.ingredients.map((ingredient, index) => (
+                        <li key={index} className="text-gray-700">{ingredient}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Instructions</h2>
+                    <ol className="space-y-3">
+                      {selectedRecipe.instructions.map((instruction, index) => (
+                        <li key={index} className="text-gray-700">
+                          <span className="font-semibold text-blue-600 mr-2">{index + 1}.</span>
+                          {instruction}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+                
+                {selectedRecipe.notes && (
+                  <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-yellow-800 mb-2">Your Notes:</h3>
+                    <p className="text-yellow-800">{selectedRecipe.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Recipe Modal */}
+        {editingRecipe && editedRecipe && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-bold text-gray-900">Edit Recipe</h1>
+                  <button 
+                    onClick={handleCancelEdit}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                {/* Basic Info */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Recipe Title</label>
+                    <input 
+                      type="text" 
+                      value={editedRecipe.title}
+                      onChange={(e) => updateEditedRecipe('title', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <input 
+                      type="text" 
+                      value={editedRecipe.description}
+                      onChange={(e) => updateEditedRecipe('description', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Recipe Details */}
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Cook Time</label>
+                    <input 
+                      type="text" 
+                      value={editedRecipe.cookTime}
+                      onChange={(e) => updateEditedRecipe('cookTime', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 30 minutes"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Servings</label>
+                    <input 
+                      type="text" 
+                      value={editedRecipe.servings}
+                      onChange={(e) => updateEditedRecipe('servings', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 4 people"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                    <select 
+                      value={editedRecipe.difficulty}
+                      onChange={(e) => updateEditedRecipe('difficulty', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="Easy">Easy</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Hard">Hard</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Ingredients */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Ingredients</label>
+                    <button 
+                      onClick={addIngredient}
+                      className="px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm"
+                    >
+                      + Add Ingredient
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {editedRecipe.ingredients.map((ingredient, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <input 
+                          type="text" 
+                          value={ingredient}
+                          onChange={(e) => updateIngredient(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="e.g., 1 cup flour"
+                        />
+                        <button 
+                          onClick={() => removeIngredient(index)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Instructions */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Instructions</label>
+                    <button 
+                      onClick={addInstruction}
+                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
+                    >
+                      + Add Step
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {editedRecipe.instructions.map((instruction, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-1">
+                          {index + 1}
+                        </span>
+                        <textarea 
+                          value={instruction}
+                          onChange={(e) => updateInstruction(index, e.target.value)}
+                          rows={2}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                          placeholder="Describe this step..."
+                        />
+                        <button 
+                          onClick={() => removeInstruction(index)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Personal Notes</label>
+                  <textarea 
+                    value={editedRecipe.notes || ''}
+                    onChange={(e) => updateEditedRecipe('notes', e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Add your personal notes, modifications, or tips..."
+                  />
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button 
+                    onClick={handleCancelEdit}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleSaveRecipe}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
