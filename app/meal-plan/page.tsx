@@ -177,7 +177,7 @@ const MealPlanPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          familySize: formData.familySize,
+          familySize: `${formData.familySize} people`,
           availableTime: meal.cookTime || '30 minutes',
           cookingSituation: `${meal.day} dinner from meal plan`,
           protein: meal.ingredients.find(ing => ing.toLowerCase().includes('chicken') || ing.toLowerCase().includes('beef') || ing.toLowerCase().includes('turkey') || ing.toLowerCase().includes('sausage') || ing.toLowerCase().includes('fish')) || 'protein from ingredients',
@@ -195,7 +195,9 @@ const MealPlanPage = () => {
       }
 
       // Save the generated recipe
+      console.log('Recipe generated successfully:', data.recipe);
       await addRecipe(data.recipe);
+      console.log('Recipe saved to collection');
       
       // Show success notification with recipe info
       setSavedRecipe({
@@ -252,10 +254,10 @@ const MealPlanPage = () => {
                   <div className="flex space-x-2 ml-4">
                     <a
                       href="/saved"
-                      className="inline-flex items-center px-3 py-1 text-sm bg-green-100 text-green-700 border border-green-300 rounded-lg hover:bg-green-200 transition-colors"
+                      className="inline-flex items-center px-4 py-2 text-sm bg-green-600 text-white border border-green-600 rounded-lg hover:bg-green-700 transition-colors font-medium"
                     >
-                      <BookOpen className="h-4 w-4 mr-1" />
-                      View All Recipes
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      View in Recipe Collection
                     </a>
                     <button
                       onClick={() => setSavedRecipe(null)}

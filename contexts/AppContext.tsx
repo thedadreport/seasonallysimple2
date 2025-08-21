@@ -208,19 +208,32 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   // Action creators
   const addRecipe = async (recipe: Recipe) => {
     try {
+      console.log('AppContext: Starting to save recipe:', recipe.title);
       dispatch({ type: 'SET_LOADING', payload: true });
       
       if (session?.user) {
+        console.log('AppContext: User is signed in, using database API');
         // Use database API
-        const savedRecipe = await apiCreateRecipe(recipe);
-        dispatch({ type: 'ADD_RECIPE', payload: savedRecipe });
+        try {
+          const savedRecipe = await apiCreateRecipe(recipe);
+          dispatch({ type: 'ADD_RECIPE', payload: savedRecipe });
+          console.log('AppContext: Recipe saved to database successfully');
+        } catch (apiError) {
+          console.warn('AppContext: Database API failed, falling back to localStorage:', apiError);
+          // Fallback to localStorage if database API fails
+          saveRecipe(recipe);
+          dispatch({ type: 'ADD_RECIPE', payload: recipe });
+          console.log('AppContext: Recipe saved to localStorage as fallback');
+        }
       } else {
+        console.log('AppContext: No user session, using localStorage');
         // Use localStorage
         saveRecipe(recipe);
         dispatch({ type: 'ADD_RECIPE', payload: recipe });
+        console.log('AppContext: Recipe saved to localStorage successfully');
       }
     } catch (error) {
-      console.error('Error saving recipe:', error);
+      console.error('AppContext: Error saving recipe:', error);
       dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to save recipe' });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
