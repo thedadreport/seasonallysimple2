@@ -47,7 +47,25 @@ const MealPlanPage = () => {
   const [selectedDiets, setSelectedDiets] = useState(['None']);
   const [selectedCuisines, setSelectedCuisines] = useState(['No Preference']);
   const [selectedCookingMethods, setSelectedCookingMethods] = useState(['Pots and Pans']);
-  const [generatedMealPlan, setGeneratedMealPlan] = useState(null);
+  const [generatedMealPlan, setGeneratedMealPlan] = useState<{
+    title: string;
+    description: string;
+    totalCost: string;
+    prepTime: string;
+    servings: string;
+    focus?: string;
+    meals: {
+      day: string;
+      recipe: string;
+      prepTime: string;
+      cookTime: string;
+      cost: string;
+      ingredients: string[];
+      prepNotes: string;
+    }[];
+    shoppingList: Record<string, string[]>;
+    prepSchedule: string[];
+  } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatingRecipe, setGeneratingRecipe] = useState<string | null>(null);
@@ -538,22 +556,22 @@ const MealPlanPage = () => {
                     <Calendar className="h-4 w-4 mr-2" />
                     {generatedMealPlan?.focus || formData.planningFocus}
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{generatedMealPlan.title}</h1>
-                  <p className="text-lg text-gray-700 mb-6">{generatedMealPlan.description}</p>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{generatedMealPlan?.title}</h1>
+                  <p className="text-lg text-gray-700 mb-6">{generatedMealPlan?.description}</p>
                 </div>
                 
                 <div className="ml-6 text-right">
                   <div className="flex items-center text-gray-600 mb-2">
                     <DollarSign className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedMealPlan.totalCost}</span>
+                    <span className="font-medium">{generatedMealPlan?.totalCost}</span>
                   </div>
                   <div className="flex items-center text-gray-600 mb-2">
                     <Clock className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedMealPlan.prepTime}</span>
+                    <span className="font-medium">{generatedMealPlan?.prepTime}</span>
                   </div>
                   <div className="flex items-center text-green-600">
                     <Users className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedMealPlan.servings}</span>
+                    <span className="font-medium">{generatedMealPlan?.servings}</span>
                   </div>
                 </div>
               </div>
@@ -578,7 +596,7 @@ const MealPlanPage = () => {
                 This Week's Dinners
               </h2>
               <div className="space-y-4">
-                {generatedMealPlan.meals.map((meal, index) => (
+                {generatedMealPlan?.meals?.map((meal, index) => (
                   <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -634,7 +652,7 @@ const MealPlanPage = () => {
                   Shopping List
                 </h2>
                 <div className="space-y-4">
-                  {Object.entries(generatedMealPlan.shoppingList).map(([category, items]) => (
+                  {Object.entries(generatedMealPlan?.shoppingList || {}).map(([category, items]) => (
                     <div key={category}>
                       <h3 className="font-semibold text-gray-900 mb-2">{category}</h3>
                       <ul className="space-y-1">
@@ -658,7 +676,7 @@ const MealPlanPage = () => {
                 </h2>
                 <p className="text-gray-600 text-sm mb-4">Complete these tasks on Sunday to set yourself up for success:</p>
                 <ol className="space-y-3">
-                  {generatedMealPlan.prepSchedule.map((task, index) => (
+                  {generatedMealPlan?.prepSchedule?.map((task, index) => (
                     <li key={index} className="flex items-start">
                       <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full text-sm font-medium flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
                         {index + 1}
