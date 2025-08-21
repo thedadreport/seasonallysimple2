@@ -103,7 +103,7 @@ const RecipePage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [savedRecipe, setSavedRecipe] = useState(null);
+  const [savedRecipe, setSavedRecipe] = useState<any>(null);
   
   // Form state
   const [formData, setFormData] = useState({

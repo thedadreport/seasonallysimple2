@@ -49,9 +49,9 @@ const MealPlanPage = () => {
   const [selectedCookingMethods, setSelectedCookingMethods] = useState(['Pots and Pans']);
   const [generatedMealPlan, setGeneratedMealPlan] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState(null);
-  const [generatingRecipe, setGeneratingRecipe] = useState(null);
-  const [savedRecipe, setSavedRecipe] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [generatingRecipe, setGeneratingRecipe] = useState<string | null>(null);
+  const [savedRecipe, setSavedRecipe] = useState<any>(null);
   
   // Form state
   const [formData, setFormData] = useState({
