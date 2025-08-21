@@ -68,6 +68,34 @@ export async function POST(request: NextRequest) {
         );
       }
     }
+    
+    // Check for API overload errors
+    if (error && typeof error === 'object' && 'status' in error) {
+      if (error.status === 404) {
+        return NextResponse.json(
+          { success: false, error: 'AI model configuration error. Please try again or contact support.' },
+          { status: 503 }
+        );
+      }
+      if (error.status === 529) {
+        return NextResponse.json(
+          { success: false, error: 'The AI service is currently experiencing high demand. Please try again in a few moments.' },
+          { status: 503 }
+        );
+      }
+      if (error.status === 401) {
+        return NextResponse.json(
+          { success: false, error: 'Authentication failed with AI service' },
+          { status: 503 }
+        );
+      }
+      if (error.status === 429) {
+        return NextResponse.json(
+          { success: false, error: 'Rate limit exceeded. Please wait a moment before trying again.' },
+          { status: 503 }
+        );
+      }
+    }
 
     return NextResponse.json(
       { success: false, error: 'Failed to generate meal plan. Please try again.' },

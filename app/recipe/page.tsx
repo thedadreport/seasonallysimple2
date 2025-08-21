@@ -95,6 +95,12 @@ const dietaryRestrictions = [
   'Halal'
 ];
 
+const difficultyLevels = [
+  { value: 'Easy', label: 'Easy', icon: Star, color: 'bg-green-50 border-green-200 text-green-700', description: 'Simple recipes with basic techniques' },
+  { value: 'Intermediate', label: 'Intermediate', icon: ChefHat, color: 'bg-yellow-50 border-yellow-200 text-yellow-700', description: 'Moderate complexity, some cooking skills needed' },
+  { value: 'Expert', label: 'Expert', icon: Flame, color: 'bg-red-50 border-red-200 text-red-700', description: 'Advanced techniques and longer prep time' }
+];
+
 const RecipePage = () => {
   const { subscription, usage, canGenerateRecipe, incrementRecipeUsage, addRecipe } = useApp();
   const [showRecipe, setShowRecipe] = useState(false);
@@ -110,10 +116,12 @@ const RecipePage = () => {
     familySize: 4, // Now a number for the picker
     availableTime: '30 minutes',
     cookingSituation: "Tonight's Dinner",
-    protein: 'Chicken',
+    protein: '',
     vegetables: '',
-    cookingMethod: 'Pots and Pans',
-    cuisineType: 'No Preference'
+    cookingMethod: '',
+    cuisineType: 'No Preference',
+    difficulty: 'Easy',
+    seasonal: false
   });
 
   const toggleDiet = (diet: string) => {
@@ -255,7 +263,7 @@ const RecipePage = () => {
               <div className="mb-6">
                 <label className="label">Cooking Situation</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
-                  {["Tonight's Dinner", "Protein + random stuff in fridge", "Need to stretch small portions", "Want minimal cleanup", "Making tomorrow's lunch too", "Special occasion meal"].map((situation) => (
+                  {["Tonight's Dinner", "Minimal Cleanup", "Stretch a Protein", "Make Tomorrow's Lunch", "Special Occasion"].map((situation) => (
                     <button
                       key={situation}
                       type="button"
@@ -326,7 +334,7 @@ const RecipePage = () => {
                 <div className="md:col-span-2">
                   <label className="label flex items-center space-x-2">
                     <ChefHat className="h-4 w-4 text-red-600" />
-                    <span>What protein do you have?</span>
+                    <span>What protein do you have? <span className="text-gray-500 font-normal">(optional)</span></span>
                   </label>
                   <input 
                     type="text" 
@@ -342,7 +350,7 @@ const RecipePage = () => {
               <div className="mt-6">
                 <label className="label flex items-center space-x-2">
                   <Utensils className="h-4 w-4 text-green-600" />
-                  <span>Vegetables in your fridge</span>
+                  <span>Vegetables in your fridge <span className="text-gray-500 font-normal">(optional)</span></span>
                 </label>
                 <textarea 
                   className="input h-20 resize-none mt-2" 
@@ -350,6 +358,69 @@ const RecipePage = () => {
                   value={formData.vegetables}
                   onChange={(e) => setFormData({...formData, vegetables: e.target.value})}
                 ></textarea>
+              </div>
+
+              {/* Recipe Difficulty - Full Width */}
+              <div className="mt-6">
+                <label className="label">What difficulty level do you prefer?</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                  {difficultyLevels.map((level) => {
+                    const Icon = level.icon;
+                    const isSelected = formData.difficulty === level.value;
+                    return (
+                      <button
+                        key={level.value}
+                        type="button"
+                        onClick={() => setFormData({...formData, difficulty: level.value})}
+                        className={`p-4 rounded-lg border-2 transition-all hover:scale-105 text-left ${
+                          isSelected
+                            ? `${level.color} border-current shadow-md scale-105`
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3 mb-2">
+                          <Icon className={`h-5 w-5 ${isSelected ? '' : 'text-gray-500'}`} />
+                          <span className="text-lg font-semibold">{level.label}</span>
+                        </div>
+                        <p className={`text-sm ${isSelected ? '' : 'text-gray-500'}`}>
+                          {level.description}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Seasonal Toggle */}
+              <div className="mt-6">
+                <label className="label">Recipe Focus</label>
+                <div className="flex items-center space-x-4 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, seasonal: !formData.seasonal})}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg border-2 transition-all ${
+                      formData.seasonal
+                        ? 'bg-green-50 border-green-300 text-green-700 shadow-md'
+                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                      formData.seasonal
+                        ? 'bg-green-600 border-green-600'
+                        : 'border-gray-400'
+                    }`}>
+                      {formData.seasonal && (
+                        <CheckCircle className="h-3 w-3 text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <span className="font-medium">Use Seasonal Ingredients</span>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Focus on fresh, in-season produce for the best flavors
+                      </p>
+                    </div>
+                  </button>
+                </div>
               </div>
 
               {/* Cooking Method - Full Width */}

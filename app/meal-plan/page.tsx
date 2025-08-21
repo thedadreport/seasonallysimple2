@@ -46,7 +46,7 @@ const MealPlanPage = () => {
   const [showMealPlan, setShowMealPlan] = useState(false);
   const [selectedDiets, setSelectedDiets] = useState(['None']);
   const [selectedCuisines, setSelectedCuisines] = useState(['No Preference']);
-  const [selectedCookingMethods, setSelectedCookingMethods] = useState(['Pots and Pans']);
+  const [selectedCookingMethods, setSelectedCookingMethods] = useState([]);
   const [generatedMealPlan, setGeneratedMealPlan] = useState<{
     title: string;
     description: string;
@@ -70,6 +70,7 @@ const MealPlanPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [generatingRecipe, setGeneratingRecipe] = useState<string | null>(null);
   const [savedRecipe, setSavedRecipe] = useState<any>(null);
+  const [generatedRecipes, setGeneratedRecipes] = useState<Set<string>>(new Set());
   
   // Form state
   const [formData, setFormData] = useState({
@@ -149,6 +150,7 @@ const MealPlanPage = () => {
       }
 
       setGeneratedMealPlan(data.mealPlan);
+      setGeneratedRecipes(new Set()); // Reset generated recipes for new meal plan
       setShowMealPlan(true);
     } catch (error) {
       console.error('Meal plan generation error:', error);
@@ -198,6 +200,9 @@ const MealPlanPage = () => {
       console.log('Recipe generated successfully:', data.recipe);
       await addRecipe(data.recipe);
       console.log('Recipe saved to collection');
+      
+      // Mark this recipe as generated
+      setGeneratedRecipes(prev => new Set(prev.add(meal.day)));
       
       // Show success notification with recipe info
       setSavedRecipe({
@@ -626,7 +631,11 @@ const MealPlanPage = () => {
                         <button 
                           onClick={() => handleGenerateRecipe(meal)}
                           disabled={generatingRecipe === meal.day}
-                          className={`px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-2 ${
+                          className={`px-3 py-2 text-sm border rounded-lg transition-colors flex items-center space-x-2 ${
+                            generatedRecipes.has(meal.day)
+                              ? 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
+                              : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
+                          } ${
                             generatingRecipe === meal.day ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                         >
@@ -634,6 +643,11 @@ const MealPlanPage = () => {
                             <>
                               <Loader2 className="h-4 w-4 animate-spin" />
                               <span>Generating...</span>
+                            </>
+                          ) : generatedRecipes.has(meal.day) ? (
+                            <>
+                              <CheckCircle className="h-4 w-4" />
+                              <span>Recipe Generated</span>
                             </>
                           ) : (
                             <span>View Full Recipe</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3 } from 'lucide-react';
+import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Printer } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
 import { SubscriptionTier, Recipe } from '@/types';
@@ -14,6 +14,9 @@ const SavedPage = () => {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [editedRecipe, setEditedRecipe] = useState<Recipe | null>(null);
+  const [filterDifficulty, setFilterDifficulty] = useState('all');
+  const [filterCookTime, setFilterCookTime] = useState('all');
+  const [sortBy, setSortBy] = useState('recent');
 
   // Debug logging
   console.log('SavedPage: Current recipes count:', recipes.length);
@@ -39,6 +42,10 @@ const SavedPage = () => {
 
   const handleViewRecipe = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
+  };
+
+  const handlePrintRecipe = () => {
+    window.print();
   };
 
   const handleEditRecipe = (recipe: Recipe) => {
@@ -132,10 +139,49 @@ const SavedPage = () => {
     }
   };
 
-  const filteredRecipes = recipes.filter(recipe =>
-    recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredRecipes = recipes
+    .filter(recipe => {
+      // Search term filter
+      const matchesSearch = searchTerm === '' || 
+        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recipe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recipe.ingredients.some(ingredient => ingredient.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        recipe.instructions.some(instruction => instruction.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        recipe.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        recipe.situation.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Difficulty filter
+      const matchesDifficulty = filterDifficulty === 'all' || recipe.difficulty.toLowerCase() === filterDifficulty;
+      
+      // Cook time filter
+      let matchesCookTime = true;
+      if (filterCookTime !== 'all') {
+        const cookTimeNum = parseInt(recipe.cookTime.match(/\d+/)?.[0] || '0');
+        if (filterCookTime === 'quick' && cookTimeNum > 30) matchesCookTime = false;
+        if (filterCookTime === 'medium' && (cookTimeNum <= 30 || cookTimeNum > 60)) matchesCookTime = false;
+        if (filterCookTime === 'long' && cookTimeNum <= 60) matchesCookTime = false;
+      }
+      
+      return matchesSearch && matchesDifficulty && matchesCookTime;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'recent':
+          return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+        case 'alphabetical':
+          return a.title.localeCompare(b.title);
+        case 'cooktime':
+          const aTime = parseInt(a.cookTime.match(/\d+/)?.[0] || '0');
+          const bTime = parseInt(b.cookTime.match(/\d+/)?.[0] || '0');
+          return aTime - bTime;
+        case 'difficulty':
+          const difficultyOrder = { 'Easy': 1, 'Intermediate': 2, 'Expert': 3 };
+          return (difficultyOrder[a.difficulty as keyof typeof difficultyOrder] || 2) - 
+                 (difficultyOrder[b.difficulty as keyof typeof difficultyOrder] || 2);
+        default:
+          return 0;
+      }
+    });
 
   const filteredMealPlans = mealPlans.filter(plan =>
     plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -154,18 +200,82 @@ const SavedPage = () => {
 
         {/* Search and Filter */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="flex flex-col gap-4">
+            {/* Search Bar */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search recipes and meal plans..."
+                placeholder="Search by title, ingredients, instructions, or tags..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input pl-10"
+                className="w-full input pl-10"
               />
             </div>
-            <div className="flex space-x-2">
+            
+            {/* Filters - Only show for recipes tab */}
+            {activeTab === 'recipes' && (
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="flex items-center space-x-2">
+                  <Filter className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">Filters:</span>
+                </div>
+                
+                <div className="flex flex-wrap gap-3">
+                  <select
+                    value={filterDifficulty}
+                    onChange={(e) => setFilterDifficulty(e.target.value)}
+                    className="text-sm border border-gray-300 rounded-lg px-3 py-1 bg-white"
+                  >
+                    <option value="all">Any Difficulty</option>
+                    <option value="easy">Easy</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="expert">Expert</option>
+                  </select>
+                  
+                  <select
+                    value={filterCookTime}
+                    onChange={(e) => setFilterCookTime(e.target.value)}
+                    className="text-sm border border-gray-300 rounded-lg px-3 py-1 bg-white"
+                  >
+                    <option value="all">Any Cook Time</option>
+                    <option value="quick">Quick (≤30 min)</option>
+                    <option value="medium">Medium (30-60 min)</option>
+                    <option value="long">Long (60+ min)</option>
+                  </select>
+                  
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="text-sm border border-gray-300 rounded-lg px-3 py-1 bg-white"
+                  >
+                    <option value="recent">Recently Added</option>
+                    <option value="alphabetical">A-Z</option>
+                    <option value="cooktime">Cook Time</option>
+                    <option value="difficulty">Difficulty</option>
+                  </select>
+                  
+                  {/* Clear filters button */}
+                  {(filterDifficulty !== 'all' || filterCookTime !== 'all' || sortBy !== 'recent' || searchTerm !== '') && (
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setFilterDifficulty('all');
+                        setFilterCookTime('all');
+                        setSortBy('recent');
+                      }}
+                      className="text-sm px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Tab Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between border-t border-gray-200 pt-4">
+              <div className="flex space-x-2">
               <button
                 onClick={() => setActiveTab('recipes')}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
@@ -206,6 +316,7 @@ const SavedPage = () => {
               >
                 Back to Free
               </button>
+              </div>
             </div>
           </div>
         </div>
@@ -404,8 +515,8 @@ const SavedPage = () => {
 
         {/* View Recipe Modal */}
         {selectedRecipe && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 print:bg-white print:relative print:p-0">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto print:max-w-full print:max-h-full print:rounded-none print:shadow-none">
               <div className="p-6 border-b border-gray-200">
                 <div className="flex justify-between items-start">
                   <div>
@@ -426,12 +537,22 @@ const SavedPage = () => {
                       </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => setSelectedRecipe(null)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    ✕
-                  </button>
+                  <div className="flex items-center space-x-2 print:hidden">
+                    <button 
+                      onClick={handlePrintRecipe}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                      title="Print Recipe"
+                    >
+                      <Printer className="h-4 w-4" />
+                      <span className="text-sm font-medium">Print</span>
+                    </button>
+                    <button 
+                      onClick={() => setSelectedRecipe(null)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               </div>
               
@@ -542,8 +663,8 @@ const SavedPage = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="Easy">Easy</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Hard">Hard</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Expert">Expert</option>
                     </select>
                   </div>
                 </div>

@@ -5,6 +5,24 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
+// Retry wrapper for API calls
+async function retryApiCall<T>(fn: () => Promise<T>, maxRetries = 2, delayMs = 2000): Promise<T> {
+  for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      // Check if it's an overload error and we have retries left
+      if (error.status === 529 && error.error?.error?.type === 'overloaded_error' && attempt <= maxRetries) {
+        console.log(`Claude API overloaded, retrying attempt ${attempt + 1}/${maxRetries + 1} after ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt)); // Exponential backoff
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error('All retry attempts failed');
+}
+
 // Validate API key availability
 export function validateAnthropicConfig(): boolean {
   return !!process.env.ANTHROPIC_API_KEY;
@@ -20,10 +38,15 @@ export async function generateRecipeWithAI(formData: {
   cookingMethod: string;
   cuisineType: string;
   dietaryRestrictions: string[];
+  difficulty: string;
+  seasonal?: boolean;
 }) {
   if (!validateAnthropicConfig()) {
     throw new Error('Anthropic API key not configured');
   }
+
+  const seasonalNote = formData.seasonal ? `
+**SEASONAL FOCUS:** Use fresh, in-season ingredients and seasonal cooking themes. Consider what's fresh and available during the current season (late August) - think late summer produce like tomatoes, corn, eggplant, peppers, stone fruits, and herbs.` : '';
 
   const prompt = `Create a detailed, family-friendly recipe based on these requirements:
 
@@ -34,7 +57,8 @@ export async function generateRecipeWithAI(formData: {
 **Vegetables to Include:** ${formData.vegetables}
 **Cooking Method:** ${formData.cookingMethod}
 **Cuisine Style:** ${formData.cuisineType}
-**Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}
+**Difficulty Level:** ${formData.difficulty}
+**Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}${seasonalNote}
 
 Please generate a complete recipe with:
 1. A creative, descriptive title
@@ -48,7 +72,12 @@ Please generate a complete recipe with:
 9. 3-4 helpful tips or variations
 10. Personal notes or suggestions
 
-Make it practical, achievable, and tailored to the cooking situation and method. Focus on real-world flexibility and family appeal. Ensure the recipe is specifically designed for the chosen cooking method (${formData.cookingMethod}) and reflects ${formData.cuisineType} cuisine style with appropriate flavors, ingredients, and cooking techniques. If "No Preference" is selected for cuisine, create a versatile recipe that could work for various tastes.
+Make it practical, achievable, and tailored to the cooking situation and method. Focus on real-world flexibility and family appeal. Ensure the recipe is specifically designed for the chosen cooking method (${formData.cookingMethod}) and reflects ${formData.cuisineType} cuisine style with appropriate flavors, ingredients, and cooking techniques. If "No Preference" is selected for cuisine, create a versatile recipe that could work for various tastes.${formData.seasonal ? ' IMPORTANT: Prioritize seasonal, fresh ingredients that are currently in peak season for the best flavors and value.' : ''}
+
+IMPORTANT: Adjust the recipe complexity based on the difficulty level:
+- **Easy**: Use simple techniques, common ingredients, minimal steps, basic seasoning. Perfect for beginners or busy weeknights.
+- **Intermediate**: Include some cooking techniques like sautéing, braising, or reduction. May require 1-2 specialty ingredients or equipment.
+- **Expert**: Advanced techniques like tempering, emulsification, or complex flavor building. Multiple cooking stages, specialized equipment, or restaurant-style presentations are appropriate.
 
 Format the response as valid JSON with this exact structure:
 {
@@ -66,7 +95,7 @@ Format the response as valid JSON with this exact structure:
 }`;
 
   try {
-    const completion = await anthropic.messages.create({
+    const completion = await retryApiCall(() => anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 2000,
       temperature: 0.7,
@@ -77,7 +106,7 @@ Format the response as valid JSON with this exact structure:
           content: prompt
         }
       ]
-    });
+    }));
 
     const responseText = completion.content[0]?.type === 'text' ? completion.content[0].text : null;
     if (!responseText) {
@@ -186,7 +215,7 @@ Format the response as valid JSON with this exact structure:
 }`;
 
   try {
-    const completion = await anthropic.messages.create({
+    const completion = await retryApiCall(() => anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 3000,
       temperature: 0.7,
@@ -197,7 +226,7 @@ Format the response as valid JSON with this exact structure:
           content: prompt
         }
       ]
-    });
+    }));
 
     const responseText = completion.content[0]?.type === 'text' ? completion.content[0].text : null;
     if (!responseText) {
