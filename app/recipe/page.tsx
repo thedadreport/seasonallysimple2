@@ -452,7 +452,7 @@ const RecipePage = () => {
 
             <div className="flex justify-center space-x-4">
               <button 
-                onClick={handleGenerateRecipe}
+                onClick={() => handleGenerateRecipe()}
                 disabled={!canGenerate || isGenerating}
                 className={`btn-primary flex items-center space-x-3 ${
                   (!canGenerate || isGenerating) ? 'opacity-50 cursor-not-allowed' : ''
