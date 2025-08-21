@@ -46,7 +46,7 @@ const MealPlanPage = () => {
   const [showMealPlan, setShowMealPlan] = useState(false);
   const [selectedDiets, setSelectedDiets] = useState(['None']);
   const [selectedCuisines, setSelectedCuisines] = useState(['No Preference']);
-  const [selectedCookingMethods, setSelectedCookingMethods] = useState([]);
+  const [selectedCookingMethods, setSelectedCookingMethods] = useState<string[]>([]);
   const [generatedMealPlan, setGeneratedMealPlan] = useState<{
     title: string;
     description: string;
@@ -114,7 +114,7 @@ const MealPlanPage = () => {
   const toggleCookingMethod = (method: string) => {
     if (selectedCookingMethods.includes(method)) {
       const filtered = selectedCookingMethods.filter(m => m !== method);
-      setSelectedCookingMethods(filtered.length === 0 ? ['Pots and Pans'] : filtered);
+      setSelectedCookingMethods(filtered);
     } else {
       setSelectedCookingMethods([...selectedCookingMethods, method]);
     }
