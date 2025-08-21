@@ -348,9 +348,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (session?.user) {
-        // Use database API
-        const updatedUsage = await apiIncrementUsage('recipe');
-        dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+        try {
+          // Try database API first
+          const updatedUsage = await apiIncrementUsage('recipe');
+          dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+        } catch (apiError) {
+          console.warn('Database API failed, falling back to localStorage:', apiError);
+          // Fallback to localStorage if database API fails
+          const updatedUsage = incrementRecipeUsageStorage();
+          dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+        }
       } else {
         // Use localStorage
         const updatedUsage = incrementRecipeUsageStorage();
@@ -371,9 +378,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (session?.user) {
-        // Use database API
-        const updatedUsage = await apiIncrementUsage('mealPlan');
-        dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+        try {
+          // Try database API first
+          const updatedUsage = await apiIncrementUsage('mealPlan');
+          dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+        } catch (apiError) {
+          console.warn('Database API failed, falling back to localStorage:', apiError);
+          // Fallback to localStorage if database API fails
+          const updatedUsage = incrementMealPlanUsageStorage();
+          dispatch({ type: 'UPDATE_USAGE', payload: updatedUsage });
+        }
       } else {
         // Use localStorage
         const updatedUsage = incrementMealPlanUsageStorage();
@@ -392,9 +406,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       
       if (session?.user) {
-        // Use database API
-        const updatedSubscription = await apiUpdateSubscription(subscription);
-        dispatch({ type: 'UPDATE_SUBSCRIPTION', payload: updatedSubscription });
+        try {
+          // Try database API first
+          const updatedSubscription = await apiUpdateSubscription(subscription);
+          dispatch({ type: 'UPDATE_SUBSCRIPTION', payload: updatedSubscription });
+        } catch (apiError) {
+          console.warn('Database API failed, falling back to localStorage:', apiError);
+          // Fallback to localStorage if database API fails
+          saveSubscription(subscription);
+          dispatch({ type: 'UPDATE_SUBSCRIPTION', payload: subscription });
+        }
       } else {
         // Use localStorage
         saveSubscription(subscription);

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Clock, Users, ChefHat, Utensils, CheckCircle, BookOpen, Star, Lock, Loader2 } from 'lucide-react';
+import { Clock, Users, ChefHat, Utensils, CheckCircle, BookOpen, Star, Lock, Loader2, Cookie, Flame, Zap, Timer, Wind, Snowflake, Globe, Fish, Wheat, MapPin, Printer, Plus, Minus, ExternalLink } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { getRemainingRecipes } from '../../lib/subscription';
 import { Recipe } from '@/types';
@@ -46,6 +46,34 @@ const generatedRecipe = {
   situation: "Tonight's Dinner Crisis"
 };
 
+const cookingMethods = [
+  { value: 'Pots and Pans', label: 'Pots & Pans', icon: ChefHat, color: 'bg-blue-50 border-blue-200 text-blue-700' },
+  { value: 'Sheet Pan', label: 'Sheet Pan', icon: Cookie, color: 'bg-orange-50 border-orange-200 text-orange-700' },
+  { value: 'One Pot', label: 'One Pot', icon: Utensils, color: 'bg-green-50 border-green-200 text-green-700' },
+  { value: 'Instant Pot', label: 'Instant Pot', icon: Zap, color: 'bg-purple-50 border-purple-200 text-purple-700' },
+  { value: 'Slow Cooker', label: 'Slow Cooker', icon: Timer, color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
+  { value: 'Air Fryer', label: 'Air Fryer', icon: Wind, color: 'bg-cyan-50 border-cyan-200 text-cyan-700' },
+  { value: 'Oven Baked', label: 'Oven Baked', icon: Flame, color: 'bg-red-50 border-red-200 text-red-700' },
+  { value: 'Grill', label: 'Grill', icon: Flame, color: 'bg-amber-50 border-amber-200 text-amber-700' },
+  { value: 'Cast Iron', label: 'Cast Iron', icon: ChefHat, color: 'bg-gray-50 border-gray-200 text-gray-700' },
+  { value: 'No Cook', label: 'No Cook', icon: Snowflake, color: 'bg-teal-50 border-teal-200 text-teal-700' }
+];
+
+const cuisineTypes = [
+  { value: 'No Preference', label: 'No Preference', icon: Globe, color: 'bg-gray-50 border-gray-200 text-gray-700' },
+  { value: 'American', label: 'American', icon: Star, color: 'bg-red-50 border-red-200 text-red-700' },
+  { value: 'Italian', label: 'Italian', icon: Utensils, color: 'bg-green-50 border-green-200 text-green-700' },
+  { value: 'Mexican', label: 'Mexican', icon: Flame, color: 'bg-orange-50 border-orange-200 text-orange-700' },
+  { value: 'Asian', label: 'Asian', icon: ChefHat, color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
+  { value: 'Mediterranean', label: 'Mediterranean', icon: Fish, color: 'bg-blue-50 border-blue-200 text-blue-700' },
+  { value: 'Indian', label: 'Indian', icon: Flame, color: 'bg-amber-50 border-amber-200 text-amber-700' },
+  { value: 'Thai', label: 'Thai', icon: Timer, color: 'bg-lime-50 border-lime-200 text-lime-700' },
+  { value: 'French', label: 'French', icon: Star, color: 'bg-purple-50 border-purple-200 text-purple-700' },
+  { value: 'Middle Eastern', label: 'Middle Eastern', icon: MapPin, color: 'bg-teal-50 border-teal-200 text-teal-700' },
+  { value: 'Southern', label: 'Southern', icon: Wheat, color: 'bg-rose-50 border-rose-200 text-rose-700' },
+  { value: 'BBQ', label: 'BBQ', icon: Flame, color: 'bg-slate-50 border-slate-200 text-slate-700' }
+];
+
 const dietaryRestrictions = [
   'None',
   'Vegetarian',
@@ -73,15 +101,19 @@ const RecipePage = () => {
   const [selectedDiets, setSelectedDiets] = useState(['None']);
   const [generatedRecipe, setGeneratedRecipe] = useState<Recipe | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [savedRecipe, setSavedRecipe] = useState(null);
   
   // Form state
   const [formData, setFormData] = useState({
-    familySize: '4 people',
+    familySize: 4, // Now a number for the picker
     availableTime: '30 minutes',
     cookingSituation: "Tonight's Dinner",
     protein: 'Chicken',
-    vegetables: ''
+    vegetables: '',
+    cookingMethod: 'Pots and Pans',
+    cuisineType: 'No Preference'
   });
 
   const toggleDiet = (diet: string) => {
@@ -98,14 +130,22 @@ const RecipePage = () => {
     }
   };
 
-  const handleGenerateRecipe = async () => {
-    const success = await incrementRecipeUsage();
-    if (!success) return;
+  const handleGenerateRecipe = async (isRegeneration = false) => {
+    if (!isRegeneration) {
+      const success = await incrementRecipeUsage();
+      if (!success) return;
+    }
 
     setIsGenerating(true);
     setError(null);
+    setSavedRecipe(null);
+    setGenerationProgress('Analyzing your preferences...');
     
     try {
+      // Progress updates
+      setTimeout(() => setGenerationProgress('Creating your custom recipe...'), 1000);
+      setTimeout(() => setGenerationProgress('Adding final touches...'), 8000);
+
       const response = await fetch('/api/generate-recipe', {
         method: 'POST',
         headers: {
@@ -113,6 +153,7 @@ const RecipePage = () => {
         },
         body: JSON.stringify({
           ...formData,
+          familySize: `${formData.familySize} people`,
           dietaryRestrictions: selectedDiets.filter(d => d !== 'None')
         }),
       });
@@ -125,9 +166,11 @@ const RecipePage = () => {
 
       setGeneratedRecipe(data.recipe);
       setShowRecipe(true);
+      setGenerationProgress('');
     } catch (error) {
       console.error('Recipe generation error:', error);
       setError(error instanceof Error ? error.message : 'Failed to generate recipe');
+      setGenerationProgress('');
     } finally {
       setIsGenerating(false);
     }
@@ -137,12 +180,19 @@ const RecipePage = () => {
     if (generatedRecipe) {
       try {
         await addRecipe(generatedRecipe);
-        // Could show a success message here
+        setSavedRecipe({
+          title: generatedRecipe.title,
+          recipeId: generatedRecipe.id
+        });
       } catch (error) {
         console.error('Failed to save recipe:', error);
         setError('Failed to save recipe');
       }
     }
+  };
+
+  const handlePrintRecipe = () => {
+    window.print();
   };
 
   const remainingRecipes = getRemainingRecipes(subscription, usage);
@@ -152,7 +202,7 @@ const RecipePage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4">
       <div className="max-w-4xl mx-auto pt-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Recipe Generator</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">AI Recipe Generator</h1>
           <p className="text-xl text-gray-600">
             Tell us your situation and we'll create the perfect recipe for your family
           </p>
@@ -163,83 +213,194 @@ const RecipePage = () => {
             <p className="text-red-800">{error}</p>
           </div>
         )}
+        
+        {savedRecipe && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-3">
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-green-900">Recipe Saved Successfully!</h3>
+                  <p className="text-green-800 text-sm mt-1">
+                    "{savedRecipe.title}" has been saved to your recipe collection.
+                  </p>
+                </div>
+              </div>
+              <div className="flex space-x-2 ml-4">
+                <a
+                  href="/saved"
+                  className="inline-flex items-center px-3 py-1 text-sm bg-green-100 text-green-700 border border-green-300 rounded-lg hover:bg-green-200 transition-colors"
+                >
+                  <BookOpen className="h-4 w-4 mr-1" />
+                  View All Recipes
+                </a>
+                <button
+                  onClick={() => setSavedRecipe(null)}
+                  className="px-3 py-1 text-sm text-green-600 hover:text-green-800 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {!showRecipe ? (
           // Recipe Generation Form
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">What's Your Cooking Situation?</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">What's Your Cooking Situation?</h2>
               
               {/* Cooking Situation - Full Width at Top */}
               <div className="mb-6">
                 <label className="label">Cooking Situation</label>
-                <select 
-                  className="input" 
-                  value={formData.cookingSituation}
-                  onChange={(e) => setFormData({...formData, cookingSituation: e.target.value})}
-                >
-                  <option value="Tonight's Dinner">Tonight's Dinner</option>
-                  <option value="Protein + random stuff in fridge">Protein + random stuff in fridge</option>
-                  <option value="Need to stretch small portions">Need to stretch small portions</option>
-                  <option value="Want minimal cleanup">Want minimal cleanup</option>
-                  <option value="Making tomorrow's lunch too">Making tomorrow's lunch too</option>
-                  <option value="Special occasion meal">Special occasion meal</option>
-                </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
+                  {["Tonight's Dinner", "Protein + random stuff in fridge", "Need to stretch small portions", "Want minimal cleanup", "Making tomorrow's lunch too", "Special occasion meal"].map((situation) => (
+                    <button
+                      key={situation}
+                      type="button"
+                      onClick={() => setFormData({...formData, cookingSituation: situation})}
+                      className={`px-4 py-3 text-sm rounded-lg border transition-all text-left ${
+                        formData.cookingSituation === situation
+                          ? 'bg-purple-100 border-purple-300 text-purple-700'
+                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      {situation}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Other fields in 2x2 grid */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="label">Family Size</label>
-                    <select 
-                      className="input"
-                      value={formData.familySize}
-                      onChange={(e) => setFormData({...formData, familySize: e.target.value})}
+              {/* Form fields in improved layout */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {/* Family Size */}
+                <div>
+                  <label className="label flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-blue-600" />
+                    <span>Family Size</span>
+                  </label>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, familySize: Math.max(1, formData.familySize - 1)})}
+                      className="w-8 h-8 rounded-full border-2 border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"
+                      disabled={formData.familySize <= 1}
                     >
-                      <option value="2 people">2 people</option>
-                      <option value="3-4 people">3-4 people</option>
-                      <option value="4-5 people">4-5 people</option>
-                      <option value="6+ people">6+ people</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="label">Available Time</label>
-                    <select 
-                      className="input"
-                      value={formData.availableTime}
-                      onChange={(e) => setFormData({...formData, availableTime: e.target.value})}
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <div className="bg-white border-2 border-blue-300 rounded-lg px-3 py-2 min-w-[60px] text-center">
+                      <span className="text-xl font-bold text-blue-600">{formData.familySize}</span>
+                      <div className="text-xs text-gray-500">people</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, familySize: Math.min(12, formData.familySize + 1)})}
+                      className="w-8 h-8 rounded-full border-2 border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"
+                      disabled={formData.familySize >= 12}
                     >
-                      <option value="15 minutes">15 minutes</option>
-                      <option value="30 minutes">30 minutes</option>
-                      <option value="45 minutes">45 minutes</option>
-                      <option value="1 hour">1 hour</option>
-                    </select>
+                      <Plus className="h-3 w-3" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="label">What protein do you have?</label>
-                    <input 
-                      type="text" 
-                      className="input" 
-                      placeholder="Chicken thighs, ground beef, etc." 
-                      value={formData.protein}
-                      onChange={(e) => setFormData({...formData, protein: e.target.value})}
-                    />
-                  </div>
+                {/* Available Time */}
+                <div>
+                  <label className="label flex items-center space-x-2">
+                    <Clock className="h-4 w-4 text-orange-600" />
+                    <span>Available Time</span>
+                  </label>
+                  <select 
+                    className="input mt-2"
+                    value={formData.availableTime}
+                    onChange={(e) => setFormData({...formData, availableTime: e.target.value})}
+                  >
+                    <option value="15 minutes">15 minutes</option>
+                    <option value="30 minutes">30 minutes</option>
+                    <option value="45 minutes">45 minutes</option>
+                    <option value="1 hour">1 hour</option>
+                  </select>
+                </div>
 
-                  <div>
-                    <label className="label">Vegetables in your fridge</label>
-                    <textarea 
-                      className="input h-24 resize-none" 
-                      placeholder="Carrots, bell peppers, onions, frozen peas..."
-                      value={formData.vegetables}
-                      onChange={(e) => setFormData({...formData, vegetables: e.target.value})}
-                    ></textarea>
-                  </div>
+                {/* Protein - span 2 columns */}
+                <div className="md:col-span-2">
+                  <label className="label flex items-center space-x-2">
+                    <ChefHat className="h-4 w-4 text-red-600" />
+                    <span>What protein do you have?</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    className="input mt-2" 
+                    placeholder="Chicken thighs, ground beef, salmon, tofu..." 
+                    value={formData.protein}
+                    onChange={(e) => setFormData({...formData, protein: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              {/* Vegetables - Full Width */}
+              <div className="mt-6">
+                <label className="label flex items-center space-x-2">
+                  <Utensils className="h-4 w-4 text-green-600" />
+                  <span>Vegetables in your fridge</span>
+                </label>
+                <textarea 
+                  className="input h-20 resize-none mt-2" 
+                  placeholder="Carrots, bell peppers, onions, frozen peas, spinach, mushrooms..."
+                  value={formData.vegetables}
+                  onChange={(e) => setFormData({...formData, vegetables: e.target.value})}
+                ></textarea>
+              </div>
+
+              {/* Cooking Method - Full Width */}
+              <div className="mt-6">
+                <label className="label">How do you want to cook?</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-3">
+                  {cookingMethods.map((method) => {
+                    const Icon = method.icon;
+                    const isSelected = formData.cookingMethod === method.value;
+                    return (
+                      <button
+                        key={method.value}
+                        type="button"
+                        onClick={() => setFormData({...formData, cookingMethod: method.value})}
+                        className={`p-3 rounded-lg border-2 transition-all hover:scale-105 flex flex-col items-center space-y-2 text-center ${
+                          isSelected
+                            ? `${method.color} border-current shadow-md scale-105`
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        <Icon className={`h-6 w-6 ${isSelected ? '' : 'text-gray-500'}`} />
+                        <span className="text-sm font-medium">{method.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Cuisine Type - Full Width */}
+              <div className="mt-6">
+                <label className="label">What type of cuisine are you in the mood for?</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-3">
+                  {cuisineTypes.map((cuisine) => {
+                    const Icon = cuisine.icon;
+                    const isSelected = formData.cuisineType === cuisine.value;
+                    return (
+                      <button
+                        key={cuisine.value}
+                        type="button"
+                        onClick={() => setFormData({...formData, cuisineType: cuisine.value})}
+                        className={`p-3 rounded-lg border-2 transition-all hover:scale-105 flex flex-col items-center space-y-2 text-center ${
+                          isSelected
+                            ? `${cuisine.color} border-current shadow-md scale-105`
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 ${isSelected ? '' : 'text-gray-500'}`} />
+                        <span className="text-xs font-medium">{cuisine.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -300,7 +461,7 @@ const RecipePage = () => {
                 {isGenerating ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Creating Your Recipe...</span>
+                    <span>{generationProgress || 'Creating Your Recipe...'}</span>
                   </>
                 ) : (
                   <>
@@ -317,7 +478,19 @@ const RecipePage = () => {
           </div>
         ) : generatedRecipe ? (
           // Recipe Display
-          <div className="space-y-6">
+          <div className="space-y-6 relative">
+            {/* Loading Overlay for Regeneration */}
+            {isGenerating && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-2xl flex items-center justify-center">
+                <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center space-y-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                  <div className="text-center">
+                    <p className="text-lg font-medium text-gray-900">Creating New Recipe</p>
+                    <p className="text-sm text-gray-600">{generationProgress || 'Please wait...'}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Recipe Header */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
               <div className="flex items-start justify-between mb-6">
@@ -354,16 +527,45 @@ const RecipePage = () => {
                 </div>
               </div>
               
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-3">
                 <button 
                   onClick={() => setShowRecipe(false)}
                   className="btn-ghost"
                 >
-                  ← Generate Another
+                  ← Back to Form
+                </button>
+                <button 
+                  onClick={() => handleGenerateRecipe(true)}
+                  disabled={isGenerating}
+                  className={`btn-ghost flex items-center space-x-2 ${
+                    isGenerating ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Regenerating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChefHat className="h-4 w-4" />
+                      <span>Try Again</span>
+                    </>
+                  )}
+                </button>
+                <button 
+                  onClick={handlePrintRecipe}
+                  className="btn-ghost flex items-center space-x-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span>Print Recipe</span>
                 </button>
                 <button 
                   onClick={handleSaveRecipe}
-                  className="btn-primary"
+                  disabled={isGenerating}
+                  className={`btn-primary ${
+                    isGenerating ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   Save Recipe
                 </button>

@@ -123,4 +123,139 @@
     color: #36454f;
     margin-bottom: 0.5rem;
   }
+
+  /* Custom Range Slider Styling */
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 5px;
+    outline: none;
+    opacity: 0.9;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+  }
+
+  .slider:hover {
+    opacity: 1;
+  }
+
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #87a96b;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #87a96b;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Print Styles */
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  /* Hide non-essential elements when printing */
+  .no-print,
+  nav,
+  button,
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost,
+  [class*="btn-"],
+  .loading-overlay,
+  .navigation,
+  .sidebar,
+  .header-actions,
+  .page-footer {
+    display: none !important;
+  }
+
+  /* Ensure recipe content is visible */
+  .recipe-content,
+  .recipe-header,
+  .recipe-ingredients,
+  .recipe-instructions,
+  .recipe-tips {
+    display: block !important;
+    break-inside: avoid;
+  }
+
+  /* Recipe title styling */
+  h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 12pt;
+    page-break-after: avoid;
+  }
+
+  h2 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+
+  /* Recipe info styling */
+  .recipe-meta {
+    margin-bottom: 16pt;
+    font-size: 11pt;
+  }
+
+  /* Ingredient and instruction lists */
+  ul, ol {
+    margin-left: 20pt;
+    margin-bottom: 12pt;
+  }
+
+  li {
+    margin-bottom: 4pt;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure good page breaks */
+  .recipe-section {
+    page-break-inside: avoid;
+    margin-bottom: 16pt;
+  }
+
+  /* Remove colors and backgrounds for better printing */
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Keep some semantic colors for important info */
+  .recipe-difficulty {
+    font-weight: bold;
+  }
+
+  .recipe-tags {
+    font-style: italic;
+    font-size: 10pt;
+  }
 }

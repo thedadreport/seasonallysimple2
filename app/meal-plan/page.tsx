@@ -1,105 +1,36 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, ShoppingCart, Clock, DollarSign, Users, CheckCircle, Star, ChefHat, BookOpen, Lock, Crown } from 'lucide-react';
+import { Calendar, ShoppingCart, Clock, DollarSign, Users, CheckCircle, Star, ChefHat, BookOpen, Lock, Crown, Loader2, Plus, Minus, ExternalLink, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { getRemainingMealPlans, formatSubscriptionTier } from '../../lib/subscription';
 import SubscriptionUpgrade from '../../components/SubscriptionUpgrade';
 
-const testMealPlan = {
-  title: "Budget-Friendly Family Week",
-  description: "A complete 5-day meal plan designed for a family of 4, focusing on affordable ingredients and minimal prep time.",
-  totalCost: "$87",
-  prepTime: "2 hours Sunday prep",
-  servings: "4 people, 5 dinners",
-  focus: "Budget-Focused",
-  meals: [
-    {
-      day: "Monday",
-      recipe: "One-Pot Chicken & Rice Skillet",
-      prepTime: "5 min",
-      cookTime: "25 min",
-      cost: "$12",
-      ingredients: ["Chicken thighs", "Rice", "Frozen vegetables", "Onion", "Garlic"],
-      prepNotes: "Dice onion and garlic Sunday"
-    },
-    {
-      day: "Tuesday", 
-      recipe: "Slow Cooker Beef & Bean Chili",
-      prepTime: "10 min",
-      cookTime: "6 hours",
-      cost: "$15",
-      ingredients: ["Ground beef", "Canned beans", "Diced tomatoes", "Onion", "Chili powder"],
-      prepNotes: "Brown beef Sunday, add to slow cooker Tuesday morning"
-    },
-    {
-      day: "Wednesday",
-      recipe: "Pasta with Turkey Meatballs", 
-      prepTime: "15 min",
-      cookTime: "20 min",
-      cost: "$18",
-      ingredients: ["Ground turkey", "Pasta", "Marinara sauce", "Breadcrumbs", "Parmesan"],
-      prepNotes: "Make meatballs Sunday, freeze until needed"
-    },
-    {
-      day: "Thursday",
-      recipe: "Sheet Pan Sausage & Vegetables",
-      prepTime: "10 min", 
-      cookTime: "30 min",
-      cost: "$16",
-      ingredients: ["Italian sausage", "Bell peppers", "Zucchini", "Red onion", "Potatoes"],
-      prepNotes: "Chop all vegetables Sunday"
-    },
-    {
-      day: "Friday",
-      recipe: "Leftover Remix: Chili Mac",
-      prepTime: "5 min",
-      cookTime: "15 min", 
-      cost: "$8",
-      ingredients: ["Tuesday's leftover chili", "Pasta", "Cheese", "Green onions"],
-      prepNotes: "Use Tuesday's chili + fresh pasta"
-    }
-  ],
-  shoppingList: {
-    "Proteins": [
-      "2 lbs chicken thighs ($8)",
-      "1 lb ground beef ($6)",
-      "1 lb ground turkey ($5)",
-      "1 lb Italian sausage ($7)"
-    ],
-    "Pantry": [
-      "2 lbs jasmine rice ($3)",
-      "1 lb pasta ($2)",
-      "Marinara sauce ($3)",
-      "Canned beans x2 ($3)",
-      "Diced tomatoes ($2)"
-    ],
-    "Produce": [
-      "Yellow onions x3 ($2)", 
-      "Bell peppers x3 ($4)",
-      "Zucchini x2 ($3)",
-      "Small potatoes 2lbs ($3)"
-    ],
-    "Dairy/Other": [
-      "Parmesan cheese ($4)",
-      "Shredded cheese ($4)",
-      "Breadcrumbs ($2)",
-      "Frozen mixed vegetables ($3)"
-    ]
-  },
-  prepSchedule: [
-    "Dice all onions and garlic (15 min)",
-    "Chop vegetables for sheet pan dinner (20 min)", 
-    "Brown ground beef for chili (10 min)",
-    "Make and freeze turkey meatballs (30 min)",
-    "Cook rice for Monday (20 min)"
-  ]
-};
+// Test meal plan data removed - now using real AI-generated meal plans
 
 const dietaryRestrictions = [
   'None', 'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 
   'Soy-Free', 'Egg-Free', 'Keto', 'Low-Carb', 'Paleo', 'Whole30',
   'Mediterranean', 'Low-Sodium', 'Diabetic-Friendly', 'Heart-Healthy', 'Kosher', 'Halal'
+];
+
+const cookingMethods = [
+  { value: 'Pots and Pans', label: 'Pots & Pans', icon: ChefHat, color: 'bg-blue-50 border-blue-200 text-blue-700' },
+  { value: 'Sheet Pan', label: 'Sheet Pan', icon: Cookie, color: 'bg-orange-50 border-orange-200 text-orange-700' },
+  { value: 'One Pot', label: 'One Pot', icon: Utensils, color: 'bg-green-50 border-green-200 text-green-700' },
+  { value: 'Instant Pot', label: 'Instant Pot', icon: Zap, color: 'bg-purple-50 border-purple-200 text-purple-700' },
+  { value: 'Slow Cooker', label: 'Slow Cooker', icon: Timer, color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
+  { value: 'Air Fryer', label: 'Air Fryer', icon: Wind, color: 'bg-cyan-50 border-cyan-200 text-cyan-700' },
+  { value: 'Oven Baked', label: 'Oven Baked', icon: Flame, color: 'bg-red-50 border-red-200 text-red-700' },
+  { value: 'Grill', label: 'Grill', icon: Flame, color: 'bg-amber-50 border-amber-200 text-amber-700' },
+  { value: 'Cast Iron', label: 'Cast Iron', icon: ChefHat, color: 'bg-gray-50 border-gray-200 text-gray-700' },
+  { value: 'No Cook', label: 'No Cook', icon: Snowflake, color: 'bg-teal-50 border-teal-200 text-teal-700' }
+];
+
+const cuisineTypes = [
+  'No Preference', 'American', 'Italian', 'Mexican', 'Asian', 'Chinese', 'Japanese', 
+  'Thai', 'Indian', 'French', 'Greek', 'Spanish', 'Middle Eastern', 'Korean', 
+  'Vietnamese', 'Brazilian', 'Moroccan', 'German', 'British', 'Caribbean'
 ];
 
 const planningFocus = [
@@ -111,11 +42,27 @@ const planningFocus = [
 ];
 
 const MealPlanPage = () => {
-  const { subscription, usage, canGenerateMealPlan, incrementMealPlanUsage } = useApp();
+  const { subscription, usage, canGenerateMealPlan, incrementMealPlanUsage, addMealPlan, addRecipe } = useApp();
   const [showMealPlan, setShowMealPlan] = useState(false);
   const [selectedDiets, setSelectedDiets] = useState(['None']);
-  const [selectedFocus, setSelectedFocus] = useState('Budget-focused (minimize cost)');
-  const [numDinners, setNumDinners] = useState(5);
+  const [selectedCuisines, setSelectedCuisines] = useState(['No Preference']);
+  const [selectedCookingMethods, setSelectedCookingMethods] = useState(['Pots and Pans']);
+  const [generatedMealPlan, setGeneratedMealPlan] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState(null);
+  const [generatingRecipe, setGeneratingRecipe] = useState(null);
+  const [savedRecipe, setSavedRecipe] = useState(null);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    planningFocus: 'Budget-focused (minimize cost)',
+    numDinners: 5,
+    familySize: 4, // Now a number instead of string
+    weeklyBudget: 150, // Now a number for slider
+    prepTime: '1-2 hours',
+    skillLevel: 'Intermediate (some techniques)',
+    pantryItems: ''
+  });
 
   const toggleDiet = (diet: string) => {
     if (diet === 'None') {
@@ -131,10 +78,111 @@ const MealPlanPage = () => {
     }
   };
 
+  const toggleCuisine = (cuisine: string) => {
+    if (cuisine === 'No Preference') {
+      setSelectedCuisines(['No Preference']);
+    } else {
+      const newCuisines = selectedCuisines.filter(c => c !== 'No Preference');
+      if (selectedCuisines.includes(cuisine)) {
+        const filtered = newCuisines.filter(c => c !== cuisine);
+        setSelectedCuisines(filtered.length === 0 ? ['No Preference'] : filtered);
+      } else {
+        setSelectedCuisines([...newCuisines, cuisine]);
+      }
+    }
+  };
+
+  const toggleCookingMethod = (method: string) => {
+    if (selectedCookingMethods.includes(method)) {
+      const filtered = selectedCookingMethods.filter(m => m !== method);
+      setSelectedCookingMethods(filtered.length === 0 ? ['Pots and Pans'] : filtered);
+    } else {
+      setSelectedCookingMethods([...selectedCookingMethods, method]);
+    }
+  };
+
   const handleGenerateMealPlan = async () => {
     const success = await incrementMealPlanUsage();
-    if (success) {
+    if (!success) return;
+
+    setIsGenerating(true);
+    setError(null);
+    setSavedRecipe(null);
+    
+    try {
+      const response = await fetch('/api/generate-meal-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          weeklyBudget: `$${formData.weeklyBudget}`,
+          dietaryRestrictions: selectedDiets.filter(d => d !== 'None'),
+          cuisinePreferences: selectedCuisines.filter(c => c !== 'No Preference'),
+          cookingMethods: selectedCookingMethods
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to generate meal plan');
+      }
+
+      setGeneratedMealPlan(data.mealPlan);
       setShowMealPlan(true);
+    } catch (error) {
+      console.error('Meal plan generation error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate meal plan');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerateRecipe = async (meal) => {
+    setGeneratingRecipe(meal.day);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/generate-recipe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          familySize: formData.familySize,
+          availableTime: meal.cookTime || '30 minutes',
+          cookingSituation: `${meal.day} dinner from meal plan`,
+          protein: meal.ingredients.find(ing => ing.toLowerCase().includes('chicken') || ing.toLowerCase().includes('beef') || ing.toLowerCase().includes('turkey') || ing.toLowerCase().includes('sausage') || ing.toLowerCase().includes('fish')) || 'protein from ingredients',
+          vegetables: meal.ingredients.filter(ing => ing.toLowerCase().includes('pepper') || ing.toLowerCase().includes('onion') || ing.toLowerCase().includes('carrot') || ing.toLowerCase().includes('vegetable')).join(', ') || 'vegetables from ingredients',
+          cookingMethod: 'Pots and Pans', // Default cooking method
+          cuisineType: 'No Preference', // Default cuisine
+          dietaryRestrictions: selectedDiets.filter(d => d !== 'None')
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to generate recipe');
+      }
+
+      // Save the generated recipe
+      await addRecipe(data.recipe);
+      
+      // Show success notification with recipe info
+      setSavedRecipe({
+        title: data.recipe.title,
+        mealName: meal.recipe,
+        recipeId: data.recipe.id
+      });
+      
+    } catch (error) {
+      console.error('Recipe generation error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate recipe');
+    } finally {
+      setGeneratingRecipe(null);
     }
   };
 
@@ -156,9 +204,46 @@ const MealPlanPage = () => {
           <SubscriptionUpgrade feature="meal planning" />
         ) : !showMealPlan ? (
           // Meal Plan Generation Form
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+          <>
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="text-red-800">{error}</p>
+              </div>
+            )}
+            
+            {savedRecipe && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-green-900">Recipe Saved Successfully!</h3>
+                      <p className="text-green-800 text-sm mt-1">
+                        "{savedRecipe.title}" has been generated and saved to your recipe collection.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2 ml-4">
+                    <a
+                      href="/saved"
+                      className="inline-flex items-center px-3 py-1 text-sm bg-green-100 text-green-700 border border-green-300 rounded-lg hover:bg-green-200 transition-colors"
+                    >
+                      <BookOpen className="h-4 w-4 mr-1" />
+                      View All Recipes
+                    </a>
+                    <button
+                      onClick={() => setSavedRecipe(null)}
+                      className="px-3 py-1 text-sm text-green-600 hover:text-green-800 transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Plan Your Week</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Plan Your Perfect Week</h2>
               
               {/* Planning Focus - Full Width at Top */}
               <div className="mb-6">
@@ -168,9 +253,9 @@ const MealPlanPage = () => {
                     <button
                       key={focus}
                       type="button"
-                      onClick={() => setSelectedFocus(focus)}
+                      onClick={() => setFormData({...formData, planningFocus: focus})}
                       className={`px-4 py-3 text-sm rounded-lg border transition-all text-left ${
-                        selectedFocus === focus
+                        formData.planningFocus === focus
                           ? 'bg-blue-100 border-blue-300 text-blue-700'
                           : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
@@ -189,9 +274,9 @@ const MealPlanPage = () => {
                     <button
                       key={num}
                       type="button"
-                      onClick={() => setNumDinners(num)}
+                      onClick={() => setFormData({...formData, numDinners: num})}
                       className={`w-12 h-12 rounded-lg border transition-all font-semibold ${
-                        numDinners === num
+                        formData.numDinners === num
                           ? 'bg-blue-100 border-blue-300 text-blue-700'
                           : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
@@ -202,53 +287,111 @@ const MealPlanPage = () => {
                 </div>
               </div>
 
-              {/* Planning Details in 2x2 grid */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="label">Family Size</label>
-                    <select className="input">
-                      <option>2-3 people</option>
-                      <option>4-5 people</option>
-                      <option>6+ people</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="label">Weekly Budget Target</label>
-                    <select className="input">
-                      <option>$50-75 per week</option>
-                      <option>$75-100 per week</option>
-                      <option>$100-150 per week</option>
-                      <option>No budget limit</option>
-                    </select>
+              {/* Planning Details in balanced layout */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {/* Family Size */}
+                <div>
+                  <label className="label flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-blue-600" />
+                    <span>Family Size</span>
+                  </label>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, familySize: Math.max(1, formData.familySize - 1)})}
+                      className="w-8 h-8 rounded-full border-2 border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"
+                      disabled={formData.familySize <= 1}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <div className="bg-white border-2 border-blue-300 rounded-lg px-3 py-2 min-w-[60px] text-center">
+                      <span className="text-xl font-bold text-blue-600">{formData.familySize}</span>
+                      <div className="text-xs text-gray-500">people</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, familySize: Math.min(12, formData.familySize + 1)})}
+                      className="w-8 h-8 rounded-full border-2 border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"
+                      disabled={formData.familySize >= 12}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="label">Available prep time on Sunday</label>
-                    <select className="input">
-                      <option>30 minutes</option>
-                      <option>1-2 hours</option>
-                      <option>2-3 hours</option>
-                      <option>No Sunday prep</option>
-                    </select>
+                {/* Weekly Budget */}
+                <div className="md:col-span-2">
+                  <label className="label flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4 text-green-600" />
+                    <span>Weekly Budget Target</span>
+                  </label>
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">$50</span>
+                      <div className="bg-white border-2 border-green-300 rounded-lg px-3 py-1">
+                        <span className="text-lg font-bold text-green-600">${formData.weeklyBudget}</span>
+                      </div>
+                      <span className="text-sm text-gray-600">$500</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="50"
+                      max="500"
+                      step="10"
+                      value={formData.weeklyBudget}
+                      onChange={(e) => setFormData({...formData, weeklyBudget: parseInt(e.target.value)})}
+                      className="w-full h-2 bg-green-100 rounded-lg appearance-none cursor-pointer slider"
+                      style={{
+                        background: `linear-gradient(to right, #87a96b 0%, #87a96b ${((formData.weeklyBudget - 50) / (500 - 50)) * 100}%, #e5e7eb ${((formData.weeklyBudget - 50) / (500 - 50)) * 100}%, #e5e7eb 100%)`
+                      }}
+                    />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="label">Cooking skill level</label>
-                    <select className="input">
-                      <option>Beginner (simple meals)</option>
-                      <option>Intermediate (some techniques)</option>
-                      <option>Advanced (any complexity)</option>
-                    </select>
-                  </div>
+                {/* Cooking Skill Level */}
+                <div>
+                  <label className="label flex items-center space-x-2">
+                    <ChefHat className="h-4 w-4 text-orange-600" />
+                    <span>Skill Level</span>
+                  </label>
+                  <select 
+                    className="input mt-2"
+                    value={formData.skillLevel}
+                    onChange={(e) => setFormData({...formData, skillLevel: e.target.value})}
+                  >
+                    <option value="Beginner (simple meals)">Beginner</option>
+                    <option value="Intermediate (some techniques)">Intermediate</option>
+                    <option value="Advanced (any complexity)">Advanced</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Sunday Prep Time - Full Width */}
+              <div className="mt-6">
+                <label className="label flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-purple-600" />
+                  <span>Available prep time on Sunday</span>
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                  {['30 minutes', '1-2 hours', '2-3 hours', 'No Sunday prep'].map((time) => (
+                    <button
+                      key={time}
+                      type="button"
+                      onClick={() => setFormData({...formData, prepTime: time})}
+                      className={`px-4 py-3 text-sm rounded-lg border transition-all text-center ${
+                        formData.prepTime === time
+                          ? 'bg-purple-100 border-purple-300 text-purple-700'
+                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  ))}
                 </div>
               </div>
 
               {/* Dietary Restrictions - Full Width */}
-              <div className="mt-6">
+              <div className="mt-8">
                 <label className="label">Dietary restrictions (select all that apply)</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                   {dietaryRestrictions.map((diet) => (
@@ -268,8 +411,55 @@ const MealPlanPage = () => {
                 </div>
               </div>
 
-              {/* Pantry Items */}
+              {/* Cuisine Preferences - Full Width */}
               <div className="mt-6">
+                <label className="label">Cuisine preferences (select all that appeal to you)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2 mt-2">
+                  {cuisineTypes.map((cuisine) => (
+                    <button
+                      key={cuisine}
+                      type="button"
+                      onClick={() => toggleCuisine(cuisine)}
+                      className={`px-3 py-2 text-sm rounded-lg border transition-all ${
+                        selectedCuisines.includes(cuisine)
+                          ? 'bg-orange-100 border-orange-300 text-orange-700'
+                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      {cuisine}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cooking Methods - Full Width */}
+              <div className="mt-6">
+                <label className="label">Preferred cooking methods for this week (select all that appeal to you)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-2">
+                  {cookingMethods.map((method) => {
+                    const Icon = method.icon;
+                    const isSelected = selectedCookingMethods.includes(method.value);
+                    return (
+                      <button
+                        key={method.value}
+                        type="button"
+                        onClick={() => toggleCookingMethod(method.value)}
+                        className={`p-3 rounded-lg border-2 transition-all hover:scale-105 flex flex-col items-center space-y-2 text-center ${
+                          isSelected
+                            ? `${method.color} border-current shadow-md scale-105`
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        <Icon className={`h-6 w-6 ${isSelected ? '' : 'text-gray-500'}`} />
+                        <span className="text-sm font-medium">{method.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Pantry Items */}
+              <div className="mt-8">
                 <label className="label">What's already in your pantry/fridge?</label>
                 <textarea 
                   className="input h-20 resize-none" 
@@ -305,13 +495,22 @@ const MealPlanPage = () => {
             <div className="flex justify-center space-x-4">
               <button 
                 onClick={handleGenerateMealPlan}
-                disabled={!canGenerate}
+                disabled={!canGenerate || isGenerating}
                 className={`btn-primary flex items-center space-x-3 ${
-                  !canGenerate ? 'opacity-50 cursor-not-allowed' : ''
+                  (!canGenerate || isGenerating) ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                <Calendar className="h-5 w-5" />
-                <span>{canGenerate ? 'Generate My Meal Plan' : 'Limit Reached'}</span>
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Creating Your Meal Plan...</span>
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="h-5 w-5" />
+                    <span>{canGenerate ? 'Generate My Meal Plan' : 'Limit Reached'}</span>
+                  </>
+                )}
               </button>
               <button className="btn-ghost">
                 <BookOpen className="h-5 w-5 mr-2" />
@@ -319,6 +518,7 @@ const MealPlanPage = () => {
               </button>
             </div>
           </div>
+          </>
         ) : (
           // Meal Plan Display
           <div className="space-y-6">
@@ -328,24 +528,24 @@ const MealPlanPage = () => {
                 <div className="flex-1">
                   <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-4">
                     <Calendar className="h-4 w-4 mr-2" />
-                    {testMealPlan.focus}
+                    {generatedMealPlan?.focus || formData.planningFocus}
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{testMealPlan.title}</h1>
-                  <p className="text-lg text-gray-700 mb-6">{testMealPlan.description}</p>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{generatedMealPlan.title}</h1>
+                  <p className="text-lg text-gray-700 mb-6">{generatedMealPlan.description}</p>
                 </div>
                 
                 <div className="ml-6 text-right">
                   <div className="flex items-center text-gray-600 mb-2">
                     <DollarSign className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{testMealPlan.totalCost}</span>
+                    <span className="font-medium">{generatedMealPlan.totalCost}</span>
                   </div>
                   <div className="flex items-center text-gray-600 mb-2">
                     <Clock className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{testMealPlan.prepTime}</span>
+                    <span className="font-medium">{generatedMealPlan.prepTime}</span>
                   </div>
                   <div className="flex items-center text-green-600">
                     <Users className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{testMealPlan.servings}</span>
+                    <span className="font-medium">{generatedMealPlan.servings}</span>
                   </div>
                 </div>
               </div>
@@ -370,7 +570,7 @@ const MealPlanPage = () => {
                 This Week's Dinners
               </h2>
               <div className="space-y-4">
-                {testMealPlan.meals.map((meal, index) => (
+                {generatedMealPlan.meals.map((meal, index) => (
                   <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -395,8 +595,21 @@ const MealPlanPage = () => {
                         </div>
                       </div>
                       <div className="ml-4 flex-shrink-0">
-                        <button className="px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors">
-                          View Full Recipe
+                        <button 
+                          onClick={() => handleGenerateRecipe(meal)}
+                          disabled={generatingRecipe === meal.day}
+                          className={`px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-2 ${
+                            generatingRecipe === meal.day ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {generatingRecipe === meal.day ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Generating...</span>
+                            </>
+                          ) : (
+                            <span>View Full Recipe</span>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -413,7 +626,7 @@ const MealPlanPage = () => {
                   Shopping List
                 </h2>
                 <div className="space-y-4">
-                  {Object.entries(testMealPlan.shoppingList).map(([category, items]) => (
+                  {Object.entries(generatedMealPlan.shoppingList).map(([category, items]) => (
                     <div key={category}>
                       <h3 className="font-semibold text-gray-900 mb-2">{category}</h3>
                       <ul className="space-y-1">
@@ -437,7 +650,7 @@ const MealPlanPage = () => {
                 </h2>
                 <p className="text-gray-600 text-sm mb-4">Complete these tasks on Sunday to set yourself up for success:</p>
                 <ol className="space-y-3">
-                  {testMealPlan.prepSchedule.map((task, index) => (
+                  {generatedMealPlan.prepSchedule.map((task, index) => (
                     <li key={index} className="flex items-start">
                       <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full text-sm font-medium flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
                         {index + 1}

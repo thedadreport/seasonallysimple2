@@ -17,6 +17,8 @@ export async function generateRecipeWithAI(formData: {
   cookingSituation: string;
   protein: string;
   vegetables: string;
+  cookingMethod: string;
+  cuisineType: string;
   dietaryRestrictions: string[];
 }) {
   if (!validateAnthropicConfig()) {
@@ -30,6 +32,8 @@ export async function generateRecipeWithAI(formData: {
 **Cooking Situation:** ${formData.cookingSituation}
 **Preferred Protein:** ${formData.protein}
 **Vegetables to Include:** ${formData.vegetables}
+**Cooking Method:** ${formData.cookingMethod}
+**Cuisine Style:** ${formData.cuisineType}
 **Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}
 
 Please generate a complete recipe with:
@@ -44,7 +48,7 @@ Please generate a complete recipe with:
 9. 3-4 helpful tips or variations
 10. Personal notes or suggestions
 
-Make it practical, achievable, and tailored to the cooking situation. Focus on real-world flexibility and family appeal.
+Make it practical, achievable, and tailored to the cooking situation and method. Focus on real-world flexibility and family appeal. Ensure the recipe is specifically designed for the chosen cooking method (${formData.cookingMethod}) and reflects ${formData.cuisineType} cuisine style with appropriate flavors, ingredients, and cooking techniques. If "No Preference" is selected for cuisine, create a versatile recipe that could work for various tastes.
 
 Format the response as valid JSON with this exact structure:
 {
@@ -107,6 +111,8 @@ export async function generateMealPlanWithAI(formData: {
   prepTime: string;
   skillLevel: string;
   dietaryRestrictions: string[];
+  cuisinePreferences: string[];
+  cookingMethods: string[];
   pantryItems: string;
 }) {
   if (!validateAnthropicConfig()) {
@@ -121,7 +127,9 @@ export async function generateMealPlanWithAI(formData: {
 **Weekly Budget:** ${formData.weeklyBudget}
 **Available Prep Time:** ${formData.prepTime}
 **Cooking Skill Level:** ${formData.skillLevel}
+**Preferred Cooking Methods:** ${formData.cookingMethods.join(', ')}
 **Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}
+**Cuisine Preferences:** ${formData.cuisinePreferences.join(', ') || 'No specific preference'}
 **Pantry Items Available:** ${formData.pantryItems || 'Standard pantry staples'}
 
 Please generate a complete meal plan with:
@@ -142,7 +150,7 @@ Please generate a complete meal plan with:
 8. Sunday prep schedule with time estimates
 9. Personal notes or tips for success
 
-Make it practical, budget-conscious, and achievable for the specified skill level.
+Make it practical, budget-conscious, and achievable for the specified skill level. IMPORTANT: Distribute meals across the preferred cooking methods (${formData.cookingMethods.join(', ')}) - ensure each meal uses one of these methods with appropriate techniques, cooking times, and equipment. If cuisine preferences are specified, ensure that each meal reflects one of the preferred cuisine types (${formData.cuisinePreferences.join(', ')}) with authentic flavors, ingredients, and cooking techniques from those culinary traditions. Distribute both cooking methods and cuisines evenly across the meal plan for variety.
 
 Format the response as valid JSON with this exact structure:
 {
