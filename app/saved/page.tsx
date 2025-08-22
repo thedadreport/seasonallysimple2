@@ -1,17 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Printer } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
 import { SubscriptionTier, Recipe } from '@/types';
 
 
 const SavedPage = () => {
+  const router = useRouter();
   const { recipes, mealPlans, deleteRecipe, deleteMealPlan, addRecipe, addMealPlan, subscription, usage, canEditRecipe, updateSubscription, updateRecipe } = useApp();
   const [activeTab, setActiveTab] = useState('recipes');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [editedRecipe, setEditedRecipe] = useState<Recipe | null>(null);
   const [filterDifficulty, setFilterDifficulty] = useState('all');
@@ -41,12 +42,9 @@ const SavedPage = () => {
   const canEdit = canEditRecipe();
 
   const handleViewRecipe = (recipe: Recipe) => {
-    setSelectedRecipe(recipe);
+    router.push(`/recipe/${recipe.id}`);
   };
 
-  const handlePrintRecipe = () => {
-    window.print();
-  };
 
   const handleEditRecipe = (recipe: Recipe) => {
     if (canEdit) {
@@ -513,83 +511,6 @@ const SavedPage = () => {
           </div>
         )}
 
-        {/* View Recipe Modal */}
-        {selectedRecipe && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 print:bg-white print:relative print:p-0">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto print:max-w-full print:max-h-full print:rounded-none print:shadow-none">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{selectedRecipe.title}</h1>
-                    <p className="text-gray-600 mb-4">{selectedRecipe.description}</p>
-                    <div className="flex items-center space-x-6 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {selectedRecipe.cookTime}
-                      </div>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        {selectedRecipe.servings}
-                      </div>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 mr-1" />
-                        {selectedRecipe.difficulty}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 print:hidden">
-                    <button 
-                      onClick={handlePrintRecipe}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-                      title="Print Recipe"
-                    >
-                      <Printer className="h-4 w-4" />
-                      <span className="text-sm font-medium">Print</span>
-                    </button>
-                    <button 
-                      onClick={() => setSelectedRecipe(null)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-6">
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Ingredients</h2>
-                    <ul className="space-y-2">
-                      {selectedRecipe.ingredients.map((ingredient, index) => (
-                        <li key={index} className="text-gray-700">{ingredient}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Instructions</h2>
-                    <ol className="space-y-3">
-                      {selectedRecipe.instructions.map((instruction, index) => (
-                        <li key={index} className="text-gray-700">
-                          <span className="font-semibold text-blue-600 mr-2">{index + 1}.</span>
-                          {instruction}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                </div>
-                
-                {selectedRecipe.notes && (
-                  <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-yellow-800 mb-2">Your Notes:</h3>
-                    <p className="text-yellow-800">{selectedRecipe.notes}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Edit Recipe Modal */}
         {editingRecipe && editedRecipe && (
