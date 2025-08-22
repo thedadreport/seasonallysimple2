@@ -1,15 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Plus, ShoppingCart, Clock, Users, Star, X, ChefHat, Search, Filter } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { Recipe } from '@/types';
 
 const CalendarPage = () => {
   const { recipes } = useApp();
+  const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [assignedRecipes, setAssignedRecipes] = useState<Record<string, Recipe>>({});
   
   // Modal search and filter state
@@ -81,6 +85,11 @@ const CalendarPage = () => {
       setShowRecipeModal(false);
       setSelectedDate(null);
     }
+  };
+
+  const handleViewRecipeDetails = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    setShowDetailsModal(true);
   };
 
   const handleRemoveRecipe = (date: Date) => {
@@ -276,9 +285,10 @@ const CalendarPage = () => {
               return (
                 <div 
                   key={index}
-                  className={`border-r border-b border-gray-200 last:border-r-0 min-h-[120px] p-2 ${
+                  className={`border-r border-b border-gray-200 last:border-r-0 p-2 ${
                     currentMonthDay ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/50'
-                  } transition-colors`}
+                  } transition-colors 
+                  min-h-[50px] md:min-h-[120px]`}
                 >
                   {/* Date Number */}
                   <div className={`text-sm font-medium mb-2 ${
@@ -295,40 +305,73 @@ const CalendarPage = () => {
                     )}
                   </div>
 
-                  {/* Recipe or Add Button */}
+                  {/* Recipe or Add Button - Desktop View */}
                   {currentMonthDay && (
                     <div className="h-full">
                       {assignedRecipe ? (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 h-[80px] relative group">
-                          <button
-                            onClick={() => handleRemoveRecipe(date)}
-                            className="absolute top-1 right-1 text-blue-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                          <h4 className="font-medium text-blue-900 text-xs leading-tight mb-1 pr-4">
-                            {assignedRecipe.title}
-                          </h4>
-                          <div className="flex items-center justify-between text-xs text-blue-600 mt-auto">
-                            <div className="flex items-center">
-                              <Clock className="h-3 w-3 mr-1" />
-                              <span>{assignedRecipe.cookTime}</span>
-                            </div>
-                            <div className="font-medium">
-                              ${estimateRecipeCost(assignedRecipe).toFixed(2)}
+                        <>
+                          {/* Desktop: Full details */}
+                          <div className="hidden md:block bg-blue-50 border border-blue-200 rounded-lg p-2 h-[80px] relative group">
+                            <button
+                              onClick={() => handleRemoveRecipe(date)}
+                              className="absolute top-1 right-1 text-blue-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                            <h4 className="font-medium text-blue-900 text-xs leading-tight mb-1 pr-4">
+                              {assignedRecipe.title}
+                            </h4>
+                            <div className="flex items-center justify-between text-xs text-blue-600 mt-auto">
+                              <div className="flex items-center">
+                                <Clock className="h-3 w-3 mr-1" />
+                                <span>{assignedRecipe.cookTime}</span>
+                              </div>
+                              <div className="font-medium">
+                                ${estimateRecipeCost(assignedRecipe).toFixed(2)}
+                              </div>
                             </div>
                           </div>
-                        </div>
+                          
+                          {/* Mobile: Dot indicator */}
+                          <div className="md:hidden flex items-center justify-between">
+                            <button
+                              onClick={() => handleViewRecipeDetails(assignedRecipe)}
+                              className="flex items-center space-x-1 group"
+                            >
+                              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                              <span className="text-xs text-blue-700 font-medium truncate max-w-[60px]">
+                                {assignedRecipe.title.split(' ')[0]}
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => handleRemoveRecipe(date)}
+                              className="text-gray-400 hover:text-red-500 p-1"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </>
                       ) : (
-                        <button 
-                          onClick={() => handleAddRecipe(date)}
-                          className="w-full h-[80px] flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors group border-2 border-dashed border-gray-200 hover:border-gray-300 rounded-lg"
-                        >
-                          <div className="text-center">
-                            <Plus className="h-4 w-4 mx-auto mb-1 group-hover:scale-110 transition-transform" />
-                            <span className="text-xs">Add Dinner</span>
-                          </div>
-                        </button>
+                        <>
+                          {/* Desktop: Full add button */}
+                          <button 
+                            onClick={() => handleAddRecipe(date)}
+                            className="hidden md:flex w-full h-[80px] items-center justify-center text-gray-400 hover:text-gray-600 transition-colors group border-2 border-dashed border-gray-200 hover:border-gray-300 rounded-lg"
+                          >
+                            <div className="text-center">
+                              <Plus className="h-4 w-4 mx-auto mb-1 group-hover:scale-110 transition-transform" />
+                              <span className="text-xs">Add Dinner</span>
+                            </div>
+                          </button>
+                          
+                          {/* Mobile: Compact add button */}
+                          <button 
+                            onClick={() => handleAddRecipe(date)}
+                            className="md:hidden flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </>
                       )}
                     </div>
                   )}
@@ -548,6 +591,103 @@ const CalendarPage = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recipe Details Modal for Mobile */}
+        {showDetailsModal && selectedRecipe && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
+              {/* Header */}
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-gray-900 truncate pr-4">
+                    {selectedRecipe.title}
+                  </h2>
+                  <button
+                    onClick={() => setShowDetailsModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                  >
+                    <X className="h-5 w-5 text-gray-400" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Recipe Details */}
+              <div className="p-4 overflow-y-auto">
+                <p className="text-gray-600 mb-4 text-sm">{selectedRecipe.description}</p>
+                
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Clock className="h-4 w-4 mr-2" />
+                    <span>{selectedRecipe.cookTime}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Users className="h-4 w-4 mr-2" />
+                    <span>{selectedRecipe.servings}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Star className="h-4 w-4 mr-2" />
+                    <span>{selectedRecipe.difficulty}</span>
+                  </div>
+                  {selectedRecipe.cost && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <span className="mr-2">💰</span>
+                      <span>{selectedRecipe.cost}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tags */}
+                <div className="mb-4">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRecipe.tags.slice(0, 4).map((tag, index) => (
+                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Ingredients Summary */}
+                <div className="mb-4">
+                  <h3 className="font-medium text-gray-900 mb-2">Key Ingredients</h3>
+                  <div className="text-sm text-gray-600">
+                    {selectedRecipe.ingredients.slice(0, 3).map((ingredient, index) => (
+                      <div key={index} className="flex items-start mb-1">
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                        <span className="truncate">{ingredient}</span>
+                      </div>
+                    ))}
+                    {selectedRecipe.ingredients.length > 3 && (
+                      <div className="text-xs text-gray-500 mt-2">
+                        +{selectedRecipe.ingredients.length - 3} more ingredients
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowDetailsModal(false);
+                      router.push(`/recipe/${selectedRecipe.id}`);
+                    }}
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    View Full Recipe
+                  </button>
+                  <button
+                    onClick={() => setShowDetailsModal(false)}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
