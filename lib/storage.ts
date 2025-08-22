@@ -2,6 +2,7 @@ import { Recipe, MealPlan } from '@/types';
 
 const RECIPES_KEY = 'seasonally-simple-recipes';
 const MEAL_PLANS_KEY = 'seasonally-simple-meal-plans';
+const CALENDAR_KEY = 'seasonally-simple-calendar';
 
 // Recipe storage functions
 export const getRecipes = (): Recipe[] => {
@@ -94,6 +95,41 @@ export const deleteMealPlan = (id: string): void => {
 // Utility functions
 export const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
+};
+
+// Calendar assignment storage functions
+export const getCalendarAssignments = (): Record<string, Recipe> => {
+  if (typeof window === 'undefined') return {};
+  
+  try {
+    const stored = localStorage.getItem(CALENDAR_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    console.error('Error loading calendar assignments:', error);
+    return {};
+  }
+};
+
+export const saveCalendarAssignments = (assignments: Record<string, Recipe>): void => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    localStorage.setItem(CALENDAR_KEY, JSON.stringify(assignments));
+  } catch (error) {
+    console.error('Error saving calendar assignments:', error);
+  }
+};
+
+export const assignRecipeToDate = (dateKey: string, recipe: Recipe): void => {
+  const assignments = getCalendarAssignments();
+  assignments[dateKey] = recipe;
+  saveCalendarAssignments(assignments);
+};
+
+export const removeRecipeFromDate = (dateKey: string): void => {
+  const assignments = getCalendarAssignments();
+  delete assignments[dateKey];
+  saveCalendarAssignments(assignments);
 };
 
 export const formatDate = (date: Date): string => {

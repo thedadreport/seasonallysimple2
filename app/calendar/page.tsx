@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Plus, ShoppingCart, Clock, Users, Star, X, ChefHat, Search, Filter } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, ShoppingCart, Clock, Users, Star, X, ChefHat, Search, Filter, Copy, Check } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { Recipe } from '@/types';
+import { getCalendarAssignments, assignRecipeToDate, removeRecipeFromDate } from '@/lib/storage';
 
 const CalendarPage = () => {
   const { recipes } = useApp();
@@ -12,9 +13,22 @@ const CalendarPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showShoppingListModal, setShowShoppingListModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [assignedRecipes, setAssignedRecipes] = useState<Record<string, Recipe>>({});
+  const [shoppingListDateRange, setShoppingListDateRange] = useState<{start: Date | null, end: Date | null}>({
+    start: null,
+    end: null
+  });
+  const [generatedShoppingList, setGeneratedShoppingList] = useState<{[category: string]: string[]} | null>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // Load calendar assignments from storage on component mount
+  useEffect(() => {
+    const loadedAssignments = getCalendarAssignments();
+    setAssignedRecipes(loadedAssignments);
+  }, []);
   
   // Modal search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -78,6 +92,11 @@ const CalendarPage = () => {
   const handleSelectRecipe = (recipe: Recipe) => {
     if (selectedDate) {
       const dateKey = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      
+      // Save to persistent storage
+      assignRecipeToDate(dateKey, recipe);
+      
+      // Update local state
       setAssignedRecipes(prev => ({
         ...prev,
         [dateKey]: recipe
@@ -92,8 +111,136 @@ const CalendarPage = () => {
     setShowDetailsModal(true);
   };
 
+  const handleGenerateShoppingList = () => {
+    // Set default date range to current week
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Start from Monday
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // End on Sunday
+    
+    setShoppingListDateRange({
+      start: startOfWeek,
+      end: endOfWeek
+    });
+    setShowShoppingListModal(true);
+  };
+
+  const generateShoppingListForRange = () => {
+    if (!shoppingListDateRange.start || !shoppingListDateRange.end) return;
+
+    const ingredientMap = new Map<string, number>();
+    const startDate = new Date(shoppingListDateRange.start);
+    const endDate = new Date(shoppingListDateRange.end);
+
+    // Iterate through each day in the range
+    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+      const dateKey = date.toISOString().split('T')[0];
+      const recipe = assignedRecipes[dateKey];
+      
+      if (recipe) {
+        // Add ingredients to the map
+        recipe.ingredients.forEach(ingredient => {
+          const cleanIngredient = ingredient.toLowerCase().trim();
+          ingredientMap.set(cleanIngredient, (ingredientMap.get(cleanIngredient) || 0) + 1);
+        });
+      }
+    }
+
+    // Categorize ingredients
+    const shoppingList: {[category: string]: string[]} = {
+      'Proteins': [],
+      'Produce': [],
+      'Pantry': [],
+      'Dairy': [],
+      'Other': []
+    };
+
+    // Simple categorization logic
+    ingredientMap.forEach((count, ingredient) => {
+      const displayIngredient = count > 1 ? `${ingredient} (×${count})` : ingredient;
+      
+      if (ingredient.includes('chicken') || ingredient.includes('beef') || ingredient.includes('fish') || 
+          ingredient.includes('salmon') || ingredient.includes('pork') || ingredient.includes('turkey') ||
+          ingredient.includes('shrimp') || ingredient.includes('tofu')) {
+        shoppingList['Proteins'].push(displayIngredient);
+      } else if (ingredient.includes('onion') || ingredient.includes('tomato') || ingredient.includes('carrot') ||
+                 ingredient.includes('pepper') || ingredient.includes('lettuce') || ingredient.includes('spinach') ||
+                 ingredient.includes('potato') || ingredient.includes('garlic') || ingredient.includes('herb')) {
+        shoppingList['Produce'].push(displayIngredient);
+      } else if (ingredient.includes('milk') || ingredient.includes('cheese') || ingredient.includes('butter') ||
+                 ingredient.includes('cream') || ingredient.includes('yogurt') || ingredient.includes('egg')) {
+        shoppingList['Dairy'].push(displayIngredient);
+      } else if (ingredient.includes('rice') || ingredient.includes('pasta') || ingredient.includes('bread') ||
+                 ingredient.includes('flour') || ingredient.includes('oil') || ingredient.includes('salt') ||
+                 ingredient.includes('pepper') || ingredient.includes('sauce') || ingredient.includes('spice')) {
+        shoppingList['Pantry'].push(displayIngredient);
+      } else {
+        shoppingList['Other'].push(displayIngredient);
+      }
+    });
+
+    // Remove empty categories
+    Object.keys(shoppingList).forEach(category => {
+      if (shoppingList[category].length === 0) {
+        delete shoppingList[category];
+      }
+    });
+
+    setGeneratedShoppingList(shoppingList);
+  };
+
+  const copyShoppingListToClipboard = async () => {
+    if (!generatedShoppingList || !shoppingListDateRange.start || !shoppingListDateRange.end) return;
+
+    const startDate = shoppingListDateRange.start.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+    const endDate = shoppingListDateRange.end.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+
+    let textToCopy = `🛒 Shopping List\n${startDate} - ${endDate}\n\n`;
+
+    Object.entries(generatedShoppingList).forEach(([category, items]) => {
+      textToCopy += `${category.toUpperCase()}\n`;
+      items.forEach(item => {
+        textToCopy += `□ ${item.charAt(0).toUpperCase() + item.slice(1)}\n`;
+      });
+      textToCopy += '\n';
+    });
+
+    textToCopy += `Generated by Seasonally Simple\n`;
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = textToCopy;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    }
+  };
+
   const handleRemoveRecipe = (date: Date) => {
     const dateKey = date.toISOString().split('T')[0];
+    
+    // Remove from persistent storage
+    removeRecipeFromDate(dateKey);
+    
+    // Update local state
     setAssignedRecipes(prev => {
       const newAssigned = { ...prev };
       delete newAssigned[dateKey];
@@ -258,7 +405,10 @@ const CalendarPage = () => {
           <button className="px-4 py-2 bg-orange-100 text-orange-700 border border-orange-200 rounded-lg hover:bg-orange-200 transition-colors font-medium">
             Browse Recipes
           </button>
-          <button className="px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-lg hover:bg-green-200 transition-colors font-medium flex items-center">
+          <button 
+            onClick={handleGenerateShoppingList}
+            className="px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-lg hover:bg-green-200 transition-colors font-medium flex items-center"
+          >
             <ShoppingCart className="h-4 w-4 mr-2" />
             Generate Shopping List
           </button>
@@ -687,6 +837,238 @@ const CalendarPage = () => {
                   >
                     Close
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Shopping List Modal */}
+        {showShoppingListModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+              {/* Header */}
+              <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">Generate Shopping List</h2>
+                  <button
+                    onClick={() => {
+                      setShowShoppingListModal(false);
+                      setGeneratedShoppingList(null);
+                    }}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="h-6 w-6 text-gray-400" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-6">
+                {!generatedShoppingList ? (
+                  /* Date Range Selection */
+                  <div>
+                    <p className="text-gray-600 mb-6">Select the date range for your shopping list:</p>
+                    
+                    {/* Date Range Inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                        <input
+                          type="date"
+                          value={shoppingListDateRange.start ? shoppingListDateRange.start.toISOString().split('T')[0] : ''}
+                          onChange={(e) => setShoppingListDateRange(prev => ({
+                            ...prev,
+                            start: new Date(e.target.value)
+                          }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                        <input
+                          type="date"
+                          value={shoppingListDateRange.end ? shoppingListDateRange.end.toISOString().split('T')[0] : ''}
+                          onChange={(e) => setShoppingListDateRange(prev => ({
+                            ...prev,
+                            end: new Date(e.target.value)
+                          }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Date Range Buttons */}
+                    <div className="mb-6">
+                      <p className="text-sm font-medium text-gray-700 mb-3">Quick Select:</p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => {
+                            const today = new Date();
+                            const startOfWeek = new Date(today);
+                            startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+                            const endOfWeek = new Date(startOfWeek);
+                            endOfWeek.setDate(startOfWeek.getDate() + 6);
+                            setShoppingListDateRange({ start: startOfWeek, end: endOfWeek });
+                          }}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
+                        >
+                          This Week
+                        </button>
+                        <button
+                          onClick={() => {
+                            const today = new Date();
+                            const nextWeekStart = new Date(today);
+                            nextWeekStart.setDate(today.getDate() - today.getDay() + 8);
+                            const nextWeekEnd = new Date(nextWeekStart);
+                            nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+                            setShoppingListDateRange({ start: nextWeekStart, end: nextWeekEnd });
+                          }}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
+                        >
+                          Next Week
+                        </button>
+                        <button
+                          onClick={() => {
+                            const today = new Date();
+                            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                            const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                            setShoppingListDateRange({ start: startOfMonth, end: endOfMonth });
+                          }}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
+                        >
+                          This Month
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Preview meals in range */}
+                    {shoppingListDateRange.start && shoppingListDateRange.end && (
+                      <div className="mb-6">
+                        <h3 className="font-medium text-gray-900 mb-3">Planned Meals in Range:</h3>
+                        <div className="bg-gray-50 rounded-lg p-4 max-h-40 overflow-y-auto">
+                          {(() => {
+                            const mealsInRange: {date: string, recipe: Recipe}[] = [];
+                            const startDate = new Date(shoppingListDateRange.start);
+                            const endDate = new Date(shoppingListDateRange.end);
+                            
+                            for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+                              const dateKey = date.toISOString().split('T')[0];
+                              const recipe = assignedRecipes[dateKey];
+                              if (recipe) {
+                                mealsInRange.push({
+                                  date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+                                  recipe
+                                });
+                              }
+                            }
+
+                            if (mealsInRange.length === 0) {
+                              return <p className="text-gray-500 text-sm">No meals planned for this date range.</p>;
+                            }
+
+                            return (
+                              <div className="space-y-2">
+                                {mealsInRange.map((meal, index) => (
+                                  <div key={index} className="flex items-center justify-between text-sm">
+                                    <span className="font-medium text-gray-700">{meal.date}</span>
+                                    <span className="text-gray-600">{meal.recipe.title}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Generate Button */}
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        onClick={() => {
+                          setShowShoppingListModal(false);
+                          setGeneratedShoppingList(null);
+                        }}
+                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={generateShoppingListForRange}
+                        disabled={!shoppingListDateRange.start || !shoppingListDateRange.end}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      >
+                        Generate List
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Generated Shopping List Display */
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Shopping List</h3>
+                      <p className="text-gray-600 text-sm">
+                        {shoppingListDateRange.start?.toLocaleDateString()} - {shoppingListDateRange.end?.toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {Object.entries(generatedShoppingList).map(([category, items]) => (
+                        <div key={category}>
+                          <h4 className="font-medium text-gray-900 mb-2 text-sm uppercase tracking-wide">
+                            {category}
+                          </h4>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <ul className="space-y-1">
+                              {items.map((item, index) => (
+                                <li key={index} className="flex items-center text-sm">
+                                  <span className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></span>
+                                  <span className="capitalize">{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => setGeneratedShoppingList(null)}
+                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        Back to Dates
+                      </button>
+                      <button
+                        onClick={copyShoppingListToClipboard}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center ${
+                          copySuccess 
+                            ? 'bg-green-600 text-white' 
+                            : 'bg-orange-600 text-white hover:bg-orange-700'
+                        }`}
+                      >
+                        {copySuccess ? (
+                          <>
+                            <Check className="h-4 w-4 mr-2" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copy to Notes
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => window.print()}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                      >
+                        Print List
+                      </button>
+                    </div>
+                  </div>
+                )}
                 </div>
               </div>
             </div>
