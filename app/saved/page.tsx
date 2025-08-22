@@ -167,7 +167,7 @@ const SavedPage = () => {
       description: newRecipe.description!,
       cookTime: newRecipe.cookTime!,
       servings: newRecipe.servings!,
-      difficulty: newRecipe.difficulty! as 'Easy' | 'Intermediate' | 'Expert',
+      difficulty: newRecipe.difficulty! as 'Easy' | 'Intermediate' | 'Advanced',
       ingredients: newRecipe.ingredients!.filter(ing => ing.trim() !== ''),
       instructions: newRecipe.instructions!.filter(inst => inst.trim() !== ''),
       tags: newRecipe.tags || [],
@@ -342,7 +342,7 @@ const SavedPage = () => {
                     <option value="all">Any Difficulty</option>
                     <option value="easy">Easy</option>
                     <option value="intermediate">Intermediate</option>
-                    <option value="expert">Expert</option>
+                    <option value="advanced">Advanced</option>
                   </select>
                   
                   <select
@@ -886,7 +886,7 @@ const SavedPage = () => {
                     >
                       <option value="Easy">Easy</option>
                       <option value="Intermediate">Intermediate</option>
-                      <option value="Expert">Expert</option>
+                      <option value="Advanced">Advanced</option>
                     </select>
                   </div>
 

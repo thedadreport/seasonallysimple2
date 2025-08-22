@@ -24,8 +24,6 @@ const CalendarPage = () => {
     
     // First day of the month
     const firstDay = new Date(year, month, 1);
-    // Last day of the month
-    const lastDay = new Date(year, month + 1, 0);
     
     // Start from the Monday of the week containing the first day
     const startDate = new Date(firstDay);
@@ -343,7 +341,7 @@ const CalendarPage = () => {
                         <option value="all">Any Difficulty</option>
                         <option value="easy">Easy</option>
                         <option value="intermediate">Intermediate</option>
-                        <option value="expert">Expert</option>
+                        <option value="advanced">Advanced</option>
                       </select>
                       
                       <select
@@ -415,46 +413,46 @@ const CalendarPage = () => {
                     </div>
                     <div className="grid md:grid-cols-2 gap-4">
                       {filteredRecipes.map((recipe) => (
-                      <div
-                        key={recipe.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors cursor-pointer"
-                        onClick={() => handleSelectRecipe(recipe)}
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 mb-1">{recipe.title}</h3>
-                            <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
+                        <div
+                          key={recipe.id}
+                          className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors cursor-pointer"
+                          onClick={() => handleSelectRecipe(recipe)}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-1">{recipe.title}</h3>
+                              <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
+                            </div>
                           </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {recipe.cookTime}
+                          
+                          <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {recipe.cookTime}
+                            </div>
+                            <div className="flex items-center">
+                              <Users className="h-4 w-4 mr-1" />
+                              {recipe.servings}
+                            </div>
+                            <div className="flex items-center">
+                              <Star className="h-4 w-4 mr-1" />
+                              {recipe.difficulty}
+                            </div>
                           </div>
-                          <div className="flex items-center">
-                            <Users className="h-4 w-4 mr-1" />
-                            {recipe.servings}
-                          </div>
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 mr-1" />
-                            {recipe.difficulty}
-                          </div>
-                        </div>
 
-                        <div className="flex flex-wrap gap-1">
-                          {recipe.tags.slice(0, 3).map((tag, index) => (
-                            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-                              {tag}
-                            </span>
-                          ))}
-                          {recipe.tags.length > 3 && (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-                              +{recipe.tags.length - 3} more
-                            </span>
-                          )}
+                          <div className="flex flex-wrap gap-1">
+                            {recipe.tags.slice(0, 3).map((tag, index) => (
+                              <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
+                                {tag}
+                              </span>
+                            ))}
+                            {recipe.tags.length > 3 && (
+                              <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
+                                +{recipe.tags.length - 3} more
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
                       ))}
                     </div>
                   </div>

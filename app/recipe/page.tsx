@@ -98,7 +98,7 @@ const dietaryRestrictions = [
 const difficultyLevels = [
   { value: 'Easy', label: 'Easy', icon: Star, color: 'bg-green-50 border-green-200 text-green-700', description: 'Simple recipes with basic techniques' },
   { value: 'Intermediate', label: 'Intermediate', icon: ChefHat, color: 'bg-yellow-50 border-yellow-200 text-yellow-700', description: 'Moderate complexity, some cooking skills needed' },
-  { value: 'Expert', label: 'Expert', icon: Flame, color: 'bg-red-50 border-red-200 text-red-700', description: 'Advanced techniques and longer prep time' }
+  { value: 'Advanced', label: 'Advanced', icon: Flame, color: 'bg-red-50 border-red-200 text-red-700', description: 'Advanced techniques and longer prep time' }
 ];
 
 const RecipePage = () => {
