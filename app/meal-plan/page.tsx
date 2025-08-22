@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, ShoppingCart, Clock, DollarSign, Users, CheckCircle, Star, ChefHat, BookOpen, Lock, Crown, Loader2, Plus, Minus, ExternalLink, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils } from 'lucide-react';
+import { Calendar, ShoppingCart, Clock, DollarSign, Users, CheckCircle, Star, ChefHat, BookOpen, Lock, Crown, Loader2, Plus, Minus, ExternalLink, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { getRemainingMealPlans, formatSubscriptionTier } from '../../lib/subscription';
 import SubscriptionUpgrade from '../../components/SubscriptionUpgrade';
@@ -82,6 +82,8 @@ const MealPlanPage = () => {
     skillLevel: 'Intermediate (some techniques)',
     pantryItems: ''
   });
+  
+  const [useSeasonalIngredients, setUseSeasonalIngredients] = useState(false);
 
   const toggleDiet = (diet: string) => {
     if (diet === 'None') {
@@ -139,7 +141,8 @@ const MealPlanPage = () => {
           weeklyBudget: `$${formData.weeklyBudget}`,
           dietaryRestrictions: selectedDiets.filter(d => d !== 'None'),
           cuisinePreferences: selectedCuisines.filter(c => c !== 'No Preference'),
-          cookingMethods: selectedCookingMethods
+          cookingMethods: selectedCookingMethods,
+          useSeasonalIngredients
         }),
       });
 
@@ -252,7 +255,7 @@ const MealPlanPage = () => {
                     <div>
                       <h3 className="font-semibold text-green-900">Recipe Saved Successfully!</h3>
                       <p className="text-green-800 text-sm mt-1">
-                        "{savedRecipe.title}" has been generated and saved to your recipe collection.
+                        "{savedRecipe.title}" has been generated and saved to My Recipes.
                       </p>
                     </div>
                   </div>
@@ -262,7 +265,7 @@ const MealPlanPage = () => {
                       className="inline-flex items-center px-4 py-2 text-sm bg-green-600 text-white border border-green-600 rounded-lg hover:bg-green-700 transition-colors font-medium"
                     >
                       <BookOpen className="h-4 w-4 mr-2" />
-                      View in Recipe Collection
+                      View in My Recipes
                     </a>
                     <button
                       onClick={() => setSavedRecipe(null)}
@@ -491,12 +494,44 @@ const MealPlanPage = () => {
                 </div>
               </div>
 
-              {/* Pantry Items */}
+              {/* Seasonal Ingredients Toggle */}
               <div className="mt-8">
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Leaf className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-green-900">Use Seasonal Ingredients</h3>
+                      <p className="text-sm text-green-700 mt-1">
+                        Focus on fresh, in-season produce for better flavor and lower costs
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setUseSeasonalIngredients(!useSeasonalIngredients)}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      useSeasonalIngredients ? 'bg-green-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        useSeasonalIngredients ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Pantry Items */}
+              <div className="mt-6">
                 <label className="label">What's already in your pantry/fridge?</label>
                 <textarea 
                   className="input h-20 resize-none" 
                   placeholder="Rice, pasta, canned beans, frozen vegetables, chicken breast, ground beef..."
+                  value={formData.pantryItems}
+                  onChange={(e) => setFormData({...formData, pantryItems: e.target.value})}
                 ></textarea>
               </div>
             </div>
@@ -589,9 +624,6 @@ const MealPlanPage = () => {
                   className="btn-ghost"
                 >
                   ← Generate Another Plan
-                </button>
-                <button className="btn-primary">
-                  Save Meal Plan
                 </button>
               </div>
             </div>

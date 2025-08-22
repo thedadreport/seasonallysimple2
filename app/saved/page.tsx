@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3 } from 'lucide-react';
+import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Plus } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
 import { SubscriptionTier, Recipe } from '@/types';
@@ -18,6 +18,19 @@ const SavedPage = () => {
   const [filterDifficulty, setFilterDifficulty] = useState('all');
   const [filterCookTime, setFilterCookTime] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newRecipe, setNewRecipe] = useState<Partial<Recipe>>({
+    title: '',
+    description: '',
+    cookTime: '',
+    servings: '',
+    difficulty: 'Easy',
+    ingredients: [''],
+    instructions: [''],
+    tags: [],
+    situation: 'Custom Recipe',
+    notes: ''
+  });
 
   // Debug logging
   console.log('SavedPage: Current recipes count:', recipes.length);
@@ -137,6 +150,107 @@ const SavedPage = () => {
     }
   };
 
+  // Create recipe functions
+  const handleCreateRecipe = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleSaveNewRecipe = async () => {
+    if (!newRecipe.title || !newRecipe.description || !newRecipe.cookTime || !newRecipe.servings) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    const customRecipe: Recipe = {
+      id: `custom-${Date.now()}`,
+      title: newRecipe.title!,
+      description: newRecipe.description!,
+      cookTime: newRecipe.cookTime!,
+      servings: newRecipe.servings!,
+      difficulty: newRecipe.difficulty! as 'Easy' | 'Intermediate' | 'Expert',
+      ingredients: newRecipe.ingredients!.filter(ing => ing.trim() !== ''),
+      instructions: newRecipe.instructions!.filter(inst => inst.trim() !== ''),
+      tags: newRecipe.tags || [],
+      situation: newRecipe.situation || 'Custom Recipe',
+      notes: newRecipe.notes || '',
+      dateAdded: new Date().toLocaleDateString()
+    };
+
+    try {
+      await addRecipe(customRecipe);
+      setShowCreateModal(false);
+      // Reset form
+      setNewRecipe({
+        title: '',
+        description: '',
+        cookTime: '',
+        servings: '',
+        difficulty: 'Easy',
+        ingredients: [''],
+        instructions: [''],
+        tags: [],
+        situation: 'Custom Recipe',
+        notes: ''
+      });
+    } catch (error) {
+      console.error('Error creating recipe:', error);
+      alert('Failed to create recipe. Please try again.');
+    }
+  };
+
+  const updateNewRecipe = (field: keyof Recipe, value: any) => {
+    setNewRecipe(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const addNewIngredient = () => {
+    setNewRecipe(prev => ({
+      ...prev,
+      ingredients: [...(prev.ingredients || []), '']
+    }));
+  };
+
+  const removeNewIngredient = (index: number) => {
+    setNewRecipe(prev => ({
+      ...prev,
+      ingredients: (prev.ingredients || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateNewIngredient = (index: number, value: string) => {
+    const newIngredients = [...(newRecipe.ingredients || [])];
+    newIngredients[index] = value;
+    setNewRecipe(prev => ({
+      ...prev,
+      ingredients: newIngredients
+    }));
+  };
+
+  const addNewInstruction = () => {
+    setNewRecipe(prev => ({
+      ...prev,
+      instructions: [...(prev.instructions || []), '']
+    }));
+  };
+
+  const removeNewInstruction = (index: number) => {
+    setNewRecipe(prev => ({
+      ...prev,
+      instructions: (prev.instructions || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateNewInstruction = (index: number, value: string) => {
+    const newInstructions = [...(newRecipe.instructions || [])];
+    newInstructions[index] = value;
+    setNewRecipe(prev => ({
+      ...prev,
+      instructions: newInstructions
+    }));
+  };
+
   const filteredRecipes = recipes
     .filter(recipe => {
       // Search term filter
@@ -190,9 +304,9 @@ const SavedPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4">
       <div className="max-w-6xl mx-auto pt-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Saved Recipes & Plans</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">My Recipes</h1>
           <p className="text-xl text-gray-600">
-            Your collection of favorite recipes and meal plans, ready to cook again
+            Your personal collection of recipes and meal plans, ready to cook again
           </p>
         </div>
 
@@ -295,6 +409,13 @@ const SavedPage = () => {
               >
                 <Calendar className="h-4 w-4 inline mr-2" />
                 Meal Plans ({mealPlans.length})
+              </button>
+              <button
+                onClick={handleCreateRecipe}
+                className="px-4 py-2 bg-purple-100 text-purple-700 border border-purple-300 rounded-lg hover:bg-purple-200 transition-all font-medium"
+              >
+                <Plus className="h-4 w-4 inline mr-2" />
+                Create Recipe
               </button>
               <button
                 onClick={handleAddTestData}
@@ -496,7 +617,7 @@ const SavedPage = () => {
             <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Start Building Your Recipe Collection</h2>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Save recipes and meal plans from our generator to build your personal collection of family favorites.
+              Generate recipes or create your own custom entries to build your personal collection of family favorites.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button className="btn-primary">
@@ -682,6 +803,202 @@ const SavedPage = () => {
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Recipe Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-bold text-gray-900">Create Custom Recipe</h1>
+                  <button 
+                    onClick={() => setShowCreateModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="text-gray-600 mt-2">Add your own family recipes, pizza nights, eating out, or any meal plan.</p>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                {/* Basic Info */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Recipe Title *</label>
+                    <input 
+                      type="text" 
+                      value={newRecipe.title || ''}
+                      onChange={(e) => updateNewRecipe('title', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., Mom's Lasagna, Pizza Night, Taco Tuesday"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <input 
+                      type="text" 
+                      value={newRecipe.description || ''}
+                      onChange={(e) => updateNewRecipe('description', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Brief description of the meal"
+                    />
+                  </div>
+                </div>
+
+                {/* Recipe Details */}
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Cook Time *</label>
+                    <input 
+                      type="text" 
+                      value={newRecipe.cookTime || ''}
+                      onChange={(e) => updateNewRecipe('cookTime', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 30 minutes, N/A"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Servings *</label>
+                    <input 
+                      type="text" 
+                      value={newRecipe.servings || ''}
+                      onChange={(e) => updateNewRecipe('servings', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 4 people"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                    <select 
+                      value={newRecipe.difficulty || 'Easy'}
+                      onChange={(e) => updateNewRecipe('difficulty', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="Easy">Easy</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Expert">Expert</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <select 
+                      value={newRecipe.situation || 'Custom Recipe'}
+                      onChange={(e) => updateNewRecipe('situation', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="Custom Recipe">Custom Recipe</option>
+                      <option value="Family Recipe">Family Recipe</option>
+                      <option value="Pizza Night">Pizza Night</option>
+                      <option value="Eating Out">Eating Out</option>
+                      <option value="Takeout">Takeout</option>
+                      <option value="Leftovers">Leftovers</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Ingredients */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Ingredients</label>
+                    <button 
+                      onClick={addNewIngredient}
+                      className="px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm"
+                    >
+                      + Add Ingredient
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {(newRecipe.ingredients || []).map((ingredient, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <input 
+                          type="text" 
+                          value={ingredient}
+                          onChange={(e) => updateNewIngredient(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="e.g., 1 cup flour, or leave blank for non-cooking entries"
+                        />
+                        <button 
+                          onClick={() => removeNewIngredient(index)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Instructions */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Instructions</label>
+                    <button 
+                      onClick={addNewInstruction}
+                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm"
+                    >
+                      + Add Step
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {(newRecipe.instructions || []).map((instruction, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold mt-1">
+                          {index + 1}
+                        </span>
+                        <textarea 
+                          value={instruction}
+                          onChange={(e) => updateNewInstruction(index, e.target.value)}
+                          rows={2}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                          placeholder="Describe this step, or leave blank for non-cooking entries..."
+                        />
+                        <button 
+                          onClick={() => removeNewInstruction(index)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Personal Notes</label>
+                  <textarea 
+                    value={newRecipe.notes || ''}
+                    onChange={(e) => updateNewRecipe('notes', e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Add any personal notes, family history, or special instructions..."
+                  />
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button 
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleSaveNewRecipe}
+                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Create Recipe
                   </button>
                 </div>
               </div>

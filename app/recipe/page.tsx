@@ -230,7 +230,7 @@ const RecipePage = () => {
                 <div>
                   <h3 className="font-semibold text-green-900">Recipe Saved Successfully!</h3>
                   <p className="text-green-800 text-sm mt-1">
-                    "{savedRecipe.title}" has been saved to your recipe collection.
+                    "{savedRecipe.title}" has been saved to My Recipes.
                   </p>
                 </div>
               </div>

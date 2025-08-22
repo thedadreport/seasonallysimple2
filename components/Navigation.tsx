@@ -16,7 +16,8 @@ const Navigation = () => {
   const navItems = [
     { href: '/recipe', label: 'Recipes' },
     { href: '/meal-plan', label: 'Meal Plans' },
-    { href: '/saved', label: 'Saved' },
+    { href: '/calendar', label: 'Calendar' },
+    { href: '/saved', label: 'My Recipes' },
   ];
 
   const isActive = (href: string) => pathname === href;
