@@ -130,7 +130,89 @@ const CalendarPage = () => {
     return matchesSearch && matchesDifficulty && matchesCookTime;
   });
 
-  const totalCost = 0.00; // Will calculate based on assigned recipes
+  // Cost estimation function
+  const estimateRecipeCost = (recipe: Recipe): number => {
+    // If AI has provided a cost estimate, use that first
+    if (recipe.cost) {
+      // Parse the AI cost estimate (format: "$XX" or "$XX.XX")
+      const costMatch = recipe.cost.match(/\$?(\d+(?:\.\d{2})?)/);
+      if (costMatch) {
+        return parseFloat(costMatch[1]);
+      }
+    }
+
+    // Fallback to algorithmic estimation for recipes without AI cost
+    // Special handling for custom recipe types
+    if (recipe.situation === 'Pizza Night') {
+      return 25.00; // Typical pizza order cost
+    } else if (recipe.situation === 'Eating Out') {
+      return 45.00; // Typical restaurant cost for family
+    } else if (recipe.situation === 'Takeout') {
+      return 35.00; // Typical takeout cost
+    } else if (recipe.situation === 'Leftovers') {
+      return 2.00; // Minimal cost for leftovers
+    }
+
+    // Base cost estimation based on various factors
+    let baseCost = 8.00; // Default base cost for a dinner recipe
+    
+    // Adjust based on difficulty (more complex = more expensive ingredients)
+    switch (recipe.difficulty) {
+      case 'Easy':
+        baseCost *= 0.8; // 20% less for simple recipes
+        break;
+      case 'Advanced':
+        baseCost *= 1.4; // 40% more for complex recipes
+        break;
+      default: // Intermediate
+        break; // Keep base cost
+    }
+    
+    // Adjust based on number of ingredients (rough proxy for cost)
+    const ingredientCount = recipe.ingredients.length;
+    if (ingredientCount <= 5) {
+      baseCost *= 0.7; // Fewer ingredients = lower cost
+    } else if (ingredientCount >= 10) {
+      baseCost *= 1.3; // More ingredients = higher cost
+    }
+    
+    // Adjust based on cook time (longer cook time often means more expensive cuts of meat)
+    const cookTimeMatch = recipe.cookTime.match(/(\d+)/);
+    if (cookTimeMatch) {
+      const minutes = parseInt(cookTimeMatch[1]);
+      if (minutes <= 15) {
+        baseCost *= 0.8; // Quick meals often cheaper
+      } else if (minutes >= 60) {
+        baseCost *= 1.2; // Longer cook times often more expensive
+      }
+    }
+    
+    // Check for expensive ingredient keywords
+    const expensiveKeywords = ['beef', 'steak', 'salmon', 'shrimp', 'lobster', 'truffle', 'organic', 'prime'];
+    const cheapKeywords = ['pasta', 'rice', 'beans', 'lentils', 'eggs', 'potato'];
+    
+    const ingredientText = recipe.ingredients.join(' ').toLowerCase();
+    
+    if (expensiveKeywords.some(keyword => ingredientText.includes(keyword))) {
+      baseCost *= 1.5;
+    } else if (cheapKeywords.some(keyword => ingredientText.includes(keyword))) {
+      baseCost *= 0.7;
+    }
+    
+    return Math.round(baseCost * 100) / 100; // Round to 2 decimal places
+  };
+
+  // Calculate total cost for the current month
+  const calculateMonthlyCost = (): number => {
+    return Object.entries(assignedRecipes)
+      .filter(([dateKey]) => {
+        const date = new Date(dateKey);
+        return date.getMonth() === monthIndex && date.getFullYear() === currentYear;
+      })
+      .reduce((total, [, recipe]) => total + estimateRecipeCost(recipe), 0);
+  };
+
+  const totalCost = calculateMonthlyCost();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4">
@@ -227,9 +309,14 @@ const CalendarPage = () => {
                           <h4 className="font-medium text-blue-900 text-xs leading-tight mb-1 pr-4">
                             {assignedRecipe.title}
                           </h4>
-                          <div className="flex items-center text-xs text-blue-600 mt-auto">
-                            <Clock className="h-3 w-3 mr-1" />
-                            <span>{assignedRecipe.cookTime}</span>
+                          <div className="flex items-center justify-between text-xs text-blue-600 mt-auto">
+                            <div className="flex items-center">
+                              <Clock className="h-3 w-3 mr-1" />
+                              <span>{assignedRecipe.cookTime}</span>
+                            </div>
+                            <div className="font-medium">
+                              ${estimateRecipeCost(assignedRecipe).toFixed(2)}
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -437,6 +524,10 @@ const CalendarPage = () => {
                             <div className="flex items-center">
                               <Star className="h-4 w-4 mr-1" />
                               {recipe.difficulty}
+                            </div>
+                            <div className="flex items-center font-medium text-green-600">
+                              <span className="mr-1">~</span>
+                              ${estimateRecipeCost(recipe).toFixed(2)}
                             </div>
                           </div>
 

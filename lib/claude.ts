@@ -66,11 +66,12 @@ Please generate a complete recipe with:
 3. Cooking time (realistic estimate)
 4. Servings (match family size)
 5. Difficulty level (Easy/Intermediate/Advanced)
-6. 3-5 relevant tags
-7. Complete ingredient list with measurements
-8. Step-by-step instructions
-9. 3-4 helpful tips or variations
-10. Personal notes or suggestions
+6. Estimated total cost (realistic grocery cost for all ingredients)
+7. 3-5 relevant tags
+8. Complete ingredient list with measurements
+9. Step-by-step instructions
+10. 3-4 helpful tips or variations
+11. Personal notes or suggestions
 
 Make it practical, achievable, and tailored to the cooking situation and method. Focus on real-world flexibility and family appeal. Ensure the recipe is specifically designed for the chosen cooking method (${formData.cookingMethod}) and reflects ${formData.cuisineType} cuisine style with appropriate flavors, ingredients, and cooking techniques. If "No Preference" is selected for cuisine, create a versatile recipe that could work for various tastes.${formData.seasonal ? ' IMPORTANT: Prioritize seasonal, fresh ingredients that are currently in peak season for the best flavors and value.' : ''}
 
@@ -86,6 +87,7 @@ Format the response as valid JSON with this exact structure:
   "cookTime": "XX minutes",
   "servings": "X people",
   "difficulty": "Easy|Intermediate|Advanced",
+  "cost": "$XX",
   "tags": ["tag1", "tag2", "tag3"],
   "situation": "${formData.cookingSituation}",
   "ingredients": ["ingredient 1", "ingredient 2"],

@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       cookTime: aiRecipe.cookTime,
       servings: aiRecipe.servings,
       difficulty: aiRecipe.difficulty,
+      cost: aiRecipe.cost,
       tags: aiRecipe.tags,
       situation: aiRecipe.situation || formData.cookingSituation,
       ingredients: aiRecipe.ingredients,

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Clock, Users, Star, ArrowLeft, Printer, Edit3, Trash2 } from 'lucide-react';
+import { Clock, Users, Star, DollarSign, ArrowLeft, Printer, Edit3, Trash2 } from 'lucide-react';
 import { useApp } from '../../../contexts/AppContext';
 
 const RecipeDetailPage = () => {
@@ -119,6 +119,12 @@ const RecipeDetailPage = () => {
               <Star className="h-5 w-5 mr-2" />
               <span className="font-medium">{recipe.difficulty}</span>
             </div>
+            {recipe.cost && (
+              <div className="flex items-center">
+                <DollarSign className="h-5 w-5 mr-2" />
+                <span className="font-medium">{recipe.cost}</span>
+              </div>
+            )}
           </div>
           
           <div className="flex flex-wrap gap-2 mt-4">

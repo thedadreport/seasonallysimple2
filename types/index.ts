@@ -7,6 +7,7 @@ export interface Recipe {
   cookTime: string;
   servings: string;
   difficulty: 'Easy' | 'Intermediate' | 'Advanced';
+  cost?: string;
   tags: string[];
   situation: string;
   ingredients: string[];
