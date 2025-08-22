@@ -173,6 +173,7 @@ const SavedPage = () => {
       tags: newRecipe.tags || [],
       situation: newRecipe.situation || 'Custom Recipe',
       notes: newRecipe.notes || '',
+      tips: [], // Empty tips array for custom recipes
       dateAdded: new Date().toLocaleDateString()
     };
 
