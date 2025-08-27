@@ -18,6 +18,7 @@ const Navigation = () => {
     { href: '/meal-plan', label: 'Meal Plans' },
     { href: '/calendar', label: 'Calendar' },
     { href: '/saved', label: 'My Recipes' },
+    { href: '/preferences', label: 'Preferences' },
   ];
 
   const isActive = (href: string) => pathname === href;

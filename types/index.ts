@@ -36,6 +36,8 @@ export interface MealPlan {
 export interface MealPlanDay {
   day: string;
   recipe: string;
+  main?: string; // Main dish name
+  sides?: string[]; // Array of side dish names
   prepTime: string;
   cookTime: string;
   cost: string;
@@ -94,12 +96,21 @@ export interface SubscriptionLimits {
   canSaveUnlimited: boolean;
 }
 
+export interface UserPreferences {
+  cookingSkill: string;
+  dietaryRestrictions: string[];
+  cuisinePreferences: string[];
+  cookingMethods: string[];
+  useSeasonalIngredients: boolean;
+}
+
 // Context interfaces
 export interface AppState {
   recipes: Recipe[];
   mealPlans: MealPlan[];
   subscription: Subscription;
   usage: UsageStats;
+  preferences: UserPreferences | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -121,4 +132,5 @@ export interface AppContextType extends AppState {
   canGenerateRecipe: () => boolean;
   canGenerateMealPlan: () => boolean;
   canEditRecipe: () => boolean;
+  refreshUserData: () => Promise<void>;
 }

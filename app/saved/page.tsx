@@ -2,15 +2,16 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Plus } from 'lucide-react';
+import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Plus, Camera, Upload, X, Loader2, Lock, Crown, Minus } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
+import { getRemainingRecipes } from '../../lib/subscription';
 import { SubscriptionTier, Recipe } from '@/types';
 
 
 const SavedPage = () => {
   const router = useRouter();
-  const { recipes, mealPlans, deleteRecipe, deleteMealPlan, addRecipe, addMealPlan, subscription, usage, canEditRecipe, updateSubscription, updateRecipe } = useApp();
+  const { recipes, mealPlans, deleteRecipe, deleteMealPlan, addRecipe, addMealPlan, subscription, usage, canEditRecipe, updateSubscription, updateRecipe, canGenerateRecipe, incrementRecipeUsage } = useApp();
   const [activeTab, setActiveTab] = useState('recipes');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
@@ -19,6 +20,13 @@ const SavedPage = () => {
   const [filterCookTime, setFilterCookTime] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showImageUploadModal, setShowImageUploadModal] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isGeneratingFromImage, setIsGeneratingFromImage] = useState(false);
+  const [imageGenerationProgress, setImageGenerationProgress] = useState('');
+  const [imageFamilySize, setImageFamilySize] = useState(4);
+  const [imageDietaryRestrictions, setImageDietaryRestrictions] = useState(['None']);
   const [newRecipe, setNewRecipe] = useState<Partial<Recipe>>({
     title: '',
     description: '',
@@ -53,6 +61,9 @@ const SavedPage = () => {
   };
 
   const canEdit = canEditRecipe();
+  const remainingRecipes = getRemainingRecipes(subscription, usage);
+  const canGenerate = canGenerateRecipe();
+  const isPremium = subscription.tier === 'pro' || subscription.tier === 'family';
 
   const handleViewRecipe = (recipe: Recipe) => {
     router.push(`/recipe/${recipe.id}`);
@@ -252,6 +263,119 @@ const SavedPage = () => {
     }));
   };
 
+  // Image upload functions
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file (JPG, PNG, etc.)');
+        return;
+      }
+      
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Image file must be smaller than 10MB');
+        return;
+      }
+      
+      setUploadedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setUploadedImage(null);
+    setImagePreview(null);
+  };
+
+  const toggleImageDiet = (diet: string) => {
+    if (diet === 'None') {
+      setImageDietaryRestrictions(['None']);
+    } else {
+      const newDiets = imageDietaryRestrictions.filter(d => d !== 'None');
+      if (imageDietaryRestrictions.includes(diet)) {
+        const filtered = newDiets.filter(d => d !== diet);
+        setImageDietaryRestrictions(filtered.length === 0 ? ['None'] : filtered);
+      } else {
+        setImageDietaryRestrictions([...newDiets, diet]);
+      }
+    }
+  };
+
+  const handleGenerateFromImage = async () => {
+    if (!uploadedImage) {
+      alert('Please upload an image first');
+      return;
+    }
+
+    if (!isPremium) {
+      alert('Image recipe parsing is available for Pro and Family subscribers only');
+      return;
+    }
+
+    const success = await incrementRecipeUsage();
+    if (!success) return;
+
+    setIsGeneratingFromImage(true);
+    setImageGenerationProgress('Analyzing your recipe image...');
+    
+    try {
+      // Convert image to base64
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(uploadedImage);
+      });
+
+      // Progress updates
+      setTimeout(() => setImageGenerationProgress('Extracting recipe details from image...'), 1000);
+      setTimeout(() => setImageGenerationProgress('Creating your custom recipe...'), 3000);
+
+      const response = await fetch('/api/generate-recipe-from-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: base64,
+          familySize: `${imageFamilySize} people`,
+          dietaryRestrictions: imageDietaryRestrictions.filter(d => d !== 'None')
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to generate recipe from image');
+      }
+
+      await addRecipe(data.recipe);
+      setShowImageUploadModal(false);
+      
+      // Reset form
+      setUploadedImage(null);
+      setImagePreview(null);
+      setImageFamilySize(4);
+      setImageDietaryRestrictions(['None']);
+      setImageGenerationProgress('');
+      
+      alert(`Recipe "${data.recipe.title}" has been successfully added to your collection!`);
+    } catch (error) {
+      console.error('Recipe generation from image error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to generate recipe from image');
+      setImageGenerationProgress('');
+    } finally {
+      setIsGeneratingFromImage(false);
+    }
+  };
+
   const filteredRecipes = recipes
     .filter(recipe => {
       // Search term filter
@@ -417,6 +541,26 @@ const SavedPage = () => {
               >
                 <Plus className="h-4 w-4 inline mr-2" />
                 Create Recipe
+              </button>
+              <button
+                onClick={() => {
+                  if (isPremium) {
+                    setShowImageUploadModal(true);
+                  } else {
+                    alert('Image recipe parsing is a Pro+ feature. Upgrade to access this premium functionality!');
+                  }
+                }}
+                className={`px-4 py-2 border rounded-lg transition-all font-medium relative ${
+                  isPremium
+                    ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-200'
+                    : 'bg-gray-100 text-gray-500 border-gray-300 cursor-pointer hover:bg-gray-200'
+                }`}
+              >
+                <Camera className="h-4 w-4 inline mr-2" />
+                Upload Recipe Photo
+                {!isPremium && (
+                  <Crown className="h-3 w-3 inline ml-1 text-amber-500" />
+                )}
               </button>
               <button
                 onClick={handleAddTestData}
@@ -1000,6 +1144,198 @@ const SavedPage = () => {
                     className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                   >
                     Create Recipe
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Image Upload Modal */}
+        {showImageUploadModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                      <Crown className="h-6 w-6 text-amber-500 mr-2" />
+                      Upload Recipe Photo
+                      <span className="ml-2 px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-medium">
+                        Pro Feature
+                      </span>
+                    </h1>
+                    <p className="text-gray-600 mt-2">Upload a photo of any recipe and our AI will extract all the details for you</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setShowImageUploadModal(false);
+                      removeImage();
+                      setImageGenerationProgress('');
+                    }}
+                    disabled={isGeneratingFromImage}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                {/* Usage Information */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">
+                        Recipe Generations Remaining: <span className="text-xl font-bold">{remainingRecipes}</span>
+                      </p>
+                      <p className="text-xs text-blue-700 mt-1">Image parsing counts as one recipe generation</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-blue-700">Current Plan: <span className="font-medium capitalize">{subscription.tier}</span></p>
+                    </div>
+                  </div>
+                  {!canGenerate && (
+                    <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                      <p className="text-sm text-orange-800">
+                        <Lock className="h-4 w-4 inline mr-2" />
+                        You've reached your monthly limit. Upgrade for more recipes!
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Image Upload Area */}
+                {!imagePreview ? (
+                  <div className="mb-8">
+                    <label htmlFor="recipe-image" className="cursor-pointer">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                        <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-lg font-medium text-gray-900 mb-2">Click to upload a recipe photo</p>
+                        <p className="text-gray-500 mb-4">or drag and drop your image here</p>
+                        <p className="text-sm text-gray-400">Supports JPG, PNG, WebP (max 10MB)</p>
+                      </div>
+                    </label>
+                    <input
+                      id="recipe-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={isGeneratingFromImage}
+                    />
+                  </div>
+                ) : (
+                  // Image Preview
+                  <div className="mb-8">
+                    <div className="relative bg-gray-50 rounded-lg p-4">
+                      <button
+                        onClick={removeImage}
+                        disabled={isGeneratingFromImage}
+                        className="absolute top-2 right-2 z-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 transition-colors disabled:opacity-50"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <img
+                        src={imagePreview}
+                        alt="Recipe preview"
+                        className="w-full max-w-md mx-auto rounded-lg shadow-sm"
+                      />
+                      <p className="text-center text-gray-600 mt-4">
+                        Ready to extract recipe details from this image
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Settings for Image Processing */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Family Size */}
+                  <div>
+                    <label className="label flex items-center space-x-2">
+                      <Users className="h-4 w-4 text-blue-600" />
+                      <span>Family Size</span>
+                    </label>
+                    <div className="flex items-center space-x-3 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => setImageFamilySize(Math.max(1, imageFamilySize - 1))}
+                        disabled={isGeneratingFromImage || imageFamilySize <= 1}
+                        className="w-8 h-8 rounded-full border-2 border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors disabled:opacity-50"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <div className="bg-white border-2 border-blue-300 rounded-lg px-3 py-2 min-w-[60px] text-center">
+                        <span className="text-xl font-bold text-blue-600">{imageFamilySize}</span>
+                        <div className="text-xs text-gray-500">people</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setImageFamilySize(Math.min(12, imageFamilySize + 1))}
+                        disabled={isGeneratingFromImage || imageFamilySize >= 12}
+                        className="w-8 h-8 rounded-full border-2 border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors disabled:opacity-50"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Dietary Restrictions */}
+                  <div>
+                    <label className="label">Dietary Restrictions</label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {['None', 'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto'].map((diet) => (
+                        <button
+                          key={diet}
+                          type="button"
+                          onClick={() => toggleImageDiet(diet)}
+                          disabled={isGeneratingFromImage}
+                          className={`px-3 py-2 text-sm rounded-lg border transition-all disabled:opacity-50 ${
+                            imageDietaryRestrictions.includes(diet)
+                              ? 'bg-blue-100 border-blue-300 text-blue-700'
+                              : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          {diet}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button 
+                    onClick={() => {
+                      setShowImageUploadModal(false);
+                      removeImage();
+                      setImageGenerationProgress('');
+                    }}
+                    disabled={isGeneratingFromImage}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleGenerateFromImage}
+                    disabled={!canGenerate || !uploadedImage || isGeneratingFromImage}
+                    className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                      (!canGenerate || !uploadedImage || isGeneratingFromImage) 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-amber-600 text-white hover:bg-amber-700'
+                    }`}
+                  >
+                    {isGeneratingFromImage ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>{imageGenerationProgress || 'Analyzing Image...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="h-4 w-4" />
+                        <span>{uploadedImage ? 'Generate Recipe from Image' : 'Upload Image First'}</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

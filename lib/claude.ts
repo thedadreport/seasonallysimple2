@@ -171,17 +171,30 @@ Please generate a complete meal plan with:
 5. Servings info
 6. Detailed meals for each day including:
    - Day name
-   - Recipe name
+   - Complete dinner with 1 main dish + 2 side dishes
    - Prep time
    - Cook time
    - Estimated cost
-   - Key ingredients list
+   - Key ingredients list for all components
    - Prep notes/tips
 7. Organized shopping list by category with estimated prices
 8. Sunday prep schedule with time estimates
 9. Personal notes or tips for success
 
-Make it practical, budget-conscious, and achievable for the specified skill level. IMPORTANT: Distribute meals across the preferred cooking methods (${formData.cookingMethods.join(', ')}) - ensure each meal uses one of these methods with appropriate techniques, cooking times, and equipment. If cuisine preferences are specified, ensure that each meal reflects one of the preferred cuisine types (${formData.cuisinePreferences.join(', ')}) with authentic flavors, ingredients, and cooking techniques from those culinary traditions. Distribute both cooking methods and cuisines evenly across the meal plan for variety.
+Make it practical, budget-conscious, and achievable for the specified skill level. 
+
+IMPORTANT MEAL STRUCTURE: Each dinner should consist of:
+- 1 MAIN DISH (protein-focused: meat, fish, vegetarian protein, etc.)
+- 2 SIDE DISHES (vegetables, starches, grains, salads - should complement the main)
+
+The sides should balance the meal nutritionally and create variety. Examples:
+- Main: Grilled Chicken → Sides: Roasted Vegetables + Rice Pilaf
+- Main: Beef Stir-Fry → Sides: Steamed Broccoli + Egg Fried Rice  
+- Main: Baked Salmon → Sides: Quinoa Salad + Green Beans
+
+COOKING METHOD DISTRIBUTION: Distribute meals across the preferred cooking methods (${formData.cookingMethods.join(', ')}) - ensure each meal uses one of these methods with appropriate techniques, cooking times, and equipment. The primary cooking method should apply to the main dish, while sides can use complementary simple methods.
+
+CUISINE INTEGRATION: If cuisine preferences are specified, ensure that each complete dinner (main + sides) reflects one of the preferred cuisine types (${formData.cuisinePreferences.join(', ')}) with authentic flavors, ingredients, and cooking techniques from those culinary traditions. Distribute cuisines evenly across the meal plan for variety.
 
 Format the response as valid JSON with this exact structure:
 {
@@ -195,12 +208,14 @@ Format the response as valid JSON with this exact structure:
   "meals": [
     {
       "day": "Monday",
-      "recipe": "Recipe Name",
+      "main": "Main Dish Name",
+      "sides": ["Side Dish 1", "Side Dish 2"],
+      "recipe": "Complete Dinner Name (for display)",
       "prepTime": "X min",
-      "cookTime": "X min",
+      "cookTime": "X min", 
       "cost": "$X",
-      "ingredients": ["ingredient1", "ingredient2"],
-      "prepNotes": "Prep instructions"
+      "ingredients": ["main ingredients", "side 1 ingredients", "side 2 ingredients"],
+      "prepNotes": "Prep instructions for main and sides"
     }
   ],
   "shoppingList": {
@@ -250,5 +265,126 @@ Format the response as valid JSON with this exact structure:
   } catch (error) {
     console.error('Claude meal plan generation error:', error);
     throw new Error('Failed to generate meal plan with AI');
+  }
+}
+
+// Generate recipe from image using Claude Vision
+export async function generateRecipeFromImageWithAI(data: {
+  image: string;
+  familySize: string;
+  dietaryRestrictions: string[];
+}) {
+  if (!validateAnthropicConfig()) {
+    throw new Error('Anthropic API key not configured');
+  }
+
+  // Extract base64 data from data URL
+  const imageData = data.image.split(',')[1] || data.image;
+  const mimeType = data.image.startsWith('data:') 
+    ? data.image.split(';')[0].split(':')[1] 
+    : 'image/jpeg';
+
+  const prompt = `Please analyze this recipe image and extract all the recipe information you can see. Then create a complete, well-formatted recipe based on what you observe.
+
+**Target Audience:**
+- Family Size: ${data.familySize}
+- Dietary Restrictions: ${data.dietaryRestrictions.join(', ') || 'None'}
+
+If there are any dietary restrictions specified, please modify the recipe accordingly to accommodate them while staying true to the original recipe's intent.
+
+Please examine the image carefully and:
+1. Read all visible text (ingredients, instructions, title, etc.)
+2. Identify any cooking methods or techniques mentioned
+3. Note any timing information
+4. Look for serving size information
+5. Extract any tips or notes mentioned
+6. If the image quality makes some text unclear, make reasonable assumptions based on what you can see
+
+Generate a complete recipe with:
+1. A descriptive title (use the original if visible, or create one based on the dish)
+2. Brief description (2-3 sentences about the dish)
+3. Realistic cooking time
+4. Serving size (adjusted for the specified family size if needed)
+5. Difficulty level based on the complexity observed
+6. Estimated total cost for ingredients
+7. 3-5 relevant tags
+8. Complete ingredient list with measurements (scale if needed for family size)
+9. Step-by-step instructions (based on what's visible or inferred)
+10. 3-4 helpful tips or variations
+
+IMPORTANT: If you cannot clearly read parts of the recipe, make reasonable culinary assumptions based on:
+- The type of dish you can identify
+- Standard cooking methods for that type of food
+- Common ingredient proportions
+- Typical cooking times and techniques
+
+If dietary restrictions are specified, modify ingredients and instructions accordingly while maintaining the essence of the original recipe.
+
+Format the response as valid JSON with this exact structure:
+{
+  "title": "Recipe Title",
+  "description": "Brief description",
+  "cookTime": "XX minutes",
+  "servings": "X people",
+  "difficulty": "Easy|Intermediate|Advanced",
+  "cost": "$XX",
+  "tags": ["tag1", "tag2", "tag3"],
+  "situation": "Recipe from Image",
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "instructions": ["step 1", "step 2"],
+  "tips": ["tip 1", "tip 2"],
+  "notes": "Generated from uploaded recipe image. Some details may have been inferred based on culinary best practices."
+}`;
+
+  try {
+    const completion = await retryApiCall(() => anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 2500,
+      temperature: 0.5,
+      system: 'You are a professional chef and recipe developer who excels at reading recipe images and creating comprehensive, well-formatted recipes. You have expertise in identifying dishes, ingredients, and cooking techniques from visual information. When text is unclear, you make informed culinary decisions based on your knowledge of cooking methods and flavor combinations.',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: prompt
+            },
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: mimeType as any,
+                data: imageData
+              }
+            }
+          ]
+        }
+      ]
+    }));
+
+    const responseText = completion.content[0]?.type === 'text' ? completion.content[0].text : null;
+    if (!responseText) {
+      throw new Error('No response from Claude');
+    }
+
+    // Parse JSON response
+    const recipe = JSON.parse(responseText);
+    
+    // Validate required fields
+    const requiredFields = ['title', 'description', 'cookTime', 'servings', 'difficulty', 'tags', 'ingredients', 'instructions', 'tips'];
+    for (const field of requiredFields) {
+      if (!recipe[field]) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
+
+    return recipe;
+  } catch (error) {
+    console.error('Claude recipe generation from image error:', error);
+    if (error instanceof Error && error.message.includes('JSON')) {
+      throw new Error('AI returned invalid recipe format from image');
+    }
+    throw new Error('Failed to generate recipe from image with AI');
   }
 }

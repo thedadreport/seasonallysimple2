@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useReducer, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
-import { Recipe, MealPlan, AppState, AppContextType, Subscription, UsageStats, SubscriptionLimits } from '@/types';
+import { Recipe, MealPlan, AppState, AppContextType, Subscription, UsageStats, SubscriptionLimits, UserPreferences } from '@/types';
 import {
   apiGetRecipes,
   apiCreateRecipe,
@@ -42,7 +42,7 @@ import {
 
 // Action types
 type AppAction =
-  | { type: 'LOAD_DATA'; payload: { recipes: Recipe[]; mealPlans: MealPlan[]; subscription: Subscription; usage: UsageStats } }
+  | { type: 'LOAD_DATA'; payload: { recipes: Recipe[]; mealPlans: MealPlan[]; subscription: Subscription; usage: UsageStats; preferences: UserPreferences | null } }
   | { type: 'ADD_RECIPE'; payload: Recipe }
   | { type: 'UPDATE_RECIPE'; payload: { id: string; updates: Partial<Recipe> } }
   | { type: 'DELETE_RECIPE'; payload: string }
@@ -51,6 +51,7 @@ type AppAction =
   | { type: 'DELETE_MEAL_PLAN'; payload: string }
   | { type: 'UPDATE_SUBSCRIPTION'; payload: Subscription }
   | { type: 'UPDATE_USAGE'; payload: UsageStats }
+  | { type: 'UPDATE_PREFERENCES'; payload: UserPreferences }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null };
 
@@ -71,6 +72,7 @@ const initialState: AppState = {
     currentMonth: new Date().toISOString().slice(0, 7),
     lastReset: new Date().toISOString(),
   },
+  preferences: null,
   isLoading: false,
   error: null,
 };
@@ -85,6 +87,7 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
         mealPlans: action.payload.mealPlans,
         subscription: action.payload.subscription,
         usage: action.payload.usage,
+        preferences: action.payload.preferences,
         isLoading: false,
       };
 
@@ -144,6 +147,12 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
         usage: action.payload,
       };
 
+    case 'UPDATE_PREFERENCES':
+      return {
+        ...state,
+        preferences: action.payload,
+      };
+
     case 'SET_LOADING':
       return {
         ...state,
@@ -180,7 +189,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       try {
         if (session?.user) {
           // User is signed in - load from database with localStorage fallback
-          const [dbRecipes, dbMealPlans, dbSubscription, dbUsage] = await Promise.all([
+          const [dbRecipes, dbMealPlans, dbSubscription, dbUsage, dbPreferences] = await Promise.all([
             apiGetRecipes().catch((error) => {
               console.warn('Failed to load recipes from database, will merge with localStorage:', error);
               return [];
@@ -190,7 +199,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               return [];
             }),
             apiGetSubscription().catch(() => ({ tier: 'free' as const, status: 'active' as const, startDate: new Date().toISOString(), endDate: null, autoRenew: false })),
-            apiGetUsage().catch(() => ({ recipesGenerated: 0, mealPlansGenerated: 0, currentMonth: new Date().toISOString().slice(0, 7), lastReset: new Date().toISOString() }))
+            apiGetUsage().catch(() => ({ recipesGenerated: 0, mealPlansGenerated: 0, currentMonth: new Date().toISOString().slice(0, 7), lastReset: new Date().toISOString() })),
+            fetch('/api/preferences').then(res => res.json()).then(data => data.success ? data.preferences : null).catch(() => null)
           ]);
           
           // Always merge with localStorage to ensure no data is lost
@@ -225,7 +235,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             recipes: mergedRecipes, 
             mealPlans: mergedMealPlans, 
             subscription: dbSubscription, 
-            usage: dbUsage 
+            usage: dbUsage,
+            preferences: dbPreferences
           } });
           
           // Optionally sync localStorage recipes to database in background
@@ -250,7 +261,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             recipes: recipes.length,
             mealPlans: mealPlans.length
           });
-          dispatch({ type: 'LOAD_DATA', payload: { recipes, mealPlans, subscription, usage } });
+          dispatch({ type: 'LOAD_DATA', payload: { recipes, mealPlans, subscription, usage, preferences: null } });
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -514,6 +525,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return canEditRecipe(state.subscription);
   };
 
+  const refreshUserData = async () => {
+    if (!session?.user) return;
+    
+    try {
+      const response = await fetch('/api/preferences');
+      const data = await response.json();
+      
+      if (data.success) {
+        dispatch({ type: 'UPDATE_PREFERENCES', payload: data.preferences });
+      }
+    } catch (error) {
+      console.error('Error refreshing user preferences:', error);
+    }
+  };
+
   const value: AppContextType = {
     ...state,
     addRecipe,
@@ -531,6 +557,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     canGenerateRecipe: canGenerateRecipeMethod,
     canGenerateMealPlan: canGenerateMealPlanMethod,
     canEditRecipe: canEditRecipeMethod,
+    refreshUserData,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -33,20 +33,16 @@ const cuisineTypes = [
   'Vietnamese', 'Brazilian', 'Moroccan', 'German', 'British', 'Caribbean'
 ];
 
-const planningFocus = [
-  'Budget-focused (minimize cost)',
-  'Time-saving (quick meals & prep)', 
-  'Healthy eating (balanced nutrition)',
-  'Family favorites (crowd-pleasers)',
-  'Use what I have (pantry cleanout)'
-];
 
 const MealPlanPage = () => {
-  const { subscription, usage, canGenerateMealPlan, incrementMealPlanUsage, addMealPlan, addRecipe } = useApp();
+  const { subscription, usage, canGenerateMealPlan, incrementMealPlanUsage, addMealPlan, addRecipe, preferences } = useApp();
   const [showMealPlan, setShowMealPlan] = useState(false);
-  const [selectedDiets, setSelectedDiets] = useState(['None']);
-  const [selectedCuisines, setSelectedCuisines] = useState(['No Preference']);
-  const [selectedCookingMethods, setSelectedCookingMethods] = useState<string[]>([]);
+  const [showCustomizePreferences, setShowCustomizePreferences] = useState(false);
+  // Override preferences for this meal plan (optional)
+  const [overrideDiets, setOverrideDiets] = useState<string[]>([]);
+  const [overrideCuisines, setOverrideCuisines] = useState<string[]>([]);
+  const [overrideCookingMethods, setOverrideCookingMethods] = useState<string[]>([]);
+  const [overrideSeasonalIngredients, setOverrideSeasonalIngredients] = useState<boolean | null>(null);
   const [generatedMealPlan, setGeneratedMealPlan] = useState<{
     title: string;
     description: string;
@@ -57,6 +53,8 @@ const MealPlanPage = () => {
     meals: {
       day: string;
       recipe: string;
+      main?: string;
+      sides?: string[];
       prepTime: string;
       cookTime: string;
       cost: string;
@@ -74,51 +72,47 @@ const MealPlanPage = () => {
   
   // Form state
   const [formData, setFormData] = useState({
-    planningFocus: 'Budget-focused (minimize cost)',
     numDinners: 5,
     familySize: 4, // Now a number instead of string
     weeklyBudget: 150, // Now a number for slider
-    prepTime: '1-2 hours',
-    skillLevel: 'Intermediate (some techniques)',
     pantryItems: ''
   });
   
-  const [useSeasonalIngredients, setUseSeasonalIngredients] = useState(false);
-
-  const toggleDiet = (diet: string) => {
+  // Override toggle functions
+  const toggleOverrideDiet = (diet: string) => {
     if (diet === 'None') {
-      setSelectedDiets(['None']);
+      setOverrideDiets(['None']);
     } else {
-      const newDiets = selectedDiets.filter(d => d !== 'None');
-      if (selectedDiets.includes(diet)) {
+      const newDiets = overrideDiets.filter(d => d !== 'None');
+      if (overrideDiets.includes(diet)) {
         const filtered = newDiets.filter(d => d !== diet);
-        setSelectedDiets(filtered.length === 0 ? ['None'] : filtered);
+        setOverrideDiets(filtered.length === 0 ? ['None'] : filtered);
       } else {
-        setSelectedDiets([...newDiets, diet]);
+        setOverrideDiets([...newDiets, diet]);
       }
     }
   };
 
-  const toggleCuisine = (cuisine: string) => {
+  const toggleOverrideCuisine = (cuisine: string) => {
     if (cuisine === 'No Preference') {
-      setSelectedCuisines(['No Preference']);
+      setOverrideCuisines(['No Preference']);
     } else {
-      const newCuisines = selectedCuisines.filter(c => c !== 'No Preference');
-      if (selectedCuisines.includes(cuisine)) {
+      const newCuisines = overrideCuisines.filter(c => c !== 'No Preference');
+      if (overrideCuisines.includes(cuisine)) {
         const filtered = newCuisines.filter(c => c !== cuisine);
-        setSelectedCuisines(filtered.length === 0 ? ['No Preference'] : filtered);
+        setOverrideCuisines(filtered.length === 0 ? ['No Preference'] : filtered);
       } else {
-        setSelectedCuisines([...newCuisines, cuisine]);
+        setOverrideCuisines([...newCuisines, cuisine]);
       }
     }
   };
 
-  const toggleCookingMethod = (method: string) => {
-    if (selectedCookingMethods.includes(method)) {
-      const filtered = selectedCookingMethods.filter(m => m !== method);
-      setSelectedCookingMethods(filtered);
+  const toggleOverrideCookingMethod = (method: string) => {
+    if (overrideCookingMethods.includes(method)) {
+      const filtered = overrideCookingMethods.filter(m => m !== method);
+      setOverrideCookingMethods(filtered);
     } else {
-      setSelectedCookingMethods([...selectedCookingMethods, method]);
+      setOverrideCookingMethods([...overrideCookingMethods, method]);
     }
   };
 
@@ -138,11 +132,24 @@ const MealPlanPage = () => {
         },
         body: JSON.stringify({
           ...formData,
+          familySize: `${formData.familySize} people`,
           weeklyBudget: `$${formData.weeklyBudget}`,
-          dietaryRestrictions: selectedDiets.filter(d => d !== 'None'),
-          cuisinePreferences: selectedCuisines.filter(c => c !== 'No Preference'),
-          cookingMethods: selectedCookingMethods,
-          useSeasonalIngredients
+          prepTime: '1-2 hours', // Default value since we removed the UI
+          planningFocus: 'Balanced nutrition and convenience', // Default value since we removed the UI
+          // Use user preferences with optional overrides
+          dietaryRestrictions: overrideDiets.length > 0 
+            ? overrideDiets.filter(d => d !== 'None')
+            : (preferences?.dietaryRestrictions?.filter(d => d !== 'None') || []),
+          cuisinePreferences: overrideCuisines.length > 0
+            ? overrideCuisines.filter(c => c !== 'No Preference')
+            : (preferences?.cuisinePreferences?.filter(c => c !== 'No Preference') || []),
+          cookingMethods: overrideCookingMethods.length > 0
+            ? overrideCookingMethods
+            : (preferences?.cookingMethods || []),
+          useSeasonalIngredients: overrideSeasonalIngredients !== null
+            ? overrideSeasonalIngredients
+            : (preferences?.useSeasonalIngredients || false),
+          skillLevel: preferences?.cookingSkill || 'Intermediate (some techniques)'
         }),
       });
 
@@ -187,9 +194,9 @@ const MealPlanPage = () => {
           cookingSituation: `${meal.day} dinner from meal plan`,
           protein: meal.ingredients.find(ing => ing.toLowerCase().includes('chicken') || ing.toLowerCase().includes('beef') || ing.toLowerCase().includes('turkey') || ing.toLowerCase().includes('sausage') || ing.toLowerCase().includes('fish')) || 'protein from ingredients',
           vegetables: meal.ingredients.filter(ing => ing.toLowerCase().includes('pepper') || ing.toLowerCase().includes('onion') || ing.toLowerCase().includes('carrot') || ing.toLowerCase().includes('vegetable')).join(', ') || 'vegetables from ingredients',
-          cookingMethod: 'Pots and Pans', // Default cooking method
-          cuisineType: 'No Preference', // Default cuisine
-          dietaryRestrictions: selectedDiets.filter(d => d !== 'None')
+          cookingMethod: preferences?.cookingMethods?.[0] || 'Pots and Pans',
+          cuisineType: preferences?.cuisinePreferences?.[0] || 'No Preference',
+          dietaryRestrictions: preferences?.dietaryRestrictions?.filter(d => d !== 'None') || []
         }),
       });
 
@@ -281,26 +288,6 @@ const MealPlanPage = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Plan Your Perfect Week</h2>
               
-              {/* Planning Focus - Full Width at Top */}
-              <div className="mb-6">
-                <label className="label">What's your planning focus?</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
-                  {planningFocus.map((focus) => (
-                    <button
-                      key={focus}
-                      type="button"
-                      onClick={() => setFormData({...formData, planningFocus: focus})}
-                      className={`px-4 py-3 text-sm rounded-lg border transition-all text-left ${
-                        formData.planningFocus === focus
-                          ? 'bg-blue-100 border-blue-300 text-blue-700'
-                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      {focus}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {/* Number of Dinners */}
               <div className="mb-6">
@@ -324,7 +311,7 @@ const MealPlanPage = () => {
               </div>
 
               {/* Planning Details in balanced layout */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Family Size */}
                 <div>
                   <label className="label flex items-center space-x-2">
@@ -383,146 +370,141 @@ const MealPlanPage = () => {
                     />
                   </div>
                 </div>
-
-                {/* Cooking Skill Level */}
-                <div>
-                  <label className="label flex items-center space-x-2">
-                    <ChefHat className="h-4 w-4 text-orange-600" />
-                    <span>Skill Level</span>
-                  </label>
-                  <select 
-                    className="input mt-2"
-                    value={formData.skillLevel}
-                    onChange={(e) => setFormData({...formData, skillLevel: e.target.value})}
-                  >
-                    <option value="Beginner (simple meals)">Beginner</option>
-                    <option value="Intermediate (some techniques)">Intermediate</option>
-                    <option value="Advanced (any complexity)">Advanced</option>
-                  </select>
-                </div>
               </div>
 
-              {/* Sunday Prep Time - Full Width */}
-              <div className="mt-6">
-                <label className="label flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-purple-600" />
-                  <span>Available prep time on Sunday</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
-                  {['30 minutes', '1-2 hours', '2-3 hours', 'No Sunday prep'].map((time) => (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setFormData({...formData, prepTime: time})}
-                      className={`px-4 py-3 text-sm rounded-lg border transition-all text-center ${
-                        formData.prepTime === time
-                          ? 'bg-purple-100 border-purple-300 text-purple-700'
-                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* Dietary Restrictions - Full Width */}
-              <div className="mt-8">
-                <label className="label">Dietary restrictions (select all that apply)</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                  {dietaryRestrictions.map((diet) => (
-                    <button
-                      key={diet}
-                      type="button"
-                      onClick={() => toggleDiet(diet)}
-                      className={`px-3 py-2 text-sm rounded-lg border transition-all ${
-                        selectedDiets.includes(diet)
-                          ? 'bg-blue-100 border-blue-300 text-blue-700'
-                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      {diet}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Cuisine Preferences - Full Width */}
-              <div className="mt-6">
-                <label className="label">Cuisine preferences (select all that appeal to you)</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2 mt-2">
-                  {cuisineTypes.map((cuisine) => (
-                    <button
-                      key={cuisine}
-                      type="button"
-                      onClick={() => toggleCuisine(cuisine)}
-                      className={`px-3 py-2 text-sm rounded-lg border transition-all ${
-                        selectedCuisines.includes(cuisine)
-                          ? 'bg-orange-100 border-orange-300 text-orange-700'
-                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      {cuisine}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Cooking Methods - Full Width */}
-              <div className="mt-6">
-                <label className="label">Preferred cooking methods for this week (select all that appeal to you)</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-2">
-                  {cookingMethods.map((method) => {
-                    const Icon = method.icon;
-                    const isSelected = selectedCookingMethods.includes(method.value);
-                    return (
-                      <button
-                        key={method.value}
-                        type="button"
-                        onClick={() => toggleCookingMethod(method.value)}
-                        className={`p-3 rounded-lg border-2 transition-all hover:scale-105 flex flex-col items-center space-y-2 text-center ${
-                          isSelected
-                            ? `${method.color} border-current shadow-md scale-105`
-                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                        }`}
-                      >
-                        <Icon className={`h-6 w-6 ${isSelected ? '' : 'text-gray-500'}`} />
-                        <span className="text-sm font-medium">{method.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Seasonal Ingredients Toggle */}
-              <div className="mt-8">
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
-                  <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Leaf className="h-5 w-5 text-green-600" />
-                    </div>
+              {/* Preferences Status */}
+              {preferences ? (
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-green-900">Use Seasonal Ingredients</h3>
-                      <p className="text-sm text-green-700 mt-1">
-                        Focus on fresh, in-season produce for better flavor and lower costs
+                      <h3 className="font-semibold text-green-900 mb-2">Using Your Saved Preferences</h3>
+                      <div className="text-sm text-green-800 space-y-1">
+                        <p><strong>Cooking Level:</strong> {preferences.cookingSkill}</p>
+                        <p><strong>Dietary Restrictions:</strong> {preferences.dietaryRestrictions.join(', ')}</p>
+                        <p><strong>Cuisines:</strong> {preferences.cuisinePreferences.join(', ')}</p>
+                        {preferences.cookingMethods.length > 0 && (
+                          <p><strong>Cooking Methods:</strong> {preferences.cookingMethods.join(', ')}</p>
+                        )}
+                        <p><strong>Seasonal Ingredients:</strong> {preferences.useSeasonalIngredients ? 'Yes' : 'No'}</p>
+                      </div>
+                    </div>
+                    <a
+                      href="/preferences"
+                      className="text-sm text-green-700 hover:text-green-900 underline"
+                    >
+                      Edit Preferences
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-blue-900 mb-2">No Preferences Set</h3>
+                      <p className="text-sm text-blue-800">
+                        Set your cooking preferences to streamline meal planning and get personalized recommendations.
                       </p>
                     </div>
+                    <a
+                      href="/preferences"
+                      className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Set Preferences
+                    </a>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setUseSeasonalIngredients(!useSeasonalIngredients)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      useSeasonalIngredients ? 'bg-green-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        useSeasonalIngredients ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
                 </div>
+              )}
+
+              {/* Optional Preferences Override */}
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowCustomizePreferences(!showCustomizePreferences)}
+                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                >
+                  {showCustomizePreferences ? '← Use saved preferences' : 'Customize preferences for this meal plan'}
+                </button>
               </div>
+
+              {showCustomizePreferences && (
+                <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-4">Override Preferences (Optional)</h4>
+                  
+                  {/* Override Dietary Restrictions */}
+                  <div className="mb-4">
+                    <label className="label text-sm">Dietary Restrictions for this plan</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                      {dietaryRestrictions.slice(0, 6).map((diet) => (
+                        <button
+                          key={diet}
+                          type="button"
+                          onClick={() => toggleOverrideDiet(diet)}
+                          className={`px-3 py-2 text-sm rounded-lg border transition-all ${
+                            overrideDiets.includes(diet)
+                              ? 'bg-blue-100 border-blue-300 text-blue-700'
+                              : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          {diet}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Override Cuisines */}
+                  <div className="mb-4">
+                    <label className="label text-sm">Cuisines for this plan</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                      {cuisineTypes.slice(0, 8).map((cuisine) => (
+                        <button
+                          key={cuisine}
+                          type="button"
+                          onClick={() => toggleOverrideCuisine(cuisine)}
+                          className={`px-3 py-2 text-sm rounded-lg border transition-all ${
+                            overrideCuisines.includes(cuisine)
+                              ? 'bg-orange-100 border-orange-300 text-orange-700'
+                              : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          {cuisine}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Override Seasonal Ingredients */}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="label text-sm">Use seasonal ingredients for this plan</label>
+                      <div className="flex space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => setOverrideSeasonalIngredients(true)}
+                          className={`px-3 py-1 text-sm rounded ${
+                            overrideSeasonalIngredients === true
+                              ? 'bg-green-100 text-green-700 border border-green-300'
+                              : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setOverrideSeasonalIngredients(false)}
+                          className={`px-3 py-1 text-sm rounded ${
+                            overrideSeasonalIngredients === false
+                              ? 'bg-red-100 text-red-700 border border-red-300'
+                              : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Pantry Items */}
               <div className="mt-6">
@@ -596,7 +578,7 @@ const MealPlanPage = () => {
                 <div className="flex-1">
                   <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-4">
                     <Calendar className="h-4 w-4 mr-2" />
-                    {generatedMealPlan?.focus || formData.planningFocus}
+                    {generatedMealPlan?.focus || 'Weekly Meal Plan'}
                   </div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-3">{generatedMealPlan?.title}</h1>
                   <p className="text-lg text-gray-700 mb-6">{generatedMealPlan?.description}</p>
@@ -641,7 +623,15 @@ const MealPlanPage = () => {
                       <div className="flex-1">
                         <div className="flex items-center mb-2">
                           <span className="w-20 text-sm font-medium text-gray-600 mr-3">{meal.day}</span>
-                          <h3 className="text-lg font-semibold text-gray-900">{meal.recipe}</h3>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">{meal.recipe}</h3>
+                            {meal.main && meal.sides && (
+                              <div className="text-sm text-gray-600 mt-1">
+                                <span className="font-medium">Main:</span> {meal.main} | 
+                                <span className="font-medium"> Sides:</span> {meal.sides.join(', ')}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
                           <span>Prep: {meal.prepTime}</span>

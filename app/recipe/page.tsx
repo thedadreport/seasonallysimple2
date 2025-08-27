@@ -138,6 +138,7 @@ const RecipePage = () => {
     }
   };
 
+
   const handleGenerateRecipe = async (isRegeneration = false) => {
     if (!isRegeneration) {
       const success = await incrementRecipeUsage();
@@ -256,7 +257,7 @@ const RecipePage = () => {
         {!showRecipe ? (
           // Recipe Generation Form
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-            <div className="mb-8">
+              <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">What's Your Cooking Situation?</h2>
               
               {/* Cooking Situation - Full Width at Top */}
