@@ -148,7 +148,7 @@ export default function SignIn() {
               <strong>Mobile-optimized</strong> - Cook with your phone in hand
             </li>
           </ul>
-          <div class="mt-4 text-xs text-gray-500 text-center">
+          <div className="mt-4 text-xs text-gray-500 text-center">
             🔒 We only access your name and email - no personal data
           </div>
         </div>
