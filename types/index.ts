@@ -15,6 +15,7 @@ export interface Recipe {
   tips: string[];
   dateAdded: string;
   notes: string;
+  feedback?: string | null; // 'thumbs_up', 'thumbs_down', or null
 }
 
 export interface MealPlan {

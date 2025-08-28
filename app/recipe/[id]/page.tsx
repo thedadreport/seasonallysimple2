@@ -4,6 +4,7 @@ import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Clock, Users, Star, DollarSign, ArrowLeft, Printer, Edit3, Trash2 } from 'lucide-react';
 import { useApp } from '../../../contexts/AppContext';
+import RecipeFeedback from '../../../components/RecipeFeedback';
 
 const RecipeDetailPage = () => {
   const params = useParams();
@@ -166,6 +167,31 @@ const RecipeDetailPage = () => {
             </ol>
           </div>
         </div>
+        
+        {/* Recipe Feedback */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mt-6 print:hidden">
+          <RecipeFeedback 
+            recipeId={recipe.id}
+            initialFeedback={recipe.feedback}
+            size="lg"
+            showLabel={true}
+          />
+        </div>
+
+        {/* Tips */}
+        {recipe.tips && recipe.tips.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mt-6">
+            <h3 className="text-xl font-semibold text-blue-800 mb-3">Tips & Variations</h3>
+            <ul className="space-y-2">
+              {recipe.tips.map((tip, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span className="text-blue-800 leading-relaxed">{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         
         {/* Notes */}
         {recipe.notes && (

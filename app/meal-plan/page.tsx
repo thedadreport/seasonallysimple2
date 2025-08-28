@@ -72,12 +72,23 @@ const MealPlanPage = () => {
   
   // Form state
   const [formData, setFormData] = useState({
-    numDinners: 5,
+    selectedDays: [] as string[], // Start with no days selected
     familySize: 4, // Now a number instead of string
     weeklyBudget: 150, // Now a number for slider
     pantryItems: ''
   });
   
+  // Day selection functions
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  const toggleDay = (day: string) => {
+    const newSelectedDays = formData.selectedDays.includes(day)
+      ? formData.selectedDays.filter(d => d !== day)
+      : [...formData.selectedDays, day].sort((a, b) => daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b));
+    
+    setFormData({...formData, selectedDays: newSelectedDays});
+  };
+
   // Override toggle functions
   const toggleOverrideDiet = (diet: string) => {
     if (diet === 'None') {
@@ -132,6 +143,8 @@ const MealPlanPage = () => {
         },
         body: JSON.stringify({
           ...formData,
+          numDinners: formData.selectedDays.length, // Convert selected days to count
+          selectedDays: formData.selectedDays, // Pass selected days for proper day names
           familySize: `${formData.familySize} people`,
           weeklyBudget: `$${formData.weeklyBudget}`,
           prepTime: '1-2 hours', // Default value since we removed the UI
@@ -292,24 +305,28 @@ const MealPlanPage = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Plan Your Perfect Week</h2>
               
 
-              {/* Number of Dinners */}
+              {/* Day Selection */}
               <div className="mb-6">
-                <label className="label">How many dinners do you need this week?</label>
-                <div className="flex gap-2 mt-2">
-                  {[2, 3, 4, 5, 6, 7].map((num) => (
+                <label className="label">Which days do you need dinners planned?</label>
+                <p className="text-sm text-gray-600 mb-3">Select the days of the week you'd like meal plans for:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mt-2">
+                  {daysOfWeek.map((day) => (
                     <button
-                      key={num}
+                      key={day}
                       type="button"
-                      onClick={() => setFormData({...formData, numDinners: num})}
-                      className={`w-12 h-12 rounded-lg border transition-all font-semibold ${
-                        formData.numDinners === num
+                      onClick={() => toggleDay(day)}
+                      className={`px-3 py-2 rounded-lg border transition-all font-medium text-sm ${
+                        formData.selectedDays.includes(day)
                           ? 'bg-blue-100 border-blue-300 text-blue-700'
                           : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
                     >
-                      {num}
+                      {day.substring(0, 3)}
                     </button>
                   ))}
+                </div>
+                <div className="mt-2 text-sm text-gray-600">
+                  {formData.selectedDays.length} dinner{formData.selectedDays.length !== 1 ? 's' : ''} selected
                 </div>
               </div>
 
@@ -548,9 +565,9 @@ const MealPlanPage = () => {
             <div className="flex justify-center space-x-4">
               <button 
                 onClick={handleGenerateMealPlan}
-                disabled={!canGenerate || isGenerating}
+                disabled={!canGenerate || isGenerating || formData.selectedDays.length === 0}
                 className={`btn-primary flex items-center space-x-3 ${
-                  (!canGenerate || isGenerating) ? 'opacity-50 cursor-not-allowed' : ''
+                  (!canGenerate || isGenerating || formData.selectedDays.length === 0) ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 {isGenerating ? (
@@ -561,7 +578,13 @@ const MealPlanPage = () => {
                 ) : (
                   <>
                     <Calendar className="h-5 w-5" />
-                    <span>{canGenerate ? 'Generate My Meal Plan' : 'Limit Reached'}</span>
+                    <span>
+                      {formData.selectedDays.length === 0 
+                        ? 'Select Days First' 
+                        : canGenerate 
+                          ? 'Generate My Meal Plan' 
+                          : 'Limit Reached'}
+                    </span>
                   </>
                 )}
               </button>

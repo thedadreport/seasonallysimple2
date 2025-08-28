@@ -7,6 +7,7 @@ import { useApp } from '../../contexts/AppContext';
 import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
 import { getRemainingRecipes } from '../../lib/subscription';
 import { SubscriptionTier, Recipe } from '@/types';
+import RecipeFeedback from '../../components/RecipeFeedback';
 
 
 const SavedPage = () => {
@@ -645,6 +646,16 @@ const SavedPage = () => {
                           </p>
                         </div>
                       )}
+
+                      {/* Recipe Feedback */}
+                      <div className="pt-4 border-t border-gray-100">
+                        <RecipeFeedback 
+                          recipeId={recipe.id}
+                          initialFeedback={recipe.feedback}
+                          size="md"
+                          showLabel={true}
+                        />
+                      </div>
                     </div>
 
                     <div className="ml-6 flex flex-col space-y-2">

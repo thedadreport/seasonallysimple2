@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       notes: recipe.notes || '',
       tags: recipe.tags,
       situation: recipe.situation || '',
+      feedback: recipe.feedback || null,
       ...(recipe.content as any), // Spread the JSON content
     }));
 
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
     const recipeData: Recipe = await request.json();
 
     // Extract fields for database storage
-    const { id, title, description, dateAdded, notes, tags, situation, ...content } = recipeData;
+    const { id, title, description, dateAdded, notes, tags, situation, feedback, ...content } = recipeData;
 
     // Create recipe in database
     const dbRecipe = await prisma.recipe.create({
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
         tags: tags || [],
         situation: situation || null,
         notes: notes || null,
+        feedback: feedback || null,
       },
     });
 
@@ -102,6 +104,7 @@ export async function POST(request: NextRequest) {
       notes: dbRecipe.notes || '',
       tags: dbRecipe.tags,
       situation: dbRecipe.situation || '',
+      feedback: dbRecipe.feedback || null,
       ...(dbRecipe.content as any),
     };
 

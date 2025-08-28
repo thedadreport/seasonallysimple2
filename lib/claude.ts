@@ -137,6 +137,7 @@ Format the response as valid JSON with this exact structure:
 export async function generateMealPlanWithAI(formData: {
   planningFocus: string;
   numDinners: number;
+  selectedDays?: string[];
   familySize: string;
   weeklyBudget: string;
   prepTime: string;
@@ -150,10 +151,15 @@ export async function generateMealPlanWithAI(formData: {
     throw new Error('Anthropic API key not configured');
   }
 
+  const selectedDaysText = formData.selectedDays && formData.selectedDays.length > 0 
+    ? formData.selectedDays.join(', ') 
+    : 'Standard weekdays';
+    
   const prompt = `Create a comprehensive ${formData.numDinners}-day meal plan based on these requirements:
 
 **Planning Focus:** ${formData.planningFocus}
 **Number of Dinners:** ${formData.numDinners}
+**Selected Days:** ${selectedDaysText}
 **Family Size:** ${formData.familySize}
 **Weekly Budget:** ${formData.weeklyBudget}
 **Available Prep Time:** ${formData.prepTime}
@@ -169,7 +175,7 @@ Please generate a complete meal plan with:
 3. Total estimated cost
 4. Prep time summary
 5. Servings info
-6. Detailed meals for each day including:
+6. Detailed meals for ONLY the selected days (${selectedDaysText}) including:
    - Day name
    - Complete dinner with 1 main dish + 2 side dishes
    - Prep time
@@ -207,7 +213,7 @@ Format the response as valid JSON with this exact structure:
   "numMeals": ${formData.numDinners},
   "meals": [
     {
-      "day": "Monday",
+      "day": "Use EXACT day names from selected days: ${selectedDaysText}",
       "main": "Main Dish Name",
       "sides": ["Side Dish 1", "Side Dish 2"],
       "recipe": "Complete Dinner Name (for display)",

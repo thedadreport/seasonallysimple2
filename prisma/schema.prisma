@@ -107,6 +107,7 @@ model Recipe {
   tags        String[] // Array of tags
   situation   String?  // Cooking situation
   notes       String?  // User's personal notes
+  feedback    String?  // User feedback: 'thumbs_up', 'thumbs_down', null
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
