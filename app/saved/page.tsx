@@ -459,11 +459,12 @@ const SavedPage = () => {
                   <span className="text-sm font-medium text-gray-700">Filters:</span>
                 </div>
                 
-                <div className="flex flex-wrap gap-3">
+                {/* Mobile-optimized filter grid */}
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
                   <select
                     value={filterDifficulty}
                     onChange={(e) => setFilterDifficulty(e.target.value)}
-                    className="text-sm border border-gray-300 rounded-lg px-3 py-1 bg-white"
+                    className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white min-w-0"
                   >
                     <option value="all">Any Difficulty</option>
                     <option value="easy">Easy</option>
@@ -474,18 +475,18 @@ const SavedPage = () => {
                   <select
                     value={filterCookTime}
                     onChange={(e) => setFilterCookTime(e.target.value)}
-                    className="text-sm border border-gray-300 rounded-lg px-3 py-1 bg-white"
+                    className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white min-w-0"
                   >
                     <option value="all">Any Cook Time</option>
-                    <option value="quick">Quick (≤30 min)</option>
-                    <option value="medium">Medium (30-60 min)</option>
-                    <option value="long">Long (60+ min)</option>
+                    <option value="quick">≤30 min</option>
+                    <option value="medium">30-60 min</option>
+                    <option value="long">60+ min</option>
                   </select>
                   
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="text-sm border border-gray-300 rounded-lg px-3 py-1 bg-white"
+                    className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white min-w-0 col-span-2 sm:col-span-1"
                   >
                     <option value="recent">Recently Added</option>
                     <option value="alphabetical">A-Z</option>
@@ -502,7 +503,7 @@ const SavedPage = () => {
                         setFilterCookTime('all');
                         setSortBy('recent');
                       }}
-                      className="text-sm px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="text-sm px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors sm:col-span-1"
                     >
                       Clear All
                     </button>
@@ -511,76 +512,90 @@ const SavedPage = () => {
               </div>
             )}
             
-            {/* Tab Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between border-t border-gray-200 pt-4">
-              <div className="flex space-x-2">
-              <button
-                onClick={() => setActiveTab('recipes')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  activeTab === 'recipes' 
-                    ? 'bg-blue-100 text-blue-700 border border-blue-300' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <ChefHat className="h-4 w-4 inline mr-2" />
-                Recipes ({recipes.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('meal-plans')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  activeTab === 'meal-plans' 
-                    ? 'bg-blue-100 text-blue-700 border border-blue-300' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <Calendar className="h-4 w-4 inline mr-2" />
-                Meal Plans ({mealPlans.length})
-              </button>
-              <button
-                onClick={handleCreateRecipe}
-                className="px-4 py-2 bg-purple-100 text-purple-700 border border-purple-300 rounded-lg hover:bg-purple-200 transition-all font-medium"
-              >
-                <Plus className="h-4 w-4 inline mr-2" />
-                Create Recipe
-              </button>
-              <button
-                onClick={() => {
-                  if (isPremium) {
-                    setShowImageUploadModal(true);
-                  } else {
-                    alert('Image recipe parsing is a Pro+ feature. Upgrade to access this premium functionality!');
-                  }
-                }}
-                className={`px-4 py-2 border rounded-lg transition-all font-medium relative ${
-                  isPremium
-                    ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-200'
-                    : 'bg-gray-100 text-gray-500 border-gray-300 cursor-pointer hover:bg-gray-200'
-                }`}
-              >
-                <Camera className="h-4 w-4 inline mr-2" />
-                Upload Recipe Photo
-                {!isPremium && (
-                  <Crown className="h-3 w-3 inline ml-1 text-amber-500" />
-                )}
-              </button>
-              <button
-                onClick={handleAddTestData}
-                className="px-4 py-2 bg-green-100 text-green-700 border border-green-300 rounded-lg hover:bg-green-200 transition-all font-medium"
-              >
-                Add Test Data
-              </button>
-              <button
-                onClick={() => handleUpgrade('pro')}
-                className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-all font-medium"
-              >
-                Upgrade to Pro
-              </button>
-              <button
-                onClick={() => handleUpgrade('free')}
-                className="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all font-medium"
-              >
-                Back to Free
-              </button>
+            {/* Mobile-Optimized Tabs & Actions */}
+            <div className="border-t border-gray-200 pt-4">
+              {/* Tab Navigation */}
+              <div className="flex space-x-2 mb-4">
+                <button
+                  onClick={() => setActiveTab('recipes')}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
+                    activeTab === 'recipes' 
+                      ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <ChefHat className="h-4 w-4 inline mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Recipes </span>
+                  <span className="sm:hidden">Recipes </span>
+                  ({recipes.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('meal-plans')}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
+                    activeTab === 'meal-plans' 
+                      ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <Calendar className="h-4 w-4 inline mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Meal Plans </span>
+                  <span className="sm:hidden">Plans </span>
+                  ({mealPlans.length})
+                </button>
+              </div>
+
+              {/* Action Buttons - Mobile-Optimized Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
+                <button
+                  onClick={handleCreateRecipe}
+                  className="px-3 py-2.5 bg-purple-100 text-purple-700 border border-purple-300 rounded-lg hover:bg-purple-200 transition-all font-medium text-sm"
+                >
+                  <Plus className="h-4 w-4 inline mr-1" />
+                  <span className="hidden sm:inline">Create Recipe</span>
+                  <span className="sm:hidden">Create</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (isPremium) {
+                      setShowImageUploadModal(true);
+                    } else {
+                      alert('Image recipe parsing is a Pro+ feature. Upgrade to access this premium functionality!');
+                    }
+                  }}
+                  className={`px-3 py-2.5 border rounded-lg transition-all font-medium relative text-sm ${
+                    isPremium
+                      ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-200'
+                      : 'bg-gray-100 text-gray-500 border-gray-300 cursor-pointer hover:bg-gray-200'
+                  }`}
+                >
+                  <Camera className="h-4 w-4 inline mr-1" />
+                  <span className="hidden sm:inline">Upload Photo</span>
+                  <span className="sm:hidden">Photo</span>
+                  {!isPremium && (
+                    <Crown className="h-3 w-3 inline ml-1 text-amber-500" />
+                  )}
+                </button>
+                <button
+                  onClick={handleAddTestData}
+                  className="px-3 py-2.5 bg-green-100 text-green-700 border border-green-300 rounded-lg hover:bg-green-200 transition-all font-medium text-sm"
+                >
+                  <span className="hidden sm:inline">Add Test Data</span>
+                  <span className="sm:hidden">Test Data</span>
+                </button>
+                <button
+                  onClick={() => handleUpgrade('pro')}
+                  className="px-3 py-2.5 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-all font-medium text-sm"
+                >
+                  <span className="hidden sm:inline">Upgrade to Pro</span>
+                  <span className="sm:hidden">Pro</span>
+                </button>
+                <button
+                  onClick={() => handleUpgrade('free')}
+                  className="px-3 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all font-medium text-sm col-span-2 lg:col-span-1"
+                >
+                  <span className="hidden sm:inline">Back to Free</span>
+                  <span className="sm:hidden">Free</span>
+                </button>
               </div>
             </div>
           </div>

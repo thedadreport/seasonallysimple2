@@ -63,9 +63,9 @@ export default function SignIn() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
           <div className="text-center mb-6">
             <ChefHat className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back!</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Ready to End Dinner Stress?</h1>
             <p className="text-gray-600">
-              Sign in to save your recipes, create meal plans, and access your premium features.
+              Get started in 10 seconds and generate your first AI recipe instantly!
             </p>
           </div>
 
@@ -76,24 +76,11 @@ export default function SignIn() {
           )}
 
           <div className="space-y-4">
-            {/* Demo Login for Development */}
-            {process.env.NODE_ENV === 'development' && (
-              <button
-                onClick={() => handleSignIn('demo', 'demo@seasonally-simple.com')}
-                disabled={isLoading}
-                className={`w-full flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors font-medium text-gray-700 ${
-                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                <ChefHat className="w-5 h-5 mr-3" />
-                {isLoading ? 'Signing in...' : 'Demo Sign In (Development)'}
-              </button>
-            )}
 
             <button
               onClick={() => handleSignIn('google')}
               disabled={isLoading}
-              className={`w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors font-medium ${
+              className={`w-full flex items-center justify-center px-6 py-4 bg-white border-2 border-gray-300 rounded-xl hover:border-green-400 hover:bg-green-50 transition-colors font-semibold text-lg shadow-lg hover:shadow-xl ${
                 isLoading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
@@ -115,7 +102,7 @@ export default function SignIn() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              {isLoading ? 'Signing in...' : 'Continue with Google'}
+              {isLoading ? 'Getting Started...' : '🚀 Get Started with Google'}
             </button>
           </div>
 
@@ -142,21 +129,28 @@ export default function SignIn() {
 
         {/* Benefits */}
         <div className="mt-8 bg-white/80 backdrop-blur rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Why create an account?</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">🎯 What you'll get immediately:</h3>
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-center">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-              Save recipes and meal plans across all your devices
+              <strong>Generate unlimited AI recipes</strong> - No limits, ever
             </li>
             <li className="flex items-center">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-              Track your monthly usage and subscription benefits
+              <strong>Create weekly meal plans</strong> - Complete with shopping lists
             </li>
             <li className="flex items-center">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-              Edit and customize your saved recipes
+              <strong>Save & organize everything</strong> - All your recipes in one place
+            </li>
+            <li className="flex items-center">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+              <strong>Mobile-optimized</strong> - Cook with your phone in hand
             </li>
           </ul>
+          <div class="mt-4 text-xs text-gray-500 text-center">
+            🔒 We only access your name and email - no personal data
+          </div>
         </div>
       </div>
     </div>

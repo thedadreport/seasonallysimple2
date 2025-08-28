@@ -37,7 +37,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Link 
               href="/recipe" 
               className="px-8 py-4 bg-gray-900 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all flex items-center space-x-3"
@@ -53,6 +53,19 @@ export default function HomePage() {
               <Calendar className="h-5 w-5" />
               <span>Plan My Week</span>
             </Link>
+          </div>
+
+          {/* Sign Up CTA */}
+          <div className="text-center mb-16">
+            <Link 
+              href="/auth/signin" 
+              className="inline-flex items-center px-6 py-3 bg-green-100 text-green-700 border-2 border-green-300 rounded-lg font-semibold hover:bg-green-200 transition-all space-x-2"
+            >
+              <span>🚀 Get Started Free - 10 Seconds</span>
+            </Link>
+            <p className="text-sm text-gray-600 mt-2">
+              Create unlimited recipes instantly • Just sign in with Google
+            </p>
           </div>
 
           {/* Quick Stats */}
