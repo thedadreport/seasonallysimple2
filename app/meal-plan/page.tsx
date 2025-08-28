@@ -173,6 +173,8 @@ const MealPlanPage = () => {
   const handleGenerateRecipe = async (meal: {
     day: string;
     recipe: string;
+    main?: string;
+    sides?: string[];
     prepTime: string;
     cookTime: string;
     cost: string;
@@ -192,11 +194,12 @@ const MealPlanPage = () => {
           familySize: `${formData.familySize} people`,
           availableTime: meal.cookTime || '30 minutes',
           cookingSituation: `${meal.day} dinner from meal plan`,
-          protein: meal.ingredients.find(ing => ing.toLowerCase().includes('chicken') || ing.toLowerCase().includes('beef') || ing.toLowerCase().includes('turkey') || ing.toLowerCase().includes('sausage') || ing.toLowerCase().includes('fish')) || 'protein from ingredients',
-          vegetables: meal.ingredients.filter(ing => ing.toLowerCase().includes('pepper') || ing.toLowerCase().includes('onion') || ing.toLowerCase().includes('carrot') || ing.toLowerCase().includes('vegetable')).join(', ') || 'vegetables from ingredients',
+          protein: meal.main || meal.ingredients.find(ing => ing.toLowerCase().includes('chicken') || ing.toLowerCase().includes('beef') || ing.toLowerCase().includes('turkey') || ing.toLowerCase().includes('sausage') || ing.toLowerCase().includes('fish')) || 'protein from main dish',
+          vegetables: meal.sides?.join(', ') || meal.ingredients.filter(ing => ing.toLowerCase().includes('pepper') || ing.toLowerCase().includes('onion') || ing.toLowerCase().includes('carrot') || ing.toLowerCase().includes('vegetable')).join(', ') || 'vegetables and sides',
           cookingMethod: preferences?.cookingMethods?.[0] || 'Pots and Pans',
           cuisineType: preferences?.cuisinePreferences?.[0] || 'No Preference',
-          dietaryRestrictions: preferences?.dietaryRestrictions?.filter(d => d !== 'None') || []
+          dietaryRestrictions: preferences?.dietaryRestrictions?.filter(d => d !== 'None') || [],
+          difficulty: preferences?.cookingSkill?.includes('Beginner') ? 'Easy' : preferences?.cookingSkill?.includes('Expert') ? 'Advanced' : 'Intermediate'
         }),
       });
 
