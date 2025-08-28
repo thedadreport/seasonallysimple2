@@ -208,29 +208,29 @@ const RecipePage = () => {
   const canGenerate = canGenerateRecipe();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-rose-50/30 to-amber-50/40 p-4">
       <div className="max-w-4xl mx-auto pt-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-display font-bold text-warmGray-900 mb-4">Recipe Magic Maker</h1>
-          <p className="text-xl text-warmGray-600 font-body">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-serif font-light text-stone-700 mb-6 italic">Recipe magic maker</h1>
+          <p className="text-base text-stone-600 font-light leading-relaxed max-w-2xl mx-auto">
             Share your kitchen moment and we'll craft something wonderful for your family
           </p>
         </div>
         
         {error && (
-          <div className="bg-terracotta-50 border border-terracotta-200 rounded-lg p-4 mb-6">
-            <p className="text-terracotta-800 font-body">{error}</p>
+          <div className="bg-rose-50/50 border border-rose-200/50 rounded-2xl p-6 mb-8">
+            <p className="text-rose-700 font-light">{error}</p>
           </div>
         )}
         
         {savedRecipe && (
-          <div className="bg-sage-50 border border-sage-200 rounded-lg p-4 mb-6">
+          <div className="bg-stone-50/50 border border-stone-200/50 rounded-2xl p-6 mb-8">
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-sage-600 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-stone-600 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-sage-900 font-body">Recipe Saved Successfully!</h3>
-                  <p className="text-sage-800 text-sm mt-1 font-body">
+                  <h3 className="font-light text-stone-700">Recipe saved successfully!</h3>
+                  <p className="text-stone-600 text-sm mt-1 font-light">
                     "{savedRecipe.title}" has been saved to My Recipes.
                   </p>
                 </div>

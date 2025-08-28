@@ -57,7 +57,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="font-sans">
+      <body className="font-light bg-gradient-to-br from-stone-50 via-rose-50/20 to-amber-50/30 text-stone-700">
         <AuthProvider>
           <AppProvider>
             <Navigation />

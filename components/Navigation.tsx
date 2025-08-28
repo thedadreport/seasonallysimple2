@@ -24,15 +24,15 @@ const Navigation = () => {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <nav className="bg-warmCream/95 backdrop-blur-md border-b border-sage-200 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-4">
+    <nav className="bg-white/90 backdrop-blur-md border-b border-stone-100 sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 py-5">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-sage-500 to-sage-600 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105">
-              <Leaf className="h-6 w-6 text-white" />
+            <div className="w-10 h-10 bg-stone-100 rounded-full flex items-center justify-center transition-all group-hover:bg-stone-200">
+              <Leaf className="h-5 w-5 text-stone-600" />
             </div>
-            <span className="text-2xl font-display font-bold text-warmGray-900 group-hover:text-sage-700 transition-colors">
+            <span className="text-xl font-serif font-light text-stone-700 italic group-hover:text-stone-800 transition-colors">
               Seasonally Simple
             </span>
           </Link>
@@ -43,8 +43,8 @@ const Navigation = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-warmGray-800 hover:text-sage-700 transition-colors font-medium font-body ${
-                  isActive(item.href) ? 'text-sage-700 font-semibold' : ''
+                className={`text-stone-600 hover:text-stone-800 transition-colors font-light text-sm ${
+                  isActive(item.href) ? 'text-stone-800 font-normal' : ''
                 }`}
               >
                 {item.label}
@@ -54,29 +54,29 @@ const Navigation = () => {
             {/* Subscription Status */}
             <Link
               href="/subscription"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors font-body ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-full transition-colors text-sm ${
                 isActive('/subscription') 
-                  ? 'bg-sage-100 text-sage-700' 
-                  : 'hover:bg-sage-50 text-warmGray-700'
+                  ? 'bg-stone-100 text-stone-700' 
+                  : 'hover:bg-stone-50 text-stone-600'
               }`}
             >
               {subscription.tier === 'free' ? (
-                <User className="h-4 w-4" />
+                <User className="h-3 w-3" />
               ) : (
-                <Crown className="h-4 w-4" />
+                <Crown className="h-3 w-3" />
               )}
-              <span className="font-medium capitalize">{subscription.tier}</span>
+              <span className="font-light capitalize">{subscription.tier}</span>
             </Link>
             
             {/* Authentication */}
             {status === 'loading' ? (
-              <div className="px-4 py-2 text-warmGray-500 font-body">Loading...</div>
+              <div className="px-4 py-2 text-stone-400 font-light text-sm">Loading...</div>
             ) : session ? (
               <div className="flex items-center space-x-4">
                 {subscription.tier === 'free' && (
                   <Link 
                     href="/subscription"
-                    className="px-4 py-2 bg-sage-600 text-white rounded-lg font-medium font-body hover:bg-sage-700 transition-colors"
+                    className="px-4 py-2 bg-stone-700 text-white rounded-full font-light text-sm hover:bg-stone-800 transition-colors"
                   >
                     Upgrade
                   </Link>
@@ -90,25 +90,25 @@ const Navigation = () => {
                       className="w-8 h-8 rounded-full"
                     />
                   )}
-                  <span className="text-sm font-medium text-warmGray-700 font-body">
+                  <span className="text-sm font-light text-stone-600">
                     {session.user?.name?.split(' ')[0]}
                   </span>
                 </div>
                 
                 <button
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="p-2 text-warmGray-600 hover:text-warmGray-900 transition-colors"
+                  className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
                   title="Sign out"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-4 w-4" />
                 </button>
               </div>
             ) : (
               <Link
                 href="/auth/signin"
-                className="flex items-center space-x-2 px-4 py-2 bg-sage-600 text-white rounded-lg font-medium font-body hover:bg-sage-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-stone-700 text-white rounded-full font-light text-sm hover:bg-stone-800 transition-colors"
               >
-                <LogIn className="h-4 w-4" />
+                <LogIn className="h-3 w-3" />
                 <span>Sign In</span>
               </Link>
             )}
@@ -117,27 +117,27 @@ const Navigation = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-sage-50 transition-colors"
+            className="md:hidden p-2 rounded-full hover:bg-stone-50 transition-colors"
             aria-label="Toggle navigation"
           >
             {isOpen ? (
-              <X className="h-6 w-6 text-warmGray-900" />
+              <X className="h-5 w-5 text-stone-600" />
             ) : (
-              <Menu className="h-6 w-6 text-warmGray-900" />
+              <Menu className="h-5 w-5 text-stone-600" />
             )}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden mt-4 pb-4 space-y-4 border-t border-sage-200 pt-4">
+          <div className="md:hidden mt-4 pb-4 space-y-4 border-t border-stone-100 pt-4">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`block py-2 text-warmGray-900 hover:text-sage-700 transition-colors font-medium font-body ${
-                  isActive(item.href) ? 'text-sage-700 font-semibold' : ''
+                className={`block py-2 text-stone-600 hover:text-stone-800 transition-colors font-light ${
+                  isActive(item.href) ? 'text-stone-800 font-normal' : ''
                 }`}
               >
                 {item.label}
@@ -147,8 +147,8 @@ const Navigation = () => {
             <Link
               href="/subscription"
               onClick={() => setIsOpen(false)}
-              className={`flex items-center space-x-2 py-2 text-warmGray-900 hover:text-sage-700 transition-colors font-medium font-body ${
-                isActive('/subscription') ? 'text-sage-700 font-semibold' : ''
+              className={`flex items-center space-x-2 py-2 text-stone-600 hover:text-stone-800 transition-colors font-light ${
+                isActive('/subscription') ? 'text-stone-800 font-normal' : ''
               }`}
             >
               {subscription.tier === 'free' ? (
@@ -162,7 +162,7 @@ const Navigation = () => {
             {/* Mobile Authentication */}
             {session ? (
               <>
-                <div className="flex items-center space-x-3 py-3 border-t border-sage-200">
+                <div className="flex items-center space-x-3 py-3 border-t border-stone-100">
                   {session.user?.image && (
                     <img
                       src={session.user.image}
@@ -171,8 +171,8 @@ const Navigation = () => {
                     />
                   )}
                   <div>
-                    <p className="font-medium text-warmGray-900 font-body">{session.user?.name}</p>
-                    <p className="text-sm text-warmGray-600 font-body">{session.user?.email}</p>
+                    <p className="font-light text-stone-700">{session.user?.name}</p>
+                    <p className="text-sm text-stone-500 font-light">{session.user?.email}</p>
                   </div>
                 </div>
                 
@@ -181,7 +181,7 @@ const Navigation = () => {
                     <Link 
                       href="/subscription"
                       onClick={() => setIsOpen(false)}
-                      className="block w-full px-4 py-2 bg-sage-600 text-white rounded-lg font-medium font-body hover:bg-sage-700 transition-colors text-center"
+                      className="block w-full px-4 py-2 bg-stone-700 text-white rounded-full font-light hover:bg-stone-800 transition-colors text-center"
                     >
                       Upgrade
                     </Link>
@@ -194,7 +194,7 @@ const Navigation = () => {
                       setIsOpen(false);
                       signOut({ callbackUrl: '/' });
                     }}
-                    className="flex items-center justify-center w-full px-4 py-2 text-warmGray-700 border border-sage-300 rounded-lg hover:bg-sage-50 transition-colors font-body"
+                    className="flex items-center justify-center w-full px-4 py-2 text-stone-600 border border-stone-200 rounded-full hover:bg-stone-50 transition-colors font-light"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out
@@ -202,11 +202,11 @@ const Navigation = () => {
                 </div>
               </>
             ) : (
-              <div className="pt-4 border-t border-sage-200">
+              <div className="pt-4 border-t border-stone-100">
                 <Link
                   href="/auth/signin"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center w-full px-4 py-2 bg-sage-600 text-white rounded-lg font-medium font-body hover:bg-sage-700 transition-colors"
+                  className="flex items-center justify-center w-full px-4 py-2 bg-stone-700 text-white rounded-full font-light hover:bg-stone-800 transition-colors"
                 >
                   <LogIn className="h-4 w-4 mr-2" />
                   Sign In

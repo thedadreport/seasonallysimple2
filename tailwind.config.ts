@@ -88,8 +88,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        'display': ['ui-serif', 'Georgia', 'serif'], // For headings - warm, approachable
-        'body': ['ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'], // Clean, readable
+        'display': ['var(--font-playfair)', 'ui-serif', 'Georgia', 'serif'], // For headings - elegant serif
+        'body': ['var(--font-inter)', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'], // Clean, readable
+        'serif': ['var(--font-playfair)', 'ui-serif', 'Georgia', 'serif'], // Access to Playfair globally
+        'sans': ['var(--font-inter)', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'], // Inter globally
       },
       boxShadow: {
         'warm': '0 4px 14px 0 rgba(215, 118, 67, 0.15)', // Terracotta shadow
