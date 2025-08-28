@@ -6,6 +6,45 @@ A subscription-based AI meal planning app built with Next.js, featuring Google O
 **Live App:** https://seasonallysimple2.vercel.app
 **GitHub:** https://github.com/thedadreport/seasonallysimple2
 
+## 🎨 Brand Guidelines
+
+**Core Promise**: "Making wholesome, seasonal cooking deliciously simple for busy families"
+
+**Brand Personality**:
+- Warm and nurturing
+- Authentically imperfect
+- Knowledgeable but approachable
+- Gently humorous
+- Practically luxurious
+
+### Target Audience
+**Primary**: 
+- Millennial and Gen X mothers (28-45)
+- Health-conscious but not extreme
+- Middle to upper-middle income
+- Values quality over convenience
+- Interested in wellness but skeptical of trends
+
+**Secondary**:
+- Health-conscious individuals
+- People with dietary restrictions
+- Home cooks looking to level up their skills
+- Those interested in seasonal living
+
+### Visual Identity
+
+**Color Palette**:
+- Primary: Warm cream, sage green, soft terracotta
+- Secondary: Muted navy, golden honey
+- Accent: Copper metallic
+
+**Visual Elements**:
+- Clean, minimalist photography
+- Natural textures (linen, ceramic, wood)
+- Soft, natural lighting
+- Seasonal color transitions in content
+- Minimal props, focus on food and ingredients
+
 ## ✅ Completed Features
 
 ### 🔐 Authentication System
