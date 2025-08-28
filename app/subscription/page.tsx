@@ -39,12 +39,12 @@ const SubscriptionPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4">
       <div className="max-w-4xl mx-auto pt-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Subscription Management</h1>
-          <p className="text-xl text-gray-600">
-            Manage your plan, view usage, and upgrade your cooking experience
+          <h1 className="text-4xl font-display font-bold text-warmGray-900 mb-4">Your Cooking Journey</h1>
+          <p className="text-xl text-warmGray-600 font-body">
+            Nurture your plan, celebrate your progress, and grow your culinary confidence
           </p>
         </div>
 

@@ -47,31 +47,31 @@ const generatedRecipe = {
 };
 
 const cookingMethods = [
-  { value: 'Pots and Pans', label: 'Pots & Pans', icon: ChefHat, color: 'bg-blue-50 border-blue-200 text-blue-700' },
-  { value: 'Sheet Pan', label: 'Sheet Pan', icon: Cookie, color: 'bg-orange-50 border-orange-200 text-orange-700' },
-  { value: 'One Pot', label: 'One Pot', icon: Utensils, color: 'bg-green-50 border-green-200 text-green-700' },
-  { value: 'Instant Pot', label: 'Instant Pot', icon: Zap, color: 'bg-purple-50 border-purple-200 text-purple-700' },
-  { value: 'Slow Cooker', label: 'Slow Cooker', icon: Timer, color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
-  { value: 'Air Fryer', label: 'Air Fryer', icon: Wind, color: 'bg-cyan-50 border-cyan-200 text-cyan-700' },
-  { value: 'Oven Baked', label: 'Oven Baked', icon: Flame, color: 'bg-red-50 border-red-200 text-red-700' },
-  { value: 'Grill', label: 'Grill', icon: Flame, color: 'bg-amber-50 border-amber-200 text-amber-700' },
-  { value: 'Cast Iron', label: 'Cast Iron', icon: ChefHat, color: 'bg-gray-50 border-gray-200 text-gray-700' },
-  { value: 'No Cook', label: 'No Cook', icon: Snowflake, color: 'bg-teal-50 border-teal-200 text-teal-700' }
+  { value: 'Pots and Pans', label: 'Pots & Pans', icon: ChefHat, color: 'bg-sage-50 border-sage-200 text-sage-700' },
+  { value: 'Sheet Pan', label: 'Sheet Pan', icon: Cookie, color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' },
+  { value: 'One Pot', label: 'One Pot', icon: Utensils, color: 'bg-sage-50 border-sage-200 text-sage-700' },
+  { value: 'Instant Pot', label: 'Instant Pot', icon: Zap, color: 'bg-navy-50 border-navy-200 text-navy-700' },
+  { value: 'Slow Cooker', label: 'Slow Cooker', icon: Timer, color: 'bg-cream-50 border-cream-200 text-cream-700' },
+  { value: 'Air Fryer', label: 'Air Fryer', icon: Wind, color: 'bg-sage-50 border-sage-200 text-sage-700' },
+  { value: 'Oven Baked', label: 'Oven Baked', icon: Flame, color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' },
+  { value: 'Grill', label: 'Grill', icon: Flame, color: 'bg-copper-50 border-copper-200 text-copper-700' },
+  { value: 'Cast Iron', label: 'Cast Iron', icon: ChefHat, color: 'bg-warmGray-50 border-warmGray-200 text-warmGray-700' },
+  { value: 'No Cook', label: 'No Cook', icon: Snowflake, color: 'bg-cream-50 border-cream-200 text-cream-700' }
 ];
 
 const cuisineTypes = [
-  { value: 'No Preference', label: 'No Preference', icon: Globe, color: 'bg-gray-50 border-gray-200 text-gray-700' },
-  { value: 'American', label: 'American', icon: Star, color: 'bg-red-50 border-red-200 text-red-700' },
-  { value: 'Italian', label: 'Italian', icon: Utensils, color: 'bg-green-50 border-green-200 text-green-700' },
-  { value: 'Mexican', label: 'Mexican', icon: Flame, color: 'bg-orange-50 border-orange-200 text-orange-700' },
-  { value: 'Asian', label: 'Asian', icon: ChefHat, color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
-  { value: 'Mediterranean', label: 'Mediterranean', icon: Fish, color: 'bg-blue-50 border-blue-200 text-blue-700' },
-  { value: 'Indian', label: 'Indian', icon: Flame, color: 'bg-amber-50 border-amber-200 text-amber-700' },
-  { value: 'Thai', label: 'Thai', icon: Timer, color: 'bg-lime-50 border-lime-200 text-lime-700' },
-  { value: 'French', label: 'French', icon: Star, color: 'bg-purple-50 border-purple-200 text-purple-700' },
-  { value: 'Middle Eastern', label: 'Middle Eastern', icon: MapPin, color: 'bg-teal-50 border-teal-200 text-teal-700' },
-  { value: 'Southern', label: 'Southern', icon: Wheat, color: 'bg-rose-50 border-rose-200 text-rose-700' },
-  { value: 'BBQ', label: 'BBQ', icon: Flame, color: 'bg-slate-50 border-slate-200 text-slate-700' }
+  { value: 'No Preference', label: 'No Preference', icon: Globe, color: 'bg-warmGray-50 border-warmGray-200 text-warmGray-700' },
+  { value: 'American', label: 'American', icon: Star, color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' },
+  { value: 'Italian', label: 'Italian', icon: Utensils, color: 'bg-sage-50 border-sage-200 text-sage-700' },
+  { value: 'Mexican', label: 'Mexican', icon: Flame, color: 'bg-copper-50 border-copper-200 text-copper-700' },
+  { value: 'Asian', label: 'Asian', icon: ChefHat, color: 'bg-cream-50 border-cream-200 text-cream-700' },
+  { value: 'Mediterranean', label: 'Mediterranean', icon: Fish, color: 'bg-navy-50 border-navy-200 text-navy-700' },
+  { value: 'Indian', label: 'Indian', icon: Flame, color: 'bg-copper-50 border-copper-200 text-copper-700' },
+  { value: 'Thai', label: 'Thai', icon: Timer, color: 'bg-sage-50 border-sage-200 text-sage-700' },
+  { value: 'French', label: 'French', icon: Star, color: 'bg-navy-50 border-navy-200 text-navy-700' },
+  { value: 'Middle Eastern', label: 'Middle Eastern', icon: MapPin, color: 'bg-cream-50 border-cream-200 text-cream-700' },
+  { value: 'Southern', label: 'Southern', icon: Wheat, color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' },
+  { value: 'BBQ', label: 'BBQ', icon: Flame, color: 'bg-warmGray-50 border-warmGray-200 text-warmGray-700' }
 ];
 
 const dietaryRestrictions = [
@@ -96,9 +96,9 @@ const dietaryRestrictions = [
 ];
 
 const difficultyLevels = [
-  { value: 'Easy', label: 'Easy', icon: Star, color: 'bg-green-50 border-green-200 text-green-700', description: 'Simple recipes with basic techniques' },
-  { value: 'Intermediate', label: 'Intermediate', icon: ChefHat, color: 'bg-yellow-50 border-yellow-200 text-yellow-700', description: 'Moderate complexity, some cooking skills needed' },
-  { value: 'Advanced', label: 'Advanced', icon: Flame, color: 'bg-red-50 border-red-200 text-red-700', description: 'Advanced techniques and longer prep time' }
+  { value: 'Easy', label: 'Easy', icon: Star, color: 'bg-sage-50 border-sage-200 text-sage-700', description: 'Simple recipes with basic techniques' },
+  { value: 'Intermediate', label: 'Intermediate', icon: ChefHat, color: 'bg-cream-50 border-cream-200 text-cream-700', description: 'Moderate complexity, some cooking skills needed' },
+  { value: 'Advanced', label: 'Advanced', icon: Flame, color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700', description: 'Advanced techniques and longer prep time' }
 ];
 
 const RecipePage = () => {
@@ -208,29 +208,29 @@ const RecipePage = () => {
   const canGenerate = canGenerateRecipe();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4">
       <div className="max-w-4xl mx-auto pt-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">AI Recipe Generator</h1>
-          <p className="text-xl text-gray-600">
-            Tell us your situation and we'll create the perfect recipe for your family
+          <h1 className="text-4xl font-display font-bold text-warmGray-900 mb-4">Recipe Magic Maker</h1>
+          <p className="text-xl text-warmGray-600 font-body">
+            Share your kitchen moment and we'll craft something wonderful for your family
           </p>
         </div>
         
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-800">{error}</p>
+          <div className="bg-terracotta-50 border border-terracotta-200 rounded-lg p-4 mb-6">
+            <p className="text-terracotta-800 font-body">{error}</p>
           </div>
         )}
         
         {savedRecipe && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <div className="bg-sage-50 border border-sage-200 rounded-lg p-4 mb-6">
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-sage-600 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-green-900">Recipe Saved Successfully!</h3>
-                  <p className="text-green-800 text-sm mt-1">
+                  <h3 className="font-semibold text-sage-900 font-body">Recipe Saved Successfully!</h3>
+                  <p className="text-sage-800 text-sm mt-1 font-body">
                     "{savedRecipe.title}" has been saved to My Recipes.
                   </p>
                 </div>
@@ -238,7 +238,7 @@ const RecipePage = () => {
               <div className="flex space-x-2 ml-4">
                 <a
                   href="/saved"
-                  className="inline-flex items-center px-3 py-1 text-sm bg-green-100 text-green-700 border border-green-300 rounded-lg hover:bg-green-200 transition-colors"
+                  className="inline-flex items-center px-3 py-1 text-sm bg-sage-100 text-sage-700 border border-sage-300 rounded-lg hover:bg-sage-200 transition-colors font-body"
                 >
                   <BookOpen className="h-4 w-4 mr-1" />
                   View All Recipes

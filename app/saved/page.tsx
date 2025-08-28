@@ -427,12 +427,12 @@ const SavedPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4">
       <div className="max-w-6xl mx-auto pt-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">My Recipes</h1>
-          <p className="text-xl text-gray-600">
-            Your personal collection of recipes and meal plans, ready to cook again
+          <h1 className="text-4xl font-display font-bold text-warmGray-900 mb-4">My Recipe Collection</h1>
+          <p className="text-xl text-warmGray-600 font-body">
+            Your treasured collection of family favorites, ready to bring joy to your table again
           </p>
         </div>
 

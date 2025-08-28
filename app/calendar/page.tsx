@@ -505,12 +505,12 @@ const CalendarPage = () => {
   const totalCost = calculateMonthlyCost();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4">
       <div className="max-w-7xl mx-auto pt-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Dinner Calendar</h1>
-          <p className="text-xl text-gray-600">Plan your dinners for the month</p>
+          <h1 className="text-4xl font-display font-bold text-warmGray-900 mb-4">Family Dinner Calendar</h1>
+          <p className="text-xl text-warmGray-600 font-body">Weave your favorite recipes into the rhythm of your month</p>
         </div>
 
         {/* Month Navigation */}
