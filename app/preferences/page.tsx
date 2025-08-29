@@ -6,6 +6,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChefHat, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf, Save, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 
+// Force this page to be dynamic
+export const dynamic = 'force-dynamic';
+
 const dietaryRestrictions = [
   'None', 'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 
   'Soy-Free', 'Egg-Free', 'Keto', 'Low-Carb', 'Paleo', 'Whole30',

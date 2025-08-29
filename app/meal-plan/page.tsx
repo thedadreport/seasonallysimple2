@@ -7,6 +7,9 @@ import { useApp } from '../../contexts/AppContext';
 import { getRemainingMealPlans, formatSubscriptionTier } from '../../lib/subscription';
 import SubscriptionUpgrade from '../../components/SubscriptionUpgrade';
 
+// Force this page to be dynamic
+export const dynamic = 'force-dynamic';
+
 // Test meal plan data removed - now using real AI-generated meal plans
 
 const dietaryRestrictions = [

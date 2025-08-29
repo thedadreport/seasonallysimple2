@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { AlertCircle, Leaf } from 'lucide-react';
 import { Suspense } from 'react';
 
+// Force this page to be dynamic
+export const dynamic = 'force-dynamic';
+
 function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams?.get('error');
