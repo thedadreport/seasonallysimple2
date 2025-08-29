@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { ChefHat, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf, Save, Loader2, CheckCircle } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ChefHat, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf, Save, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 
 const dietaryRestrictions = [
@@ -41,6 +42,9 @@ interface UserPreferences {
 const PreferencesPage = () => {
   const { data: session } = useSession();
   const { refreshUserData } = useApp();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isOnboarding = searchParams?.get('onboarding') === 'true';
   const [preferences, setPreferences] = useState<UserPreferences>({
     cookingSkill: "Intermediate (some techniques)",
     dietaryRestrictions: ["None"],
@@ -329,25 +333,59 @@ const PreferencesPage = () => {
 
           {/* Save Button */}
           <div className="flex justify-center pt-4 border-t border-gray-200">
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className={`btn-primary flex items-center space-x-3 ${
-                isSaving ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>Saving Preferences...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-5 w-5" />
-                  <span>Save Preferences</span>
-                </>
-              )}
-            </button>
+            {isOnboarding ? (
+              <div className="flex flex-col items-center space-y-4">
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className={`btn-primary flex items-center space-x-3 ${
+                    isSaving ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>Saving Preferences...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-5 w-5" />
+                      <span>Save Preferences</span>
+                    </>
+                  )}
+                </button>
+                
+                {saveSuccess && (
+                  <button
+                    onClick={() => router.push('/meal-plan?welcome=true')}
+                    className="px-8 py-3 bg-stone-700 text-white rounded-full font-light hover:bg-stone-800 transition-all flex items-center space-x-2"
+                  >
+                    <span>Continue to Meal Planning</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className={`btn-primary flex items-center space-x-3 ${
+                  isSaving ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Saving Preferences...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-5 w-5" />
+                    <span>Save Preferences</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

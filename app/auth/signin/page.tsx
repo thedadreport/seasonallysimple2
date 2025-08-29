@@ -27,7 +27,7 @@ export default function SignIn() {
       
       const result = await signIn(provider, {
         ...(email && { email }),
-        callbackUrl: '/',
+        callbackUrl: '/preferences?onboarding=true',
         redirect: false,
       });
 
@@ -45,33 +45,33 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-rose-50/30 to-amber-50/40 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-sage-500 to-sage-600 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105">
-              <Leaf className="h-7 w-7 text-white" />
+            <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center transition-all group-hover:bg-stone-200">
+              <Leaf className="h-6 w-6 text-stone-600" />
             </div>
-            <span className="text-2xl font-display font-bold text-warmGray-900 group-hover:text-sage-700 transition-colors">
+            <span className="text-xl font-serif font-light text-stone-700 italic group-hover:text-stone-800 transition-colors">
               Seasonally Simple
             </span>
           </Link>
         </div>
 
         {/* Sign In Card */}
-        <div className="bg-softWhite rounded-2xl shadow-warm border border-sage-100 p-8">
-          <div className="text-center mb-6">
-            <ChefHat className="h-12 w-12 text-sage-600 mx-auto mb-4" />
-            <h1 className="text-2xl font-display font-bold text-warmGray-900 mb-2">Ready to Transform Dinner Time?</h1>
-            <p className="text-warmGray-600 font-body">
-              Begin your journey to stress-free, nourishing family meals in just 10 seconds!
+        <div className="bg-white/80 rounded-3xl border border-stone-100/50 p-10 shadow-sm">
+          <div className="text-center mb-8">
+            <ChefHat className="h-10 w-10 text-stone-600 mx-auto mb-6" />
+            <h1 className="text-2xl md:text-3xl font-serif font-light text-stone-700 mb-4 italic">Ready to transform dinner time?</h1>
+            <p className="text-stone-600 font-light leading-relaxed">
+              Begin your journey to stress-free, nourishing family meals
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-terracotta-50 border border-terracotta-200 rounded-lg">
-              <p className="text-terracotta-700 text-sm font-body">{error}</p>
+            <div className="mb-8 p-6 bg-rose-50/50 border border-rose-200/50 rounded-2xl">
+              <p className="text-rose-700 text-sm font-light">{error}</p>
             </div>
           )}
 
@@ -80,7 +80,7 @@ export default function SignIn() {
             <button
               onClick={() => handleSignIn('google')}
               disabled={isLoading}
-              className={`w-full flex items-center justify-center px-6 py-4 bg-softWhite border-2 border-sage-200 rounded-xl hover:border-sage-400 hover:bg-sage-50 transition-colors font-semibold font-body text-lg shadow-sage hover:shadow-warm ${
+              className={`w-full flex items-center justify-center px-8 py-4 bg-white border border-stone-200 rounded-full hover:border-stone-300 hover:bg-stone-50 transition-all font-light text-base shadow-sm ${
                 isLoading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
@@ -102,17 +102,17 @@ export default function SignIn() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              {isLoading ? 'Beginning Your Journey...' : '🌱 Begin with Google'}
+              {isLoading ? 'Beginning your journey...' : 'Begin with Google'}
             </button>
           </div>
 
-          <div className="mt-6 text-center text-sm text-warmGray-500 font-body">
+          <div className="mt-8 text-center text-sm text-stone-500 font-light">
             By signing in, you agree to our{' '}
-            <Link href="/privacy" className="text-sage-600 hover:text-sage-700">
+            <Link href="/privacy" className="text-stone-600 hover:text-stone-700">
               Privacy Policy
             </Link>{' '}
             and{' '}
-            <Link href="/terms" className="text-sage-600 hover:text-sage-700">
+            <Link href="/terms" className="text-stone-600 hover:text-stone-700">
               Terms of Service
             </Link>
           </div>
@@ -120,7 +120,7 @@ export default function SignIn() {
           <div className="mt-8 text-center">
             <Link
               href="/"
-              className="text-warmGray-600 hover:text-warmGray-900 text-sm font-medium font-body"
+              className="text-stone-500 hover:text-stone-700 text-sm font-light"
             >
               ← Back to Home
             </Link>
@@ -128,28 +128,28 @@ export default function SignIn() {
         </div>
 
         {/* Benefits */}
-        <div className="mt-8 bg-softWhite/90 backdrop-blur rounded-lg p-6 border border-sage-100">
-          <h3 className="font-semibold text-warmGray-900 mb-4 font-body">🌿 What awaits you:</h3>
-          <ul className="space-y-2 text-sm text-warmGray-600 font-body">
+        <div className="mt-10 bg-white/60 backdrop-blur rounded-2xl p-8 border border-stone-100/50">
+          <h3 className="font-light text-stone-700 mb-6 text-center italic">What awaits you</h3>
+          <ul className="space-y-3 text-sm text-stone-600 font-light">
             <li className="flex items-center">
-              <div className="w-2 h-2 bg-sage-500 rounded-full mr-3"></div>
-              <strong>Unlimited recipe inspiration</strong> - No limits, just possibilities
+              <div className="w-2 h-2 bg-stone-400 rounded-full mr-4"></div>
+              <span className="font-normal">Unlimited recipe inspiration</span> - No limits, just possibilities
             </li>
             <li className="flex items-center">
-              <div className="w-2 h-2 bg-terracotta-500 rounded-full mr-3"></div>
-              <strong>Mindful meal planning</strong> - Complete with thoughtful shopping lists
+              <div className="w-2 h-2 bg-stone-400 rounded-full mr-4"></div>
+              <span className="font-normal">Mindful meal planning</span> - Complete with thoughtful shopping lists
             </li>
             <li className="flex items-center">
-              <div className="w-2 h-2 bg-cream-500 rounded-full mr-3"></div>
-              <strong>Save & personalize</strong> - Your family's favorites, all in one place
+              <div className="w-2 h-2 bg-stone-400 rounded-full mr-4"></div>
+              <span className="font-normal">Save & personalize</span> - Your family's favorites, all in one place
             </li>
             <li className="flex items-center">
-              <div className="w-2 h-2 bg-copper-500 rounded-full mr-3"></div>
-              <strong>Mobile-friendly</strong> - Cook with gentle guidance in hand
+              <div className="w-2 h-2 bg-stone-400 rounded-full mr-4"></div>
+              <span className="font-normal">Mobile-friendly</span> - Cook with gentle guidance in hand
             </li>
           </ul>
-          <div className="mt-4 text-xs text-warmGray-500 text-center font-body">
-            🔒 We honor your privacy - only your name and email, nothing more
+          <div className="mt-6 text-xs text-stone-500 text-center font-light">
+            We honor your privacy - only your name and email, nothing more
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Calendar, ShoppingCart, Clock, DollarSign, Users, CheckCircle, Star, ChefHat, BookOpen, Lock, Crown, Loader2, Plus, Minus, ExternalLink, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Calendar, ShoppingCart, Clock, DollarSign, Users, CheckCircle, Star, ChefHat, BookOpen, Lock, Crown, Loader2, Plus, Minus, ExternalLink, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf, Sparkles } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { getRemainingMealPlans, formatSubscriptionTier } from '../../lib/subscription';
 import SubscriptionUpgrade from '../../components/SubscriptionUpgrade';
@@ -36,6 +37,18 @@ const cuisineTypes = [
 
 const MealPlanPage = () => {
   const { subscription, usage, canGenerateMealPlan, incrementMealPlanUsage, addMealPlan, addRecipe, preferences } = useApp();
+  const searchParams = useSearchParams();
+  const isWelcome = searchParams?.get('welcome') === 'true';
+  const [showWelcome, setShowWelcome] = useState(false);
+  
+  useEffect(() => {
+    if (isWelcome) {
+      setShowWelcome(true);
+      // Hide welcome message after 5 seconds
+      const timer = setTimeout(() => setShowWelcome(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isWelcome]);
   const [showMealPlan, setShowMealPlan] = useState(false);
   const [showCustomizePreferences, setShowCustomizePreferences] = useState(false);
   // Override preferences for this meal plan (optional)
@@ -245,6 +258,19 @@ const MealPlanPage = () => {
             Create your week's rhythm in one thoughtful session. Gentle recipes, mindful shopping, and peaceful prep.
           </p>
         </div>
+        
+        {showWelcome && (
+          <div className="bg-stone-50/80 border border-stone-200/50 rounded-2xl p-8 mb-8 text-center">
+            <div className="flex items-center justify-center mb-4">
+              <Sparkles className="h-6 w-6 text-stone-600 mr-3" />
+              <h3 className="text-xl font-serif font-light text-stone-700 italic">Welcome to your meal planning journey!</h3>
+            </div>
+            <p className="text-stone-600 font-light leading-relaxed max-w-2xl mx-auto">
+              You've completed your preferences - now let's create your first weekly meal plan. 
+              This thoughtful approach will help you plan nourishing meals for your family while reducing dinner stress.
+            </p>
+          </div>
+        )}
         
         {!hasAccessToMealPlans ? (
           <SubscriptionUpgrade feature="meal planning" />
