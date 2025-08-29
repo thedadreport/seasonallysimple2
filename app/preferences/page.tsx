@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChefHat, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf, Save, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
+import { ChefHat, Leaf, Save, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 
 // Force this page to be dynamic
@@ -21,24 +21,10 @@ const cuisineTypes = [
   'Vietnamese', 'Brazilian', 'Moroccan', 'German', 'British', 'Caribbean'
 ];
 
-const cookingMethods = [
-  { value: 'Pots and Pans', label: 'Pots & Pans', icon: ChefHat, color: 'bg-sage-50 border-sage-200 text-sage-700' },
-  { value: 'Sheet Pan', label: 'Sheet Pan', icon: Cookie, color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' },
-  { value: 'One Pot', label: 'One Pot', icon: Utensils, color: 'bg-sage-50 border-sage-200 text-sage-700' },
-  { value: 'Instant Pot', label: 'Instant Pot', icon: Zap, color: 'bg-navy-50 border-navy-200 text-navy-700' },
-  { value: 'Slow Cooker', label: 'Slow Cooker', icon: Timer, color: 'bg-cream-50 border-cream-200 text-cream-700' },
-  { value: 'Air Fryer', label: 'Air Fryer', icon: Wind, color: 'bg-sage-50 border-sage-200 text-sage-700' },
-  { value: 'Oven Baked', label: 'Oven Baked', icon: Flame, color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700' },
-  { value: 'Grill', label: 'Grill', icon: Flame, color: 'bg-copper-50 border-copper-200 text-copper-700' },
-  { value: 'Cast Iron', label: 'Cast Iron', icon: ChefHat, color: 'bg-warmGray-50 border-warmGray-200 text-warmGray-700' },
-  { value: 'No Cook', label: 'No Cook', icon: Snowflake, color: 'bg-cream-50 border-cream-200 text-cream-700' }
-];
-
 interface UserPreferences {
   cookingSkill: string;
   dietaryRestrictions: string[];
   cuisinePreferences: string[];
-  cookingMethods: string[];
   useSeasonalIngredients: boolean;
   cookingStyle?: string; // New field for cooking philosophy/style
 }
@@ -54,7 +40,6 @@ function PreferencesContent() {
     cookingSkill: "Intermediate (some techniques)",
     dietaryRestrictions: ["None"],
     cuisinePreferences: ["No Preference"],
-    cookingMethods: [],
     useSeasonalIngredients: false,
     cookingStyle: ""
   });
@@ -159,17 +144,6 @@ function PreferencesContent() {
     }
   };
 
-  const toggleCookingMethod = (method: string) => {
-    if (preferences.cookingMethods.includes(method)) {
-      const filtered = preferences.cookingMethods.filter(m => m !== method);
-      setPreferences(prev => ({ ...prev, cookingMethods: filtered }));
-    } else {
-      setPreferences(prev => ({ 
-        ...prev, 
-        cookingMethods: [...preferences.cookingMethods, method] 
-      }));
-    }
-  };
 
   if (isLoading) {
     return (
@@ -277,32 +251,6 @@ function PreferencesContent() {
             </div>
           </div>
 
-          {/* Cooking Methods */}
-          <div>
-            <label className="label">Preferred Cooking Methods</label>
-            <p className="text-sm text-gray-600 mb-3">Select your favorite cooking methods and equipment</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-3">
-              {cookingMethods.map((method) => {
-                const Icon = method.icon;
-                const isSelected = preferences.cookingMethods.includes(method.value);
-                return (
-                  <button
-                    key={method.value}
-                    type="button"
-                    onClick={() => toggleCookingMethod(method.value)}
-                    className={`p-3 rounded-lg border-2 transition-all hover:scale-105 flex flex-col items-center space-y-2 text-center ${
-                      isSelected
-                        ? `${method.color} border-current shadow-md scale-105`
-                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                    }`}
-                  >
-                    <Icon className={`h-6 w-6 ${isSelected ? '' : 'text-gray-500'}`} />
-                    <span className="text-sm font-medium">{method.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Cooking Style & Philosophy */}
           <div>

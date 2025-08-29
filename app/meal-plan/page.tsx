@@ -162,7 +162,7 @@ function MealPlanContent() {
             : (preferences?.cuisinePreferences?.filter(c => c !== 'No Preference') || []),
           cookingMethods: overrideCookingMethods.length > 0
             ? overrideCookingMethods
-            : (preferences?.cookingMethods || []),
+            : ['Pots and Pans', 'Sheet Pan', 'One Pot', 'Oven Baked'], // Default cooking methods
           useSeasonalIngredients: overrideSeasonalIngredients !== null
             ? overrideSeasonalIngredients
             : (preferences?.useSeasonalIngredients || false),
@@ -213,7 +213,7 @@ function MealPlanContent() {
           cookingSituation: `${meal.day} dinner from meal plan`,
           protein: meal.main || meal.ingredients.find(ing => ing.toLowerCase().includes('chicken') || ing.toLowerCase().includes('beef') || ing.toLowerCase().includes('turkey') || ing.toLowerCase().includes('sausage') || ing.toLowerCase().includes('fish')) || 'protein from main dish',
           vegetables: meal.sides?.join(', ') || meal.ingredients.filter(ing => ing.toLowerCase().includes('pepper') || ing.toLowerCase().includes('onion') || ing.toLowerCase().includes('carrot') || ing.toLowerCase().includes('vegetable')).join(', ') || 'vegetables and sides',
-          cookingMethod: preferences?.cookingMethods?.[0] || 'Pots and Pans',
+          cookingMethod: 'Pots and Pans', // Default cooking method
           cuisineType: preferences?.cuisinePreferences?.[0] || 'No Preference',
           dietaryRestrictions: preferences?.dietaryRestrictions?.filter(d => d !== 'None') || [],
           difficulty: preferences?.cookingSkill?.includes('Beginner') ? 'Easy' : preferences?.cookingSkill?.includes('Expert') ? 'Advanced' : 'Intermediate'
@@ -412,9 +412,6 @@ function MealPlanContent() {
                         <p><strong>Cooking Level:</strong> {preferences.cookingSkill}</p>
                         <p><strong>Dietary Restrictions:</strong> {preferences.dietaryRestrictions.join(', ')}</p>
                         <p><strong>Cuisines:</strong> {preferences.cuisinePreferences.join(', ')}</p>
-                        {preferences.cookingMethods.length > 0 && (
-                          <p><strong>Cooking Methods:</strong> {preferences.cookingMethods.join(', ')}</p>
-                        )}
                         <p><strong>Seasonal Ingredients:</strong> {preferences.useSeasonalIngredients ? 'Yes' : 'No'}</p>
                       </div>
                     </div>
@@ -602,29 +599,31 @@ function MealPlanContent() {
           // Meal Plan Display
           <div className="space-y-6">
             {/* Meal Plan Header */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-              <div className="flex items-start justify-between mb-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 md:p-8">
+              {/* Mobile-first layout - stacked */}
+              <div className="space-y-4 md:space-y-0 md:flex md:items-start md:justify-between mb-6">
                 <div className="flex-1">
-                  <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-4">
+                  <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-3">
                     <Calendar className="h-4 w-4 mr-2" />
                     {generatedMealPlan?.focus || 'Weekly Meal Plan'}
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{generatedMealPlan?.title}</h1>
-                  <p className="text-lg text-gray-700 mb-6">{generatedMealPlan?.description}</p>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight">{generatedMealPlan?.title}</h1>
+                  <p className="text-base md:text-lg text-gray-700 mb-4 md:mb-6">{generatedMealPlan?.description}</p>
                 </div>
                 
-                <div className="ml-6 text-right">
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <DollarSign className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedMealPlan?.totalCost}</span>
+                {/* Stats - horizontal on mobile, vertical on desktop */}
+                <div className="flex justify-between md:block md:ml-6 md:text-right space-x-4 md:space-x-0">
+                  <div className="flex items-center text-gray-600 mb-0 md:mb-2">
+                    <DollarSign className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2" />
+                    <span className="font-medium text-sm md:text-base">{generatedMealPlan?.totalCost}</span>
                   </div>
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <Clock className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedMealPlan?.prepTime}</span>
+                  <div className="flex items-center text-gray-600 mb-0 md:mb-2">
+                    <Clock className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2" />
+                    <span className="font-medium text-sm md:text-base">{generatedMealPlan?.prepTime}</span>
                   </div>
                   <div className="flex items-center text-green-600">
-                    <Users className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedMealPlan?.servings}</span>
+                    <Users className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2" />
+                    <span className="font-medium text-sm md:text-base">{generatedMealPlan?.servings}</span>
                   </div>
                 </div>
               </div>
@@ -640,49 +639,61 @@ function MealPlanContent() {
             </div>
 
             {/* Weekly Meals */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <ChefHat className="h-5 w-5 mr-2 text-orange-600" />
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <ChefHat className="h-4 w-4 md:h-5 md:w-5 mr-2 text-orange-600" />
                 This Week's Dinners
               </h2>
               <div className="space-y-4">
                 {generatedMealPlan?.meals?.map((meal, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                    <div className="flex items-start justify-between">
+                  <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4 hover:border-gray-300 transition-colors">
+                    {/* Mobile: Stack vertically, Desktop: Side by side */}
+                    <div className="space-y-3 md:space-y-0 md:flex md:items-start md:justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <span className="w-20 text-sm font-medium text-gray-600 mr-3">{meal.day}</span>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{meal.recipe}</h3>
-                            {meal.main && meal.sides && (
-                              <div className="text-sm text-gray-600 mt-1">
-                                <span className="font-medium">Main:</span> {meal.main} | 
-                                <span className="font-medium"> Sides:</span> {meal.sides.join(', ')}
-                              </div>
-                            )}
+                        {/* Day and meal name - mobile friendly */}
+                        <div className="mb-2">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-gray-600">{meal.day}</span>
+                            <span className="text-green-600 font-medium text-sm md:hidden">{meal.cost}</span>
                           </div>
+                          <h3 className="text-base md:text-lg font-semibold text-gray-900 leading-tight">{meal.recipe}</h3>
+                          {meal.main && meal.sides && (
+                            <div className="text-xs md:text-sm text-gray-600 mt-1">
+                              <span className="font-medium">Main:</span> {meal.main}
+                              <br className="md:hidden" />
+                              <span className="hidden md:inline"> | </span>
+                              <span className="font-medium">Sides:</span> {meal.sides.join(', ')}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
+                        {/* Time and cost info - mobile friendly */}
+                        <div className="flex items-center flex-wrap gap-3 text-xs md:text-sm text-gray-600 mb-2">
                           <span>Prep: {meal.prepTime}</span>
                           <span>Cook: {meal.cookTime}</span>
-                          <span className="text-green-600 font-medium">{meal.cost}</span>
+                          <span className="text-green-600 font-medium hidden md:inline">{meal.cost}</span>
                         </div>
-                        <p className="text-sm text-gray-700 mb-2">
+                        <p className="text-xs md:text-sm text-gray-700 mb-2">
                           <strong>Prep note:</strong> {meal.prepNotes}
                         </p>
-                        <div className="flex flex-wrap gap-1">
-                          {meal.ingredients.map((ingredient, i) => (
+                        <div className="flex flex-wrap gap-1 mb-3 md:mb-0">
+                          {meal.ingredients.slice(0, 6).map((ingredient, i) => (
                             <span key={i} className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
                               {ingredient}
                             </span>
                           ))}
+                          {meal.ingredients.length > 6 && (
+                            <span className="px-2 py-1 bg-gray-200 text-gray-500 rounded text-xs">
+                              +{meal.ingredients.length - 6} more
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <div className="ml-4 flex-shrink-0">
+                      {/* Button - full width on mobile, positioned right on desktop */}
+                      <div className="md:ml-4 md:flex-shrink-0">
                         <button 
                           onClick={() => handleGenerateRecipe(meal)}
                           disabled={generatingRecipe === meal.day}
-                          className={`px-3 py-2 text-sm border rounded-lg transition-colors flex items-center space-x-2 ${
+                          className={`w-full md:w-auto px-3 py-2 text-xs md:text-sm border rounded-lg transition-colors flex items-center justify-center md:justify-start space-x-2 ${
                             generatedRecipes.has(meal.day)
                               ? 'bg-green-100 text-green-700 border-green-300 hover:bg-green-200'
                               : 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
@@ -711,22 +722,22 @@ function MealPlanContent() {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
               {/* Shopping List */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                  <ShoppingCart className="h-5 w-5 mr-2 text-green-600" />
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 flex items-center">
+                  <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 mr-2 text-green-600" />
                   Shopping List
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {Object.entries(generatedMealPlan?.shoppingList || {}).map(([category, items]) => (
                     <div key={category}>
-                      <h3 className="font-semibold text-gray-900 mb-2">{category}</h3>
+                      <h3 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">{category}</h3>
                       <ul className="space-y-1">
                         {items.map((item, index) => (
                           <li key={index} className="flex items-center">
-                            <CheckCircle className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-                            <span className="text-gray-700 text-sm">{item}</span>
+                            <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-gray-400 mr-2 flex-shrink-0" />
+                            <span className="text-gray-700 text-xs md:text-sm">{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -736,24 +747,24 @@ function MealPlanContent() {
               </div>
 
               {/* Sunday Prep Schedule */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                  <Star className="h-5 w-5 mr-2 text-purple-600" />
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 flex items-center">
+                  <Star className="h-4 w-4 md:h-5 md:w-5 mr-2 text-purple-600" />
                   Sunday Prep Schedule
                 </h2>
-                <p className="text-gray-600 text-sm mb-4">Complete these tasks on Sunday to set yourself up for success:</p>
-                <ol className="space-y-3">
+                <p className="text-gray-600 text-xs md:text-sm mb-4">Complete these tasks on Sunday to set yourself up for success:</p>
+                <ol className="space-y-2 md:space-y-3">
                   {generatedMealPlan?.prepSchedule?.map((task, index) => (
                     <li key={index} className="flex items-start">
-                      <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full text-sm font-medium flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                      <span className="w-5 h-5 md:w-6 md:h-6 bg-purple-100 text-purple-600 rounded-full text-xs md:text-sm font-medium flex items-center justify-center mr-2 md:mr-3 flex-shrink-0 mt-0.5">
                         {index + 1}
                       </span>
-                      <span className="text-gray-700">{task}</span>
+                      <span className="text-gray-700 text-xs md:text-sm leading-relaxed">{task}</span>
                     </li>
                   ))}
                 </ol>
                 <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                  <p className="text-sm text-green-800">
+                  <p className="text-xs md:text-sm text-green-800">
                     <strong>Total prep time:</strong> About 2 hours. Spread throughout Sunday or do in batches!
                   </p>
                 </div>

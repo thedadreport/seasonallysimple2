@@ -47,7 +47,6 @@ export async function GET(request: NextRequest) {
           cookingSkill: "Intermediate (some techniques)",
           dietaryRestrictions: ["None"],
           cuisinePreferences: ["No Preference"],
-          cookingMethods: [],
           useSeasonalIngredients: false,
           cookingStyle: ""
         }
@@ -60,7 +59,6 @@ export async function GET(request: NextRequest) {
         cookingSkill: preferences.cookingSkill,
         dietaryRestrictions: preferences.dietaryRestrictions,
         cuisinePreferences: preferences.cuisinePreferences,
-        cookingMethods: preferences.cookingMethods,
         useSeasonalIngredients: preferences.useSeasonalIngredients,
         cookingStyle: preferences.cookingStyle
       }
@@ -93,7 +91,6 @@ export async function POST(request: NextRequest) {
       cookingSkill,
       dietaryRestrictions,
       cuisinePreferences,
-      cookingMethods,
       useSeasonalIngredients,
       cookingStyle
     } = await request.json();
@@ -129,7 +126,6 @@ export async function POST(request: NextRequest) {
         cookingSkill,
         dietaryRestrictions,
         cuisinePreferences,
-        cookingMethods: cookingMethods || [],
         useSeasonalIngredients: useSeasonalIngredients || false,
         cookingStyle: cookingStyle || ""
       },
@@ -138,7 +134,6 @@ export async function POST(request: NextRequest) {
         cookingSkill,
         dietaryRestrictions,
         cuisinePreferences,
-        cookingMethods: cookingMethods || [],
         useSeasonalIngredients: useSeasonalIngredients || false,
         cookingStyle: cookingStyle || ""
       }
@@ -150,7 +145,6 @@ export async function POST(request: NextRequest) {
         cookingSkill: preferences.cookingSkill,
         dietaryRestrictions: preferences.dietaryRestrictions,
         cuisinePreferences: preferences.cuisinePreferences,
-        cookingMethods: preferences.cookingMethods,
         useSeasonalIngredients: preferences.useSeasonalIngredients,
         cookingStyle: preferences.cookingStyle
       }

@@ -136,7 +136,6 @@ model UserPreferences {
   cookingSkill            String   @default("Intermediate (some techniques)")
   dietaryRestrictions     String[] @default(["None"])
   cuisinePreferences      String[] @default(["No Preference"])
-  cookingMethods          String[] @default([])
   useSeasonalIngredients  Boolean  @default(false)
   cookingStyle            String?  // Cooking philosophy/style preference
   createdAt               DateTime @default(now())

@@ -101,7 +101,6 @@ export interface UserPreferences {
   cookingSkill: string;
   dietaryRestrictions: string[];
   cuisinePreferences: string[];
-  cookingMethods: string[];
   useSeasonalIngredients: boolean;
   cookingStyle?: string;
 }
