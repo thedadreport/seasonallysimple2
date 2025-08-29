@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChefHat, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf, Save, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
@@ -42,7 +42,8 @@ interface UserPreferences {
   useSeasonalIngredients: boolean;
 }
 
-const PreferencesPage = () => {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function PreferencesContent() {
   const { data: session } = useSession();
   const { refreshUserData } = useApp();
   const router = useRouter();
@@ -393,6 +394,22 @@ const PreferencesPage = () => {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main component that wraps the content in Suspense
+const PreferencesPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-sage-600 mx-auto mb-4" />
+          <p className="text-warmGray-600 font-body">Loading your preferences...</p>
+        </div>
+      </div>
+    }>
+      <PreferencesContent />
+    </Suspense>
   );
 };
 

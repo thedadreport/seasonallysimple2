@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Calendar, ShoppingCart, Clock, DollarSign, Users, CheckCircle, Star, ChefHat, BookOpen, Lock, Crown, Loader2, Plus, Minus, ExternalLink, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf, Sparkles } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
@@ -38,7 +38,8 @@ const cuisineTypes = [
 ];
 
 
-const MealPlanPage = () => {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function MealPlanContent() {
   const { subscription, usage, canGenerateMealPlan, incrementMealPlanUsage, addMealPlan, addRecipe, preferences } = useApp();
   const searchParams = useSearchParams();
   const isWelcome = searchParams?.get('welcome') === 'true';
@@ -762,6 +763,22 @@ const MealPlanPage = () => {
         )}
       </div>
     </div>
+  );
+}
+
+// Main component that wraps the content in Suspense
+const MealPlanPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-sage-600 mx-auto mb-4" />
+          <p className="text-warmGray-600 font-body">Loading your meal planning workspace...</p>
+        </div>
+      </div>
+    }>
+      <MealPlanContent />
+    </Suspense>
   );
 };
 
