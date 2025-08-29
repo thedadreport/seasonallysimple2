@@ -103,6 +103,7 @@ export interface UserPreferences {
   cuisinePreferences: string[];
   cookingMethods: string[];
   useSeasonalIngredients: boolean;
+  cookingStyle?: string;
 }
 
 // Context interfaces

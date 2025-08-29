@@ -48,7 +48,8 @@ export async function GET(request: NextRequest) {
           dietaryRestrictions: ["None"],
           cuisinePreferences: ["No Preference"],
           cookingMethods: [],
-          useSeasonalIngredients: false
+          useSeasonalIngredients: false,
+          cookingStyle: ""
         }
       });
     }
@@ -60,7 +61,8 @@ export async function GET(request: NextRequest) {
         dietaryRestrictions: preferences.dietaryRestrictions,
         cuisinePreferences: preferences.cuisinePreferences,
         cookingMethods: preferences.cookingMethods,
-        useSeasonalIngredients: preferences.useSeasonalIngredients
+        useSeasonalIngredients: preferences.useSeasonalIngredients,
+        cookingStyle: preferences.cookingStyle
       }
     });
 
@@ -92,7 +94,8 @@ export async function POST(request: NextRequest) {
       dietaryRestrictions,
       cuisinePreferences,
       cookingMethods,
-      useSeasonalIngredients
+      useSeasonalIngredients,
+      cookingStyle
     } = await request.json();
 
     // Validate required fields
@@ -127,7 +130,8 @@ export async function POST(request: NextRequest) {
         dietaryRestrictions,
         cuisinePreferences,
         cookingMethods: cookingMethods || [],
-        useSeasonalIngredients: useSeasonalIngredients || false
+        useSeasonalIngredients: useSeasonalIngredients || false,
+        cookingStyle: cookingStyle || ""
       },
       create: {
         userId: user.id,
@@ -135,7 +139,8 @@ export async function POST(request: NextRequest) {
         dietaryRestrictions,
         cuisinePreferences,
         cookingMethods: cookingMethods || [],
-        useSeasonalIngredients: useSeasonalIngredients || false
+        useSeasonalIngredients: useSeasonalIngredients || false,
+        cookingStyle: cookingStyle || ""
       }
     });
 
@@ -146,7 +151,8 @@ export async function POST(request: NextRequest) {
         dietaryRestrictions: preferences.dietaryRestrictions,
         cuisinePreferences: preferences.cuisinePreferences,
         cookingMethods: preferences.cookingMethods,
-        useSeasonalIngredients: preferences.useSeasonalIngredients
+        useSeasonalIngredients: preferences.useSeasonalIngredients,
+        cookingStyle: preferences.cookingStyle
       }
     });
 

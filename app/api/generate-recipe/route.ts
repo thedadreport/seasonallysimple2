@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { generateRecipeWithAI, validateAnthropicConfig } from '@/lib/claude';
 import { generateId, formatDate } from '@/lib/storage';
+import { PrismaClient } from '@prisma/client';
+
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
+
+const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,8 +33,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate recipe using AI
-    const aiRecipe = await generateRecipeWithAI(formData);
+    // Get user session and preferences for cooking style
+    const session = await getServerSession(authOptions);
+    let cookingStyle: string | undefined;
+    
+    if (session?.user?.email) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { email: session.user.email },
+          include: { preferences: true }
+        });
+        
+        cookingStyle = user?.preferences?.cookingStyle || undefined;
+      } catch (error) {
+        console.warn('Could not fetch user preferences for cooking style:', error);
+      }
+    }
+
+    // Generate recipe using AI with cooking style
+    const aiRecipe = await generateRecipeWithAI({
+      ...formData,
+      cookingStyle
+    });
     
     // Format recipe for frontend compatibility
     const recipe = {
@@ -102,5 +130,7 @@ export async function POST(request: NextRequest) {
       { success: false, error: 'Failed to generate recipe. Please try again.' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

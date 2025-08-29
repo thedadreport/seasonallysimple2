@@ -102,7 +102,7 @@ const difficultyLevels = [
 ];
 
 const RecipePage = () => {
-  const { subscription, usage, canGenerateRecipe, incrementRecipeUsage, addRecipe } = useApp();
+  const { subscription, usage, canGenerateRecipe, incrementRecipeUsage, addRecipe, preferences } = useApp();
   const [showRecipe, setShowRecipe] = useState(false);
   const [selectedDiets, setSelectedDiets] = useState(['None']);
   const [generatedRecipe, setGeneratedRecipe] = useState<Recipe | null>(null);
@@ -163,7 +163,8 @@ const RecipePage = () => {
         body: JSON.stringify({
           ...formData,
           familySize: `${formData.familySize} people`,
-          dietaryRestrictions: selectedDiets.filter(d => d !== 'None')
+          dietaryRestrictions: selectedDiets.filter(d => d !== 'None'),
+          cookingStyle: preferences?.cookingStyle || ''
         }),
       });
 

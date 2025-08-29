@@ -40,6 +40,7 @@ export async function generateRecipeWithAI(formData: {
   dietaryRestrictions: string[];
   difficulty: string;
   seasonal?: boolean;
+  cookingStyle?: string;
 }) {
   if (!validateAnthropicConfig()) {
     throw new Error('Anthropic API key not configured');
@@ -47,6 +48,10 @@ export async function generateRecipeWithAI(formData: {
 
   const seasonalNote = formData.seasonal ? `
 **SEASONAL FOCUS:** Use fresh, in-season ingredients and seasonal cooking themes. Consider what's fresh and available during the current season (late August) - think late summer produce like tomatoes, corn, eggplant, peppers, stone fruits, and herbs.` : '';
+
+  const cookingStyleNote = formData.cookingStyle ? `
+**COOKING STYLE PREFERENCE:** ${formData.cookingStyle}
+Please incorporate this cooking philosophy and style into the recipe approach, techniques, and overall feel.` : '';
 
   const prompt = `Create a detailed, family-friendly recipe based on these requirements:
 
@@ -58,7 +63,7 @@ export async function generateRecipeWithAI(formData: {
 **Cooking Method:** ${formData.cookingMethod}
 **Cuisine Style:** ${formData.cuisineType}
 **Difficulty Level:** ${formData.difficulty}
-**Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}${seasonalNote}
+**Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}${seasonalNote}${cookingStyleNote}
 
 Please generate a complete recipe with:
 1. A creative, descriptive title
@@ -145,10 +150,15 @@ export async function generateMealPlanWithAI(formData: {
   cuisinePreferences: string[];
   cookingMethods: string[];
   pantryItems: string;
+  cookingStyle?: string;
 }) {
   if (!validateAnthropicConfig()) {
     throw new Error('Anthropic API key not configured');
   }
+
+  const cookingStyleNote = formData.cookingStyle ? `
+**COOKING STYLE PREFERENCE:** ${formData.cookingStyle}
+Please incorporate this cooking philosophy and style into all meal planning decisions, recipe selection, and preparation approaches.` : '';
 
   const prompt = `Create a comprehensive ${formData.numDinners}-day meal plan based on these requirements:
 
@@ -161,7 +171,7 @@ export async function generateMealPlanWithAI(formData: {
 **Preferred Cooking Methods:** ${formData.cookingMethods.join(', ')}
 **Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}
 **Cuisine Preferences:** ${formData.cuisinePreferences.join(', ') || 'No specific preference'}
-**Pantry Items Available:** ${formData.pantryItems || 'Standard pantry staples'}
+**Pantry Items Available:** ${formData.pantryItems || 'Standard pantry staples'}${cookingStyleNote}
 
 Please generate a complete meal plan with:
 1. Creative title reflecting the focus

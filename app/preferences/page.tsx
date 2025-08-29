@@ -40,6 +40,7 @@ interface UserPreferences {
   cuisinePreferences: string[];
   cookingMethods: string[];
   useSeasonalIngredients: boolean;
+  cookingStyle?: string; // New field for cooking philosophy/style
 }
 
 // Component that uses useSearchParams - must be wrapped in Suspense
@@ -54,7 +55,8 @@ function PreferencesContent() {
     dietaryRestrictions: ["None"],
     cuisinePreferences: ["No Preference"],
     cookingMethods: [],
-    useSeasonalIngredients: false
+    useSeasonalIngredients: false,
+    cookingStyle: ""
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -299,6 +301,50 @@ function PreferencesContent() {
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Cooking Style & Philosophy */}
+          <div>
+            <label className="label flex items-center space-x-2 mb-3">
+              <ChefHat className="h-4 w-4 text-stone-600" />
+              <span>How do you like to cook?</span>
+            </label>
+            <div className="bg-gradient-to-r from-stone-50 to-rose-50/30 border border-stone-200/50 rounded-2xl p-6">
+              <p className="text-sm text-stone-600 font-light mb-4 leading-relaxed">
+                Share your cooking philosophy, favorite chef styles, preferred techniques, or types of dishes you love. 
+                This helps us create recipes that truly match your approach to cooking.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                {[
+                  "I love Julia Child's French techniques",
+                  "Simple, rustic farm-to-table style",
+                  "Bold, spicy flavors like in Mexican cuisine", 
+                  "Minimalist Japanese-inspired cooking",
+                  "Comfort food that feeds a crowd",
+                  "Fresh, Mediterranean-style dishes"
+                ].map((example) => (
+                  <button
+                    key={example}
+                    type="button"
+                    onClick={() => setPreferences(prev => ({ ...prev, cookingStyle: example }))}
+                    className={`p-3 text-left text-sm rounded-xl border-2 transition-all hover:border-stone-300 ${
+                      preferences.cookingStyle === example
+                        ? 'bg-stone-100 border-stone-300 text-stone-700'
+                        : 'bg-white/60 border-stone-200/50 text-stone-600 hover:bg-white'
+                    }`}
+                  >
+                    {example}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                className="w-full p-4 border border-stone-200 rounded-xl bg-white/80 text-stone-700 placeholder-stone-400 text-sm resize-none focus:border-stone-400 focus:ring-2 focus:ring-stone-200 transition-all"
+                rows={3}
+                placeholder="Or describe your cooking style in your own words... e.g., 'I love making one-pot meals that are healthy but don't require too many steps. Think Ina Garten meets weeknight convenience.'"
+                value={preferences.cookingStyle || ''}
+                onChange={(e) => setPreferences(prev => ({ ...prev, cookingStyle: e.target.value }))}
+              />
             </div>
           </div>
 
