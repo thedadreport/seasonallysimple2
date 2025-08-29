@@ -315,33 +315,10 @@ function PreferencesContent() {
                 Share your cooking philosophy, favorite chef styles, preferred techniques, or types of dishes you love. 
                 This helps us create recipes that truly match your approach to cooking.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                {[
-                  "I love Julia Child's French techniques",
-                  "Simple, rustic farm-to-table style",
-                  "Bold, spicy flavors like in Mexican cuisine", 
-                  "Minimalist Japanese-inspired cooking",
-                  "Comfort food that feeds a crowd",
-                  "Fresh, Mediterranean-style dishes"
-                ].map((example) => (
-                  <button
-                    key={example}
-                    type="button"
-                    onClick={() => setPreferences(prev => ({ ...prev, cookingStyle: example }))}
-                    className={`p-3 text-left text-sm rounded-xl border-2 transition-all hover:border-stone-300 ${
-                      preferences.cookingStyle === example
-                        ? 'bg-stone-100 border-stone-300 text-stone-700'
-                        : 'bg-white/60 border-stone-200/50 text-stone-600 hover:bg-white'
-                    }`}
-                  >
-                    {example}
-                  </button>
-                ))}
-              </div>
               <textarea
                 className="w-full p-4 border border-stone-200 rounded-xl bg-white/80 text-stone-700 placeholder-stone-400 text-sm resize-none focus:border-stone-400 focus:ring-2 focus:ring-stone-200 transition-all"
-                rows={3}
-                placeholder="Or describe your cooking style in your own words... e.g., 'I love making one-pot meals that are healthy but don't require too many steps. Think Ina Garten meets weeknight convenience.'"
+                rows={4}
+                placeholder="Describe your cooking style... e.g., 'I love making one-pot meals that are healthy but don't require too many steps. Think Ina Garten meets weeknight convenience.' or 'I enjoy Julia Child's French techniques and bold flavors.'"
                 value={preferences.cookingStyle || ''}
                 onChange={(e) => setPreferences(prev => ({ ...prev, cookingStyle: e.target.value }))}
               />
