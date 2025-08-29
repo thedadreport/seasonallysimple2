@@ -193,18 +193,36 @@ Please generate a complete meal plan with:
 
 Make it practical, budget-conscious, and achievable for the specified skill level. 
 
+CRITICAL VARIETY REQUIREMENTS - AVOID REPETITION:
+🚫 **NO DUPLICATE PROTEINS:** Each meal MUST use a different primary protein. Do not repeat chicken, beef, pork, fish, etc. across meals.
+🚫 **NO DUPLICATE COOKING METHODS:** Each meal should use a different primary cooking method (grilled, roasted, stir-fried, braised, baked, pan-seared, etc.)
+🚫 **NO REPETITIVE SIDES:** Avoid repeating the same side dishes. No more than 1 roasted vegetable dish, 1 rice dish, 1 potato dish across the entire plan.
+🚫 **NO SIMILAR FLAVOR PROFILES:** Vary seasonings and cuisines - don't default to basic herbs like rosemary/garlic for multiple meals.
+
+MANDATORY PROTEIN VARIETY (choose different ones):
+- Chicken (but vary: thighs, breast, whole pieces - only use ONCE)
+- Beef (ground, steak, stew meat, etc. - only use ONCE) 
+- Pork (chops, tenderloin, ground, etc. - only use ONCE)
+- Fish/Seafood (salmon, white fish, shrimp, etc. - only use ONCE)
+- Vegetarian proteins (beans, lentils, tofu, eggs, etc. - only use ONCE)
+- Turkey, lamb, or other proteins if needed for variety
+
 IMPORTANT MEAL STRUCTURE: Each dinner should consist of:
 - 1 MAIN DISH (protein-focused: meat, fish, vegetarian protein, etc.)
 - 2 SIDE DISHES (vegetables, starches, grains, salads - should complement the main)
 
-The sides should balance the meal nutritionally and create variety. Examples:
-- Main: Grilled Chicken → Sides: Roasted Vegetables + Rice Pilaf
-- Main: Beef Stir-Fry → Sides: Steamed Broccoli + Egg Fried Rice  
-- Main: Baked Salmon → Sides: Quinoa Salad + Green Beans
+COOKING METHOD DISTRIBUTION: Distribute meals across different cooking methods (${formData.cookingMethods.join(', ')}) - ensure each meal uses a DIFFERENT primary method. Examples: grilled, roasted, stir-fried, braised, pan-seared, slow-cooked, baked, etc.
 
-COOKING METHOD DISTRIBUTION: Distribute meals across the preferred cooking methods (${formData.cookingMethods.join(', ')}) - ensure each meal uses one of these methods with appropriate techniques, cooking times, and equipment. The primary cooking method should apply to the main dish, while sides can use complementary simple methods.
+CUISINE INTEGRATION: When "No specific preference" is selected, create a DIVERSE mix of cuisine styles across the meal plan. Include different global flavors like Italian, Mexican, Asian, Mediterranean, American, etc. When specific cuisines are preferred (${formData.cuisinePreferences.join(', ')}), distribute them evenly but still ensure variety within each cuisine style.
 
-CUISINE INTEGRATION: If cuisine preferences are specified, ensure that each complete dinner (main + sides) reflects one of the preferred cuisine types (${formData.cuisinePreferences.join(', ')}) with authentic flavors, ingredients, and cooking techniques from those culinary traditions. Distribute cuisines evenly across the meal plan for variety.
+EXAMPLE VARIETY (DO NOT COPY - CREATE YOUR OWN VARIED MEALS):
+- Monday: Italian - Pasta with meat sauce, caesar salad, garlic bread
+- Tuesday: Mexican - Beef tacos, cilantro lime rice, black beans  
+- Wednesday: Asian - Stir-fried chicken with vegetables, steamed rice, pot stickers
+- Thursday: Mediterranean - Baked salmon, quinoa tabbouleh, roasted eggplant
+- Friday: American - Pork chops, mashed sweet potatoes, sautéed spinach
+
+**AVOID DEFAULTS:** Do not default to "roasted chicken with sweet potatoes and green beans" or similar basic combinations. Be creative and globally-inspired!
 
 Format the response as valid JSON with this exact structure:
 {
