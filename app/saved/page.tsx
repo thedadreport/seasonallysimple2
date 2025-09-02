@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Plus, Camera, Upload, X, Loader2, Lock, Crown, Minus } from 'lucide-react';
+import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Plus, Camera, Upload, X, Loader2, Lock, Crown, Minus, CheckCircle } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
 import { getRemainingRecipes } from '../../lib/subscription';
@@ -42,6 +42,7 @@ const SavedPageContent = () => {
     situation: 'Custom Recipe',
     notes: ''
   });
+  const [viewingMealPlan, setViewingMealPlan] = useState<any>(null);
 
   // Debug logging
   console.log('SavedPage: Current recipes count:', recipes.length);
@@ -764,7 +765,10 @@ const SavedPageContent = () => {
                     </div>
 
                     <div className="ml-6 flex flex-col space-y-2">
-                      <button className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">
+                      <button 
+                        onClick={() => setViewingMealPlan(plan)}
+                        className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                      >
                         <BookOpen className="h-4 w-4 inline mr-2" />
                         View Plan
                       </button>
@@ -1380,6 +1384,123 @@ const SavedPageContent = () => {
             </div>
           </div>
         )}
+        
+        {/* Meal Plan Detail Modal */}
+        {viewingMealPlan && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl max-h-[90vh] w-full overflow-hidden">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{viewingMealPlan.title}</h2>
+                  <p className="text-gray-600 mt-1">{viewingMealPlan.description}</p>
+                </div>
+                <button 
+                  onClick={() => setViewingMealPlan(null)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="h-6 w-6 text-gray-500" />
+                </button>
+              </div>
+              
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div className="grid lg:grid-cols-2 gap-8">
+                  {/* Meals Section */}
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <ChefHat className="h-5 w-5 mr-2 text-orange-600" />
+                      Weekly Meals
+                    </h3>
+                    <div className="space-y-4">
+                      {viewingMealPlan.meals?.map((meal: any, index: number) => (
+                        <div key={index} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-600">{meal.day}</span>
+                            <span className="text-green-600 font-medium text-sm">{meal.cost}</span>
+                          </div>
+                          <h4 className="font-semibold text-gray-900 mb-2">{meal.recipe}</h4>
+                          {meal.main && meal.sides && (
+                            <p className="text-sm text-gray-600 mb-2">
+                              <span className="font-medium">Main:</span> {meal.main} | 
+                              <span className="font-medium"> Sides:</span> {meal.sides.join(', ')}
+                            </p>
+                          )}
+                          <div className="flex items-center text-xs text-gray-600 space-x-4 mb-2">
+                            <span>Prep: {meal.prepTime}</span>
+                            <span>Cook: {meal.cookTime}</span>
+                          </div>
+                          <p className="text-xs text-gray-700">
+                            <strong>Prep note:</strong> {meal.prepNotes}
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {meal.ingredients?.slice(0, 4).map((ingredient: string, i: number) => (
+                              <span key={i} className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
+                                {ingredient}
+                              </span>
+                            ))}
+                            {meal.ingredients?.length > 4 && (
+                              <span className="px-2 py-1 bg-gray-200 text-gray-500 rounded text-xs">
+                                +{meal.ingredients.length - 4} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Shopping List & Prep Schedule */}
+                  <div className="space-y-8">
+                    {/* Shopping List */}
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <Calendar className="h-5 w-5 mr-2 text-green-600" />
+                        Shopping List
+                      </h3>
+                      <div className="space-y-4">
+                        {Object.entries(viewingMealPlan.shoppingList || {}).map(([category, items]: [string, any]) => (
+                          <div key={category}>
+                            <h4 className="font-semibold text-gray-900 mb-2">{category}</h4>
+                            <ul className="space-y-1">
+                              {items.map((item: string, index: number) => (
+                                <li key={index} className="flex items-center text-sm">
+                                  <CheckCircle className="h-3 w-3 text-gray-400 mr-2 flex-shrink-0" />
+                                  <span className="text-gray-700">{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Prep Schedule */}
+                    {viewingMealPlan.prepSchedule && (
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                          <Star className="h-5 w-5 mr-2 text-purple-600" />
+                          Sunday Prep Schedule
+                        </h3>
+                        <ol className="space-y-3">
+                          {viewingMealPlan.prepSchedule.map((task: string, index: number) => (
+                            <li key={index} className="flex items-start">
+                              <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full text-sm font-medium flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                                {index + 1}
+                              </span>
+                              <span className="text-gray-700 text-sm leading-relaxed">{task}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
       </div>
     </div>
   );
