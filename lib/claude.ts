@@ -151,6 +151,15 @@ export async function generateMealPlanWithAI(formData: {
   cookingMethods: string[];
   pantryItems: string;
   cookingStyle?: string;
+  userId?: string;
+  recentMealPlans?: Array<{
+    title: string;
+    meals: Array<{
+      recipe: string;
+      main?: string;
+    }>;
+    createdAt: string;
+  }>;
 }) {
   if (!validateAnthropicConfig()) {
     throw new Error('Anthropic API key not configured');
@@ -159,6 +168,18 @@ export async function generateMealPlanWithAI(formData: {
   const cookingStyleNote = formData.cookingStyle ? `
 **COOKING STYLE PREFERENCE:** ${formData.cookingStyle}
 Please incorporate this cooking philosophy and style into all meal planning decisions, recipe selection, and preparation approaches.` : '';
+
+  // Build recent meal plan history for AI context
+  const recentMealsNote = formData.recentMealPlans && formData.recentMealPlans.length > 0 ? `
+🚫 **AVOID REPEATING RECENT MEALS - USER'S MEAL PLAN HISTORY:**
+The user has created these meal plans recently. DO NOT repeat any of these meals or very similar variations:
+
+${formData.recentMealPlans.map(plan => `
+**${plan.title}** (${plan.createdAt})
+${plan.meals.map(meal => `- ${meal.recipe}${meal.main ? ` (${meal.main})` : ''}`).join('\n')}
+`).join('')}
+
+**CRITICAL:** Create completely different meals with different proteins, cooking methods, and flavor profiles from the above. Ensure maximum variety and avoid any similarities to recent meal plans.` : '';
 
   const prompt = `Create a comprehensive ${formData.numDinners}-day meal plan based on these requirements:
 
@@ -171,7 +192,7 @@ Please incorporate this cooking philosophy and style into all meal planning deci
 **Preferred Cooking Methods:** ${formData.cookingMethods.join(', ')}
 **Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}
 **Cuisine Preferences:** ${formData.cuisinePreferences.join(', ') || 'No specific preference'}
-**Pantry Items Available:** ${formData.pantryItems || 'Standard pantry staples'}${cookingStyleNote}
+**Pantry Items Available:** ${formData.pantryItems || 'Standard pantry staples'}${cookingStyleNote}${recentMealsNote}
 
 🥩 **CRITICAL: PRIORITIZE USER'S PANTRY INGREDIENTS**
 If the user has provided specific proteins or ingredients in their pantry items, you MUST use these first before suggesting other proteins. This is essential for practical meal planning.

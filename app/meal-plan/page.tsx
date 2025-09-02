@@ -178,6 +178,16 @@ function MealPlanContent() {
 
       setGeneratedMealPlan(data.mealPlan);
       setGeneratedRecipes(new Set()); // Reset generated recipes for new meal plan
+      
+      // Automatically save the generated meal plan
+      try {
+        await addMealPlan(data.mealPlan);
+        console.log('Meal plan saved successfully');
+      } catch (error) {
+        console.error('Error saving meal plan:', error);
+        // Don't block the UI if saving fails, just log it
+      }
+      
       setShowMealPlan(true);
     } catch (error) {
       console.error('Meal plan generation error:', error);

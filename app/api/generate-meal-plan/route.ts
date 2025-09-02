@@ -1,10 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateMealPlanWithAI, validateAnthropicConfig } from '@/lib/claude';
 import { generateId, formatDate } from '@/lib/storage';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { getPrismaClient } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.json();
+    
+    // Get user session for meal plan history
+    const session = await getServerSession(authOptions);
+    let recentMealPlans: any[] = [];
+    
+    if (session?.user?.email) {
+      const prisma = getPrismaClient();
+      if (prisma) {
+        try {
+          // Get the last 3 meal plans for the user (to avoid repetition)
+          const userMealPlans = await prisma.mealPlan.findMany({
+            where: {
+              user: {
+                email: session.user.email
+              }
+            },
+            orderBy: {
+              createdAt: 'desc'
+            },
+            take: 3,
+            select: {
+              title: true,
+              content: true,
+              createdAt: true,
+            }
+          });
+
+          // Transform the data for the AI
+          recentMealPlans = userMealPlans.map(plan => {
+            const content = plan.content as any;
+            return {
+              title: plan.title,
+              meals: content.meals || [],
+              createdAt: new Date(plan.createdAt).toLocaleDateString()
+            };
+          });
+        } catch (error) {
+          console.error('Error fetching user meal plan history:', error);
+          // Continue without meal plan history if there's an error
+        }
+      }
+    }
     
     // Validate required form data
     const requiredFields = ['planningFocus', 'numDinners', 'familySize', 'weeklyBudget', 'prepTime', 'skillLevel'];
@@ -25,8 +70,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate meal plan using AI
-    const aiMealPlan = await generateMealPlanWithAI(formData);
+    // Generate meal plan using AI with meal plan history
+    const aiMealPlan = await generateMealPlanWithAI({
+      ...formData,
+      userId: session?.user?.email || undefined,
+      recentMealPlans
+    });
     
     // Format meal plan for frontend compatibility
     const mealPlan = {

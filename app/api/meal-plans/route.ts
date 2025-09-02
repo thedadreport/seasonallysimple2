@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { MealPlan } from '@/types';
-import { prisma } from '@/lib/prisma';
+import { getPrismaClient } from '@/lib/prisma';
 
 // GET /api/meal-plans - Get all meal plans for the authenticated user
 export async function GET(request: NextRequest) {
   try {
+    const prisma = getPrismaClient();
     if (!prisma) {
       return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
     }
@@ -57,6 +58,7 @@ export async function GET(request: NextRequest) {
 // POST /api/meal-plans - Create a new meal plan
 export async function POST(request: NextRequest) {
   try {
+    const prisma = getPrismaClient();
     if (!prisma) {
       return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
     }
