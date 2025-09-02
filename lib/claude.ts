@@ -173,6 +173,15 @@ Please incorporate this cooking philosophy and style into all meal planning deci
 **Cuisine Preferences:** ${formData.cuisinePreferences.join(', ') || 'No specific preference'}
 **Pantry Items Available:** ${formData.pantryItems || 'Standard pantry staples'}${cookingStyleNote}
 
+🥩 **CRITICAL: PRIORITIZE USER'S PANTRY INGREDIENTS**
+If the user has provided specific proteins or ingredients in their pantry items, you MUST use these first before suggesting other proteins. This is essential for practical meal planning.
+
+PANTRY PRIORITIZATION RULES:
+1. **USE WHAT THEY HAVE:** Build meals around the specific ingredients they mentioned
+2. **MINIMIZE SHOPPING:** Only suggest additional proteins if they didn't provide enough variety
+3. **BE PRACTICAL:** If they have "whole chicken, ground beef, chicken thighs" - use ALL of these before adding salmon, tofu, etc.
+4. **MATCH QUANTITIES:** If they list multiple chicken items, create multiple chicken-based meals using different cuts/preparations
+
 Please generate a complete meal plan with:
 1. Creative title reflecting the focus
 2. Brief description (2-3 sentences)
@@ -200,12 +209,18 @@ CRITICAL VARIETY REQUIREMENTS - AVOID REPETITION:
 🚫 **NO SIMILAR FLAVOR PROFILES:** Vary seasonings and cuisines - don't default to basic herbs like rosemary/garlic for multiple meals.
 
 MANDATORY PROTEIN VARIETY (choose different ones):
+⚠️ **IF USER PROVIDED SPECIFIC PROTEINS IN PANTRY:** Use those first! Then add others only if needed.
+
+GENERAL PROTEIN OPTIONS (when no specific pantry proteins given):
 - Chicken (but vary: thighs, breast, whole pieces - only use ONCE)
 - Beef (ground, steak, stew meat, etc. - only use ONCE) 
 - Pork (chops, tenderloin, ground, etc. - only use ONCE)
 - Fish/Seafood (salmon, white fish, shrimp, etc. - only use ONCE)
 - Vegetarian proteins (beans, lentils, tofu, eggs, etc. - only use ONCE)
 - Turkey, lamb, or other proteins if needed for variety
+
+**EXAMPLE:** If user has "whole chicken, ground beef, chicken thighs, chicken breasts":
+✅ Day 1: Roasted Whole Chicken, Day 2: Ground Beef Tacos, Day 3: Pan-Seared Chicken Thighs, Day 4: Baked Chicken Breasts, Day 5: (only then add a different protein if needed)
 
 IMPORTANT MEAL STRUCTURE: Each dinner should consist of:
 - 1 MAIN DISH (protein-focused: meat, fish, vegetarian protein, etc.)
