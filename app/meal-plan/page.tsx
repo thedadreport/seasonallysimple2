@@ -85,6 +85,7 @@ function MealPlanContent() {
   const [error, setError] = useState<string | null>(null);
   const [generatingRecipe, setGeneratingRecipe] = useState<string | null>(null);
   const [savedRecipe, setSavedRecipe] = useState<any>(null);
+  const [savedMealPlan, setSavedMealPlan] = useState<any>(null);
   const [generatedRecipes, setGeneratedRecipes] = useState<Set<string>>(new Set());
   
   // Form state
@@ -183,6 +184,12 @@ function MealPlanContent() {
       try {
         await addMealPlan(data.mealPlan);
         console.log('Meal plan saved successfully');
+        
+        // Show success notification
+        setSavedMealPlan({
+          title: data.mealPlan.title,
+          id: data.mealPlan.id
+        });
       } catch (error) {
         console.error('Error saving meal plan:', error);
         // Don't block the UI if saving fails, just log it
@@ -320,6 +327,37 @@ function MealPlanContent() {
                     <button
                       onClick={() => setSavedRecipe(null)}
                       className="px-3 py-1 text-sm text-green-600 hover:text-green-800 transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {savedMealPlan && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-blue-900">Meal Plan Saved Successfully!</h3>
+                      <p className="text-blue-800 text-sm mt-1">
+                        "{savedMealPlan.title}" has been saved to your meal plan collection.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2 ml-4">
+                    <a
+                      href="/saved?tab=meal-plans"
+                      className="inline-flex items-center px-4 py-2 text-sm bg-blue-600 text-white border border-blue-600 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      View in My Meal Plans
+                    </a>
+                    <button
+                      onClick={() => setSavedMealPlan(null)}
+                      className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
                     >
                       ✕
                     </button>
@@ -640,11 +678,21 @@ function MealPlanContent() {
               
               <div className="flex space-x-4">
                 <button 
-                  onClick={() => setShowMealPlan(false)}
+                  onClick={() => {
+                    setShowMealPlan(false);
+                    setSavedMealPlan(null); // Clear the success notification when generating new plan
+                  }}
                   className="btn-ghost"
                 >
                   ← Generate Another Plan
                 </button>
+                <a
+                  href="/saved?tab=meal-plans"
+                  className="btn-secondary inline-flex items-center"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  View All My Meal Plans
+                </a>
               </div>
             </div>
 

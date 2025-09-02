@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Plus, Camera, Upload, X, Loader2, Lock, Crown, Minus } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
@@ -10,8 +10,10 @@ import { SubscriptionTier, Recipe } from '@/types';
 import RecipeFeedback from '../../components/RecipeFeedback';
 
 
-const SavedPage = () => {
+// Component that uses useSearchParams - must be wrapped in Suspense
+const SavedPageContent = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { recipes, mealPlans, deleteRecipe, deleteMealPlan, addRecipe, addMealPlan, subscription, usage, canEditRecipe, updateSubscription, updateRecipe, canGenerateRecipe, incrementRecipeUsage } = useApp();
   const [activeTab, setActiveTab] = useState('recipes');
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,6 +46,16 @@ const SavedPage = () => {
   // Debug logging
   console.log('SavedPage: Current recipes count:', recipes.length);
   console.log('SavedPage: Current recipes:', recipes);
+  console.log('SavedPage: Current meal plans count:', mealPlans.length);
+  console.log('SavedPage: Current meal plans:', mealPlans);
+
+  // Handle URL tab parameter
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab');
+    if (tabParam === 'meal-plans') {
+      setActiveTab('meal-plans');
+    }
+  }, [searchParams]);
 
   const handleAddTestData = () => {
     addRecipe(createTestRecipe());
@@ -1370,6 +1382,22 @@ const SavedPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// Main component that wraps the content in Suspense
+const SavedPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-sage-600 mx-auto mb-4" />
+          <p className="text-warmGray-600 font-body">Loading your saved collection...</p>
+        </div>
+      </div>
+    }>
+      <SavedPageContent />
+    </Suspense>
   );
 };
 
