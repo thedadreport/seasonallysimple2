@@ -211,18 +211,37 @@ IMPORTANT MEAL STRUCTURE: Each dinner should consist of:
 - 1 MAIN DISH (protein-focused: meat, fish, vegetarian protein, etc.)
 - 2 SIDE DISHES (vegetables, starches, grains, salads - should complement the main)
 
+🍽️ **CLASSIC DINNER PRESENTATION - AVOID "BOWL" FORMATS:**
+Create traditional, familiar dinner plates that families recognize, NOT trendy bowl meals.
+
+PREFERRED FORMATS:
+✅ "Baked Salmon with Lemon Herb Potatoes and Green Beans"
+✅ "Chicken Parmesan with Spaghetti and Caesar Salad"  
+✅ "Beef Stir-Fry with Steamed Rice and Egg Rolls"
+✅ "Pork Chops with Mashed Potatoes and Roasted Carrots"
+✅ "Taco Tuesday with Ground Beef Tacos, Spanish Rice, and Refried Beans"
+
+AVOID THESE TRENDY FORMATS:
+❌ "Ginger-Soy Glazed Salmon Bowl"
+❌ "Chili-Lime Chicken Fiesta Bowl" 
+❌ "Mediterranean Grain Bowl"
+❌ "Asian Fusion Bowl"
+❌ "Buddha Bowl" or any "__ Bowl" naming
+
+Use classic main-and-sides presentation that feels like traditional home cooking, not restaurant trends.
+
 COOKING METHOD DISTRIBUTION: Distribute meals across different cooking methods (${formData.cookingMethods.join(', ')}) - ensure each meal uses a DIFFERENT primary method. Examples: grilled, roasted, stir-fried, braised, pan-seared, slow-cooked, baked, etc.
 
 CUISINE INTEGRATION: When "No specific preference" is selected, create a DIVERSE mix of cuisine styles across the meal plan. Include different global flavors like Italian, Mexican, Asian, Mediterranean, American, etc. When specific cuisines are preferred (${formData.cuisinePreferences.join(', ')}), distribute them evenly but still ensure variety within each cuisine style.
 
-EXAMPLE VARIETY (DO NOT COPY - CREATE YOUR OWN VARIED MEALS):
-- Monday: Italian - Pasta with meat sauce, caesar salad, garlic bread
-- Tuesday: Mexican - Beef tacos, cilantro lime rice, black beans  
-- Wednesday: Asian - Stir-fried chicken with vegetables, steamed rice, pot stickers
-- Thursday: Mediterranean - Baked salmon, quinoa tabbouleh, roasted eggplant
-- Friday: American - Pork chops, mashed sweet potatoes, sautéed spinach
+EXAMPLE CLASSIC DINNER FORMATS (DO NOT COPY - CREATE YOUR OWN VARIED MEALS):
+- Monday: Italian - Chicken Parmesan with Spaghetti and Garlic Breadsticks
+- Tuesday: Mexican - Ground Beef Tacos with Spanish Rice and Refried Beans  
+- Wednesday: American - Baked Meatloaf with Mashed Potatoes and Green Bean Casserole
+- Thursday: Mediterranean - Herb-Crusted Salmon with Rice Pilaf and Roasted Zucchini
+- Friday: Asian - Beef and Broccoli Stir-Fry with Jasmine Rice and Spring Rolls
 
-**AVOID DEFAULTS:** Do not default to "roasted chicken with sweet potatoes and green beans" or similar basic combinations. Be creative and globally-inspired!
+**FOCUS ON FAMILIAR CLASSICS:** Think traditional family dinners, comfort food, and recognizable combinations that feel like home cooking - NOT trendy restaurant concepts or "bowl" meals.
 
 Format the response as valid JSON with this exact structure:
 {
