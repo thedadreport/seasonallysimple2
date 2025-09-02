@@ -43,6 +43,8 @@ const SavedPageContent = () => {
     notes: ''
   });
   const [viewingMealPlan, setViewingMealPlan] = useState<any>(null);
+  const [generatingFromMeal, setGeneratingFromMeal] = useState<string | null>(null);
+  const [mealRecipeSuccess, setMealRecipeSuccess] = useState<any>(null);
 
   // Debug logging
   console.log('SavedPage: Current recipes count:', recipes.length);
@@ -57,6 +59,70 @@ const SavedPageContent = () => {
       setActiveTab('meal-plans');
     }
   }, [searchParams]);
+
+  // Generate recipe from meal plan meal
+  const handleGenerateRecipeFromMeal = async (meal: any) => {
+    if (!canGenerate) return;
+    
+    const success = await incrementRecipeUsage();
+    if (!success) return;
+
+    setGeneratingFromMeal(meal.day);
+    setMealRecipeSuccess(null);
+    
+    try {
+      const response = await fetch('/api/generate-recipe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          familySize: '4 people', // Default or could be from meal plan
+          availableTime: meal.cookTime || '30 minutes',
+          cookingSituation: `${meal.day} dinner from saved meal plan`,
+          protein: meal.main || meal.ingredients?.find((ing: string) => 
+            ing.toLowerCase().includes('chicken') || 
+            ing.toLowerCase().includes('beef') || 
+            ing.toLowerCase().includes('turkey') || 
+            ing.toLowerCase().includes('sausage') || 
+            ing.toLowerCase().includes('fish')
+          ) || 'protein from main dish',
+          vegetables: meal.sides?.join(', ') || meal.ingredients?.filter((ing: string) => 
+            ing.toLowerCase().includes('pepper') || 
+            ing.toLowerCase().includes('onion') || 
+            ing.toLowerCase().includes('carrot') || 
+            ing.toLowerCase().includes('vegetable')
+          ).join(', ') || 'vegetables and sides',
+          cookingMethod: 'Pots and Pans', // Default cooking method
+          cuisineType: 'No Preference',
+          dietaryRestrictions: [],
+          difficulty: 'Intermediate'
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to generate recipe');
+      }
+
+      // Save the generated recipe
+      await addRecipe(data.recipe);
+      
+      // Show success notification
+      setMealRecipeSuccess({
+        title: data.recipe.title,
+        mealName: meal.recipe,
+        recipeId: data.recipe.id
+      });
+      
+    } catch (error) {
+      console.error('Recipe generation error:', error);
+      // Could add error state here if needed
+    } finally {
+      setGeneratingFromMeal(null);
+    }
+  };
 
   const handleAddTestData = () => {
     addRecipe(createTestRecipe());
@@ -1403,6 +1469,38 @@ const SavedPageContent = () => {
                 </button>
               </div>
               
+              {/* Success Notification */}
+              {mealRecipeSuccess && (
+                <div className="mx-6 mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-green-900">Recipe Generated Successfully!</h4>
+                        <p className="text-green-800 text-sm mt-1">
+                          "{mealRecipeSuccess.title}" has been created from "{mealRecipeSuccess.mealName}" and saved to My Recipes.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2 ml-4">
+                      <a
+                        href="/saved?tab=recipes"
+                        className="inline-flex items-center px-3 py-1 text-xs bg-green-600 text-white border border-green-600 rounded hover:bg-green-700 transition-colors font-medium"
+                      >
+                        <BookOpen className="h-3 w-3 mr-1" />
+                        View Recipe
+                      </a>
+                      <button
+                        onClick={() => setMealRecipeSuccess(null)}
+                        className="px-2 py-1 text-xs text-green-600 hover:text-green-800 transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Modal Content */}
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
                 <div className="grid lg:grid-cols-2 gap-8">
@@ -1433,7 +1531,7 @@ const SavedPageContent = () => {
                           <p className="text-xs text-gray-700">
                             <strong>Prep note:</strong> {meal.prepNotes}
                           </p>
-                          <div className="flex flex-wrap gap-1 mt-2">
+                          <div className="flex flex-wrap gap-1 mt-2 mb-3">
                             {meal.ingredients?.slice(0, 4).map((ingredient: string, i: number) => (
                               <span key={i} className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
                                 {ingredient}
@@ -1445,6 +1543,29 @@ const SavedPageContent = () => {
                               </span>
                             )}
                           </div>
+                          <button
+                            onClick={() => handleGenerateRecipeFromMeal(meal)}
+                            disabled={!canGenerate || generatingFromMeal === meal.day}
+                            className={`w-full px-3 py-2 text-xs border rounded-lg transition-colors flex items-center justify-center space-x-2 ${
+                              !canGenerate 
+                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                : generatingFromMeal === meal.day
+                                ? 'bg-blue-100 text-blue-700 border-blue-300 cursor-not-allowed'
+                                : 'bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200'
+                            }`}
+                          >
+                            {generatingFromMeal === meal.day ? (
+                              <>
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                <span>Generating Recipe...</span>
+                              </>
+                            ) : (
+                              <>
+                                <ChefHat className="h-3 w-3" />
+                                <span>{canGenerate ? 'Generate Full Recipe' : 'Recipe Limit Reached'}</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                       ))}
                     </div>
