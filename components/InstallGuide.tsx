@@ -17,6 +17,7 @@ const InstallGuide = ({ isOpen, onClose }: InstallGuideProps) => {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const isChrome = /Chrome/.test(navigator.userAgent) && !isIOS;
 
+
   const getSteps = () => {
     if (isIOS && isSafari) {
       return [

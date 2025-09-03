@@ -40,6 +40,7 @@ const InstallAppButton = () => {
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
+      // Use browser's native install prompt
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       
@@ -49,7 +50,8 @@ const InstallAppButton = () => {
       } else {
         console.log('User dismissed the install prompt');
       }
-    } else if (isIOS) {
+    } else {
+      // Always show install guide if no browser prompt available
       setShowInstallGuide(true);
     }
   };
