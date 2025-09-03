@@ -1,0 +1,72 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- iOS app icon background with rounded corners -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8fae95;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c9885;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="plateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f8f6f0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="leafGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6b8e70;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5a7a5f;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="4" result="offset" />
+      <feFlood flood-color="#000000" flood-opacity="0.15"/>
+      <feComposite in2="offset" operator="in"/>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background with iOS rounded corners -->
+  <rect width="180" height="180" rx="40" ry="40" fill="url(#bgGradient)"/>
+  
+  <!-- Main plate/bowl -->
+  <circle cx="90" cy="95" r="45" fill="url(#plateGradient)" filter="url(#shadow)" stroke="#e5e3dd" stroke-width="1"/>
+  
+  <!-- Food elements - stylized vegetables -->
+  <!-- Tomato -->
+  <circle cx="75" cy="85" r="8" fill="#d97449" opacity="0.9"/>
+  <path d="M71 81 Q75 79 79 81" stroke="#6b8e70" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Carrot -->
+  <ellipse cx="105" cy="90" rx="4" ry="12" fill="#d97449" opacity="0.9" transform="rotate(25 105 90)"/>
+  <path d="M108 83 L110 81 M109 85 L111 83" stroke="#6b8e70" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Lettuce leaf -->
+  <path d="M85 105 Q82 100 88 98 Q94 100 91 105 Q88 108 85 105 Z" fill="url(#leafGradient)" opacity="0.9"/>
+  
+  <!-- Herbs/garnish -->
+  <circle cx="95" cy="105" r="2" fill="#6b8e70" opacity="0.7"/>
+  <circle cx="98" cy="108" r="1.5" fill="#6b8e70" opacity="0.7"/>
+  <circle cx="92" cy="108" r="1.5" fill="#6b8e70" opacity="0.7"/>
+  
+  <!-- Fork silhouette on the side -->
+  <g transform="translate(125, 70)">
+    <rect x="0" y="0" width="2" height="25" fill="#f8f6f0" opacity="0.8" rx="1"/>
+    <rect x="-3" y="-2" width="1.5" height="8" fill="#f8f6f0" opacity="0.8" rx="0.75"/>
+    <rect x="0" y="-2" width="1.5" height="8" fill="#f8f6f0" opacity="0.8" rx="0.75"/>
+    <rect x="3" y="-2" width="1.5" height="8" fill="#f8f6f0" opacity="0.8" rx="0.75"/>
+  </g>
+  
+  <!-- Decorative leaf accent -->
+  <g transform="translate(50, 60)">
+    <path d="M0 8 Q-4 4 0 0 Q4 4 0 8 Z" fill="url(#leafGradient)" opacity="0.6"/>
+    <path d="M0 0 Q2 4 0 8" stroke="#5a7a5f" stroke-width="0.5" fill="none"/>
+  </g>
+  
+  <!-- Small accent dots for texture -->
+  <circle cx="90" cy="130" r="1" fill="#ffffff" opacity="0.3"/>
+  <circle cx="94" cy="132" r="0.8" fill="#ffffff" opacity="0.3"/>
+  <circle cx="86" cy="132" r="0.8" fill="#ffffff" opacity="0.3"/>
+  
+  <!-- Subtle highlight on plate -->
+  <ellipse cx="85" cy="88" rx="15" ry="8" fill="#ffffff" opacity="0.15" transform="rotate(-20 85 88)"/>
+</svg>
