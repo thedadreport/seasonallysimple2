@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Leaf, Crown, User, LogOut, LogIn } from 'lucide-react';
+import { Menu, X, Leaf, Crown, User, LogOut, LogIn, Settings } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useSession, signOut } from 'next-auth/react';
 
@@ -94,6 +94,14 @@ const Navigation = () => {
                     {session.user?.name?.split(' ')[0]}
                   </span>
                 </div>
+                
+                <Link
+                  href="/settings"
+                  className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
+                  title="Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Link>
                 
                 <button
                   onClick={() => signOut({ callbackUrl: '/' })}
@@ -187,6 +195,17 @@ const Navigation = () => {
                     </Link>
                   </div>
                 )}
+                
+                <div className="pt-2">
+                  <Link
+                    href="/settings"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center w-full px-4 py-2 text-stone-600 border border-stone-200 rounded-full hover:bg-stone-50 transition-colors font-light mb-2"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </Link>
+                </div>
                 
                 <div className="pt-2">
                   <button

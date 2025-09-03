@@ -3,12 +3,17 @@
 import { signIn, getSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChefHat, Leaf } from 'lucide-react';
+import { ChefHat, Leaf, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -20,13 +25,12 @@ export default function SignIn() {
     });
   }, [router]);
 
-  const handleSignIn = async (provider: string, email?: string) => {
+  const handleSignIn = async (provider: string) => {
     try {
       setIsLoading(true);
       setError('');
       
       const result = await signIn(provider, {
-        ...(email && { email }),
         callbackUrl: '/preferences?onboarding=true',
         redirect: false,
       });
@@ -38,6 +42,49 @@ export default function SignIn() {
       }
     } catch (error) {
       console.error('Sign in error:', error);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      setError('Email and password are required.');
+      return;
+    }
+
+    if (isSignUp && password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    if (isSignUp && password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError('');
+
+      const result = await signIn('credentials', {
+        email,
+        password,
+        action: isSignUp ? 'signup' : 'signin',
+        callbackUrl: '/preferences?onboarding=true',
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+      } else if (result?.url) {
+        router.push(result.url);
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
       setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
@@ -75,8 +122,100 @@ export default function SignIn() {
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Email/Password Form */}
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              {/* Email Field */}
+              <div className="relative">
+                <Mail className="absolute left-4 top-4 h-5 w-5 text-stone-400" />
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 bg-white/80 border border-stone-200 rounded-full focus:outline-none focus:border-stone-300 focus:ring-1 focus:ring-stone-300 font-light text-base placeholder:text-stone-400"
+                  required
+                />
+              </div>
 
+              {/* Password Field */}
+              <div className="relative">
+                <Lock className="absolute left-4 top-4 h-5 w-5 text-stone-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-12 pr-12 py-4 bg-white/80 border border-stone-200 rounded-full focus:outline-none focus:border-stone-300 focus:ring-1 focus:ring-stone-300 font-light text-base placeholder:text-stone-400"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-4 text-stone-400 hover:text-stone-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+
+              {/* Confirm Password (Sign Up Only) */}
+              {isSignUp && (
+                <div className="relative">
+                  <Lock className="absolute left-4 top-4 h-5 w-5 text-stone-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="confirm password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-white/80 border border-stone-200 rounded-full focus:outline-none focus:border-stone-300 focus:ring-1 focus:ring-stone-300 font-light text-base placeholder:text-stone-400"
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`w-full flex items-center justify-center px-8 py-4 bg-stone-700 text-white rounded-full hover:bg-stone-800 transition-all font-light text-base shadow-sm ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {isLoading ? (
+                  'Beginning your journey...'
+                ) : (
+                  isSignUp ? 'Create Account' : 'Sign In'
+                )}
+              </button>
+
+              {/* Toggle Sign In/Up */}
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setError('');
+                    setPassword('');
+                    setConfirmPassword('');
+                  }}
+                  className="text-stone-600 hover:text-stone-800 text-sm font-light underline"
+                >
+                  {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                </button>
+              </div>
+            </form>
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-stone-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white/80 text-stone-500 font-light">or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Sign In */}
             <button
               onClick={() => handleSignIn('google')}
               disabled={isLoading}
@@ -102,7 +241,7 @@ export default function SignIn() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              {isLoading ? 'Beginning your journey...' : 'Begin with Google'}
+              Continue with Google
             </button>
           </div>
 

@@ -1,34 +1,91 @@
 import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
+import { getPrismaClient } from '@/lib/prisma';
 
 export const authOptions: NextAuthOptions = {
   // Database adapter temporarily disabled to fix Vercel build issues
   // User data persistence is handled by our custom API routes
   // adapter: undefined,
   providers: [
-    // For development, we'll include a demo credentials provider
-    ...(process.env.NODE_ENV === 'development' ? [
-      CredentialsProvider({
-        id: 'demo',
-        name: 'Demo User',
-        credentials: {
-          email: { label: 'Email', type: 'email' },
-        },
-        async authorize(credentials) {
-          // This is for demo purposes only - never do this in production!
-          if (credentials?.email) {
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'Email and Password',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+        action: { label: 'Action', type: 'text' } // 'signin' or 'signup'
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Email and password required');
+        }
+
+        const prisma = getPrismaClient();
+        if (!prisma) {
+          throw new Error('Database connection failed');
+        }
+
+        try {
+          const { email, password, action } = credentials;
+
+          if (action === 'signup') {
+            // Check if user already exists
+            const existingUser = await prisma.user.findUnique({
+              where: { email }
+            });
+
+            if (existingUser) {
+              throw new Error('User already exists with this email');
+            }
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 12);
+
+            // Create user
+            const user = await prisma.user.create({
+              data: {
+                email,
+                password: hashedPassword,
+                name: email.split('@')[0], // Use email prefix as initial name
+              }
+            });
+
             return {
-              id: 'demo-user-' + Date.now(),
-              name: 'Demo User',
-              email: credentials.email,
-              image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+            };
+          } else {
+            // Sign in
+            const user = await prisma.user.findUnique({
+              where: { email }
+            });
+
+            if (!user || !user.password) {
+              throw new Error('Invalid email or password');
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+            if (!isPasswordValid) {
+              throw new Error('Invalid email or password');
+            }
+
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
             };
           }
-          return null;
-        },
-      })
-    ] : []),
+        } catch (error) {
+          console.error('Auth error:', error);
+          throw error;
+        }
+      },
+    }),
     
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
