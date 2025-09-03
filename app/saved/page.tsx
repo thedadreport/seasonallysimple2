@@ -4,7 +4,6 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, ChefHat, Clock, Users, Star, Search, Filter, BookOpen, Trash2, Edit3, Plus, Camera, Upload, X, Loader2, Lock, Crown, Minus, CheckCircle } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
-import { createTestRecipe, createTestMealPlan } from '../../lib/testData';
 import { getRemainingRecipes } from '../../lib/subscription';
 import { SubscriptionTier, Recipe } from '@/types';
 import RecipeFeedback from '../../components/RecipeFeedback';
@@ -124,10 +123,6 @@ const SavedPageContent = () => {
     }
   };
 
-  const handleAddTestData = () => {
-    addRecipe(createTestRecipe());
-    addMealPlan(createTestMealPlan());
-  };
 
   const handleUpgrade = (tier: SubscriptionTier) => {
     const newSubscription = {
