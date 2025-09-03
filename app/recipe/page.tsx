@@ -110,6 +110,13 @@ const RecipePage = () => {
   const [generationProgress, setGenerationProgress] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [savedRecipe, setSavedRecipe] = useState<any>(null);
+  const [showGuidance, setShowGuidance] = useState(() => {
+    // Show guidance for first-time visitors
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('recipe-guidance-seen');
+    }
+    return false;
+  });
   
   // Form state
   const [formData, setFormData] = useState({
@@ -135,6 +142,13 @@ const RecipePage = () => {
       } else {
         setSelectedDiets([...newDiets, diet]);
       }
+    }
+  };
+
+  const hideGuidance = () => {
+    setShowGuidance(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('recipe-guidance-seen', 'true');
     }
   };
 
@@ -217,6 +231,63 @@ const RecipePage = () => {
             Share your kitchen moment and we'll craft something wonderful for your family
           </p>
         </div>
+        
+        {showGuidance && (
+          <div className="bg-gradient-to-r from-sage-50/90 via-white/80 to-terracotta-50/70 border border-sage-200/50 rounded-2xl p-8 mb-8">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-sage-100 rounded-full mb-4">
+                <ChefHat className="h-6 w-6 text-sage-600" />
+              </div>
+              <h3 className="text-xl font-serif font-medium text-sage-800 mb-2">How Recipe Generation Works</h3>
+              <p className="text-sage-600 font-light leading-relaxed max-w-xl mx-auto">
+                Tell us what's in your kitchen and what you're feeling, and we'll create a personalized recipe just for you.
+              </p>
+            </div>
+            
+            <div className="bg-white/60 rounded-xl p-6 mb-6">
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-sage-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-sage-600 text-xs font-bold">1</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-warmGray-800">Share your ingredients</p>
+                    <p className="text-warmGray-600 mt-1">Tell us what proteins and veggies you have</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-terracotta-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-terracotta-600 text-xs font-bold">2</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-warmGray-800">Set your preferences</p>
+                    <p className="text-warmGray-600 mt-1">Choose difficulty, time, and cooking method</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-copper-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-copper-600 text-xs font-bold">3</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-warmGray-800">Get your custom recipe</p>
+                    <p className="text-warmGray-600 mt-1">Complete with instructions, tips, and variations</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <button
+                onClick={hideGuidance}
+                className="px-6 py-2 bg-sage-600 text-white rounded-full text-sm font-medium hover:bg-sage-700 transition-colors"
+              >
+                Got it, let me try!
+              </button>
+            </div>
+          </div>
+        )}
         
         {error && (
           <div className="bg-rose-50/50 border border-rose-200/50 rounded-2xl p-6 mb-8">

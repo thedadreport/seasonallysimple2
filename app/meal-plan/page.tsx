@@ -281,15 +281,60 @@ function MealPlanContent() {
         </div>
         
         {showWelcome && (
-          <div className="bg-stone-50/80 border border-stone-200/50 rounded-2xl p-8 mb-8 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <Sparkles className="h-6 w-6 text-stone-600 mr-3" />
-              <h3 className="text-xl font-serif font-light text-stone-700 italic">Welcome to your meal planning journey!</h3>
+          <div className="bg-gradient-to-r from-sage-50/90 via-white/80 to-terracotta-50/70 border border-sage-200/50 rounded-2xl p-8 mb-8">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-sage-100 rounded-full mb-4">
+                <Sparkles className="h-6 w-6 text-sage-600" />
+              </div>
+              <h3 className="text-2xl font-serif font-medium text-sage-800 mb-2">Perfect! You're all set up</h3>
+              <p className="text-sage-600 font-light leading-relaxed max-w-xl mx-auto">
+                Now let's create your first personalized weekly meal plan based on your preferences.
+              </p>
             </div>
-            <p className="text-stone-600 font-light leading-relaxed max-w-2xl mx-auto">
-              You've completed your preferences - now let's create your first weekly meal plan. 
-              This thoughtful approach will help you plan nourishing meals for your family while reducing dinner stress.
-            </p>
+            
+            <div className="bg-white/60 rounded-xl p-6 mb-6">
+              <h4 className="font-medium text-warmGray-800 mb-4 text-center">Here's how meal planning works:</h4>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-sage-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-sage-600 text-xs font-bold">1</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-warmGray-800">Tell us what's in your pantry</p>
+                    <p className="text-warmGray-600 mt-1">We'll prioritize these ingredients in your meals</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-terracotta-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-terracotta-600 text-xs font-bold">2</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-warmGray-800">Get your personalized plan</p>
+                    <p className="text-warmGray-600 mt-1">7 meals with shopping list and prep guide</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-copper-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-copper-600 text-xs font-bold">3</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-warmGray-800">Save & generate recipes</p>
+                    <p className="text-warmGray-600 mt-1">Turn any meal into a full recipe instantly</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <button
+                onClick={() => setShowWelcome(false)}
+                className="px-6 py-2 bg-sage-600 text-white rounded-full text-sm font-medium hover:bg-sage-700 transition-colors"
+              >
+                Got it, let's start!
+              </button>
+            </div>
           </div>
         )}
         

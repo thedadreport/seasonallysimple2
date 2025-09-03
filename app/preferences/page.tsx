@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChefHat, Leaf, Save, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
+import { ChefHat, Leaf, Save, Loader2, CheckCircle, ArrowRight, Calendar, BookOpen } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 
 // Force this page to be dynamic
@@ -156,12 +156,70 @@ function PreferencesContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4">
       <div className="max-w-4xl mx-auto pt-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-display font-bold text-warmGray-900 mb-4">Your Culinary Journey</h1>
-          <p className="text-xl text-warmGray-600 font-body">
-            Share your cooking story to create personalized recipes that feel authentically yours
-          </p>
-        </div>
+        {isOnboarding ? (
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-sage-100 rounded-full mb-4">
+              <ChefHat className="h-8 w-8 text-sage-600" />
+            </div>
+            <h1 className="text-4xl font-display font-bold text-warmGray-900 mb-4">Welcome to Seasonally Simple!</h1>
+            <p className="text-xl text-warmGray-600 font-body mb-6">
+              Let's personalize your cooking experience in just a few steps
+            </p>
+            
+            {/* How it Works Guide */}
+            <div className="bg-white/80 backdrop-blur-sm border border-sage-200 rounded-2xl p-6 mb-8 text-left max-w-3xl mx-auto">
+              <h2 className="text-lg font-semibold text-warmGray-800 mb-4 text-center">Here's what you can do with Seasonally Simple:</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-sage-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ChefHat className="h-4 w-4 text-sage-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-warmGray-800 mb-1">Generate Custom Recipes</h3>
+                    <p className="text-sm text-warmGray-600">Get personalized recipes based on your pantry ingredients, dietary needs, and cooking style</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-terracotta-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Calendar className="h-4 w-4 text-terracotta-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-warmGray-800 mb-1">Weekly Meal Plans</h3>
+                    <p className="text-sm text-warmGray-600">Create complete meal plans with shopping lists and prep guides (Pro+ feature)</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-copper-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <BookOpen className="h-4 w-4 text-copper-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-warmGray-800 mb-1">Save & Organize</h3>
+                    <p className="text-sm text-warmGray-600">Keep all your favorite recipes and meal plans in one place for easy access</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-sage-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Leaf className="h-4 w-4 text-sage-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-warmGray-800 mb-1">Seasonal Focus</h3>
+                    <p className="text-sm text-warmGray-600">Recipes that celebrate fresh, in-season ingredients for better flavor and value</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-display font-bold text-warmGray-900 mb-4">Your Culinary Journey</h1>
+            <p className="text-xl text-warmGray-600 font-body">
+              Share your cooking story to create personalized recipes that feel authentically yours
+            </p>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -331,13 +389,23 @@ function PreferencesContent() {
                 </button>
                 
                 {saveSuccess && (
-                  <button
-                    onClick={() => router.push('/meal-plan?welcome=true')}
-                    className="px-8 py-3 bg-stone-700 text-white rounded-full font-light hover:bg-stone-800 transition-all flex items-center space-x-2"
-                  >
-                    <span>Continue to Meal Planning</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                    <button
+                      onClick={() => router.push('/meal-plan?welcome=true')}
+                      className="px-8 py-4 bg-sage-600 text-white rounded-full font-medium hover:bg-sage-700 transition-all flex items-center space-x-2 shadow-lg"
+                    >
+                      <span>Create Your First Meal Plan</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                    <span className="text-warmGray-400 font-light">or</span>
+                    <button
+                      onClick={() => router.push('/recipe')}
+                      className="px-6 py-3 bg-white border-2 border-sage-200 text-sage-700 rounded-full font-medium hover:border-sage-300 hover:bg-sage-50 transition-all flex items-center space-x-2"
+                    >
+                      <ChefHat className="h-4 w-4" />
+                      <span>Generate a Recipe</span>
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
