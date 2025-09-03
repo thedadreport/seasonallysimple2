@@ -30,14 +30,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // If no subscription exists, create a free tier
+    // If no subscription exists, create a pro tier (for testing)
     if (!user.subscription) {
       const dbSubscription = await prisma.subscription.create({
         data: {
           userId: user.id,
-          tier: 'free',
+          tier: 'pro',
           status: 'active',
           currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
         },
       });
 

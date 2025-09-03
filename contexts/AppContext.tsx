@@ -60,7 +60,7 @@ const initialState: AppState = {
   recipes: [],
   mealPlans: [],
   subscription: {
-    tier: 'free',
+    tier: 'pro',
     status: 'active', 
     startDate: new Date().toISOString(),
     endDate: null,
@@ -198,7 +198,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               console.warn('Failed to load meal plans from database, will merge with localStorage:', error);
               return [];
             }),
-            apiGetSubscription().catch(() => ({ tier: 'free' as const, status: 'active' as const, startDate: new Date().toISOString(), endDate: null, autoRenew: false })),
+            apiGetSubscription().catch(() => ({ tier: 'pro' as const, status: 'active' as const, startDate: new Date().toISOString(), endDate: null, autoRenew: false })),
             apiGetUsage().catch(() => ({ recipesGenerated: 0, mealPlansGenerated: 0, currentMonth: new Date().toISOString().slice(0, 7), lastReset: new Date().toISOString() })),
             fetch('/api/preferences').then(res => res.json()).then(data => data.success ? data.preferences : null).catch(() => null)
           ]);

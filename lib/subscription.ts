@@ -34,13 +34,13 @@ export const getCurrentMonth = (): string => {
   return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
 };
 
-// Initialize default subscription (free tier)
+// Initialize default subscription (pro tier for testing)
 export const getDefaultSubscription = (): Subscription => ({
-  tier: 'free',
+  tier: 'pro',
   status: 'active',
   startDate: new Date().toISOString(),
-  endDate: null,
-  autoRenew: false,
+  endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+  autoRenew: true,
 });
 
 // Initialize default usage stats

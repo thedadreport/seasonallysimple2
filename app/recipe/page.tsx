@@ -108,6 +108,8 @@ const RecipePage = () => {
   const [generatedRecipe, setGeneratedRecipe] = useState<Recipe | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
+  const [currentStep, setCurrentStep] = useState(0);
+  const [currentMessage, setCurrentMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [savedRecipe, setSavedRecipe] = useState<any>(null);
   const [showGuidance, setShowGuidance] = useState(() => {
@@ -152,6 +154,29 @@ const RecipePage = () => {
     }
   };
 
+  // Fun cooking-related loading messages
+  const cookingSteps = [
+    { icon: '🥬', message: 'Inspecting your ingredients...', duration: 2000 },
+    { icon: '👨‍🍳', message: 'Consulting our chef network...', duration: 2500 },
+    { icon: '🔥', message: 'Heating up the creative process...', duration: 2000 },
+    { icon: '🥄', message: 'Stirring in some culinary magic...', duration: 2000 },
+    { icon: '🌿', message: 'Adding a pinch of inspiration...', duration: 2000 },
+    { icon: '⏰', message: 'Timing the perfect flavor balance...', duration: 2000 },
+    { icon: '📖', message: 'Writing your personalized recipe...', duration: 2500 },
+    { icon: '✨', message: 'Adding the finishing touches...', duration: 1500 },
+  ];
+
+  const funMessages = [
+    'Did you know? The average home cook uses only 9-12 recipes regularly!',
+    'Cooking tip: Salt enhances sweetness and reduces bitterness.',
+    'Fun fact: Mise en place means "everything in its place" in French.',
+    'Pro tip: Let meat rest after cooking to redistribute juices.',
+    'Kitchen wisdom: Taste as you go - your palate is your best guide.',
+    'Chef secret: A little acid (lemon/vinegar) brightens most dishes.',
+    'Cooking magic: Caramelization starts around 320°F (160°C).',
+    'Food science: Resting dough develops gluten for better texture.',
+  ];
+
 
   const handleGenerateRecipe = async (isRegeneration = false) => {
     if (!isRegeneration) {
@@ -162,12 +187,25 @@ const RecipePage = () => {
     setIsGenerating(true);
     setError(null);
     setSavedRecipe(null);
-    setGenerationProgress('Analyzing your preferences...');
+    setCurrentStep(0);
+    setCurrentMessage(funMessages[Math.floor(Math.random() * funMessages.length)]);
     
     try {
-      // Progress updates
-      setTimeout(() => setGenerationProgress('Creating your custom recipe...'), 1000);
-      setTimeout(() => setGenerationProgress('Adding final touches...'), 8000);
+      // Animate through cooking steps
+      let totalTime = 0;
+      cookingSteps.forEach((step, index) => {
+        setTimeout(() => {
+          setCurrentStep(index);
+          setGenerationProgress(step.message);
+          if (index < cookingSteps.length - 1) {
+            // Change fun message occasionally
+            if (Math.random() < 0.4) {
+              setCurrentMessage(funMessages[Math.floor(Math.random() * funMessages.length)]);
+            }
+          }
+        }, totalTime);
+        totalTime += step.duration;
+      });
 
       const response = await fetch('/api/generate-recipe', {
         method: 'POST',
@@ -191,10 +229,14 @@ const RecipePage = () => {
       setGeneratedRecipe(data.recipe);
       setShowRecipe(true);
       setGenerationProgress('');
+      setCurrentStep(0);
+      setCurrentMessage('');
     } catch (error) {
       console.error('Recipe generation error:', error);
       setError(error instanceof Error ? error.message : 'Failed to generate recipe');
       setGenerationProgress('');
+      setCurrentStep(0);
+      setCurrentMessage('');
     } finally {
       setIsGenerating(false);
     }
@@ -604,7 +646,9 @@ const RecipePage = () => {
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span className="text-lg animate-bounce">
+                      {cookingSteps[currentStep]?.icon || '👨‍🍳'}
+                    </span>
                     <span>{generationProgress || 'Creating Your Recipe...'}</span>
                   </>
                 ) : (
@@ -623,14 +667,58 @@ const RecipePage = () => {
         ) : generatedRecipe ? (
           // Recipe Display
           <div className="space-y-6 relative">
-            {/* Loading Overlay for Regeneration */}
+            {/* Enhanced Cooking Animation Overlay */}
             {isGenerating && (
-              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-2xl flex items-center justify-center">
-                <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center space-y-4">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  <div className="text-center">
-                    <p className="text-lg font-medium text-gray-900">Creating New Recipe</p>
-                    <p className="text-sm text-gray-600">{generationProgress || 'Please wait...'}</p>
+              <div className="absolute inset-0 bg-gradient-to-br from-sage-50/95 via-white/90 to-terracotta-50/95 backdrop-blur-sm z-10 rounded-2xl flex items-center justify-center">
+                <div className="bg-white/90 rounded-2xl shadow-xl border border-sage-200/50 p-8 max-w-md mx-4 text-center">
+                  {/* Animated Icon */}
+                  <div className="mb-6 relative">
+                    <div className="text-6xl animate-bounce">
+                      {cookingSteps[currentStep]?.icon || '👨‍🍳'}
+                    </div>
+                    <div className="absolute inset-0 animate-ping">
+                      <div className="w-20 h-20 bg-sage-200/30 rounded-full mx-auto mt-2"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Main Progress Message */}
+                  <div className="mb-4">
+                    <p className="text-xl font-serif font-medium text-sage-800 mb-2">
+                      {generationProgress || 'Cooking up something special...'}
+                    </p>
+                    
+                    {/* Progress Bar */}
+                    <div className="w-full bg-sage-100 rounded-full h-2 mb-4">
+                      <div 
+                        className="bg-gradient-to-r from-sage-500 to-terracotta-500 h-2 rounded-full transition-all duration-500 ease-out"
+                        style={{ 
+                          width: `${Math.min(((currentStep + 1) / cookingSteps.length) * 100, 100)}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Fun Message */}
+                  {currentMessage && (
+                    <div className="bg-sage-50/80 rounded-xl p-4 border border-sage-200/50">
+                      <p className="text-sm text-sage-700 font-light italic">
+                        💡 {currentMessage}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Cooking Steps Indicator */}
+                  <div className="flex justify-center space-x-2 mt-6">
+                    {cookingSteps.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          index <= currentStep
+                            ? 'bg-sage-500 scale-110'
+                            : 'bg-sage-200'
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -687,7 +775,9 @@ const RecipePage = () => {
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="animate-bounce">
+                        {cookingSteps[currentStep]?.icon || '👨‍🍳'}
+                      </span>
                       <span>Regenerating...</span>
                     </>
                   ) : (
