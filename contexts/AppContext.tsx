@@ -203,54 +203,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             fetch('/api/preferences').then(res => res.json()).then(data => data.success ? data.preferences : null).catch(() => null)
           ]);
           
-          // Always merge with localStorage to ensure no data is lost
-          const localRecipes = getRecipes();
-          const localMealPlans = getMealPlans();
-          
-          // Merge database and localStorage data, avoiding duplicates
-          const mergedRecipes = [...dbRecipes];
-          localRecipes.forEach(localRecipe => {
-            if (!mergedRecipes.find(dbRecipe => dbRecipe.id === localRecipe.id)) {
-              mergedRecipes.push(localRecipe);
-            }
-          });
-          
-          const mergedMealPlans = [...dbMealPlans];
-          localMealPlans.forEach(localPlan => {
-            if (!mergedMealPlans.find(dbPlan => dbPlan.id === localPlan.id)) {
-              mergedMealPlans.push(localPlan);
-            }
-          });
-          
-          console.log('AppContext: Loaded and merged data:', {
+          // For signed-in users, ONLY use database data to ensure data isolation
+          console.log('AppContext: Loaded user-specific database data:', {
             dbRecipes: dbRecipes.length,
-            localRecipes: localRecipes.length,
-            totalRecipes: mergedRecipes.length,
             dbMealPlans: dbMealPlans.length,
-            localMealPlans: localMealPlans.length,
-            totalMealPlans: mergedMealPlans.length
+            user: session?.user?.email
           });
+          
+          // Clear localStorage to prevent data leakage between users
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('seasonally-simple-recipes');
+            localStorage.removeItem('seasonally-simple-meal-plans');
+            console.log('AppContext: Cleared localStorage to prevent data leakage');
+          }
           
           dispatch({ type: 'LOAD_DATA', payload: { 
-            recipes: mergedRecipes, 
-            mealPlans: mergedMealPlans, 
+            recipes: dbRecipes, 
+            mealPlans: dbMealPlans, 
             subscription: dbSubscription, 
             usage: dbUsage,
             preferences: dbPreferences
           } });
-          
-          // Optionally sync localStorage recipes to database in background
-          if (localRecipes.length > 0) {
-            console.log('AppContext: Attempting to sync localStorage recipes to database...');
-            localRecipes.forEach(async (recipe) => {
-              try {
-                await apiCreateRecipe(recipe);
-                console.log('AppContext: Successfully synced recipe to database:', recipe.title);
-              } catch (error) {
-                console.log('AppContext: Recipe already exists in database or sync failed:', recipe.title);
-              }
-            });
-          }
         } else {
           // User is not signed in - load from localStorage for demo/offline usage
           const recipes = getRecipes();
@@ -280,18 +253,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       
       if (session?.user) {
         console.log('AppContext: User is signed in, using database API');
-        // Use database API
-        try {
-          const savedRecipe = await apiCreateRecipe(recipe);
-          dispatch({ type: 'ADD_RECIPE', payload: savedRecipe });
-          console.log('AppContext: Recipe saved to database successfully');
-        } catch (apiError) {
-          console.warn('AppContext: Database API failed, falling back to localStorage:', apiError);
-          // Fallback to localStorage if database API fails
-          saveRecipe(recipe);
-          dispatch({ type: 'ADD_RECIPE', payload: recipe });
-          console.log('AppContext: Recipe saved to localStorage as fallback');
-        }
+        // Use database API only - no localStorage fallback to ensure data isolation
+        const savedRecipe = await apiCreateRecipe(recipe);
+        dispatch({ type: 'ADD_RECIPE', payload: savedRecipe });
+        console.log('AppContext: Recipe saved to database successfully');
       } else {
         console.log('AppContext: No user session, using localStorage');
         // Use localStorage
