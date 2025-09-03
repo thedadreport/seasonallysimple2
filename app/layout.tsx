@@ -1,10 +1,12 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import '../styles/globals.css';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import { AppProvider } from '../contexts/AppContext';
 import AuthProvider from '../components/AuthProvider';
+import PWAManager from '../components/PWAManager';
+import OfflineIndicator from '../components/OfflineIndicator';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -23,6 +25,12 @@ export const metadata: Metadata = {
   authors: [{ name: 'Seasonally Simple' }],
   creator: 'Seasonally Simple',
   publisher: 'Seasonally Simple',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Seasonally Simple'
+  },
   openGraph: {
     title: 'Seasonally Simple - AI-Powered Family Meal Planning',
     description: 'Turn dinner stress into family joy with AI-powered recipes that solve real dinner problems.',
@@ -50,6 +58,16 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: '#7c9885',
+  colorScheme: 'light',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover'
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -57,6 +75,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <head>
+        {/* PWA Meta Tags */}
+        <meta name="application-name" content="Seasonally Simple" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Seasonally Simple" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#7c9885" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        
+        {/* Icons */}
+        <link rel="icon" type="image/svg+xml" href="/icon-192x192.svg" />
+        <link rel="apple-touch-icon" href="/icon-192x192.svg" />
+        <link rel="shortcut icon" href="/icon-192x192.svg" />
+      </head>
       <body className="font-light bg-gradient-to-br from-stone-50 via-rose-50/20 to-amber-50/30 text-stone-700">
         <AuthProvider>
           <AppProvider>
@@ -65,6 +99,8 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <PWAManager />
+            <OfflineIndicator />
           </AppProvider>
         </AuthProvider>
       </body>
