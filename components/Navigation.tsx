@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, Leaf, Crown, User, LogOut, LogIn, Settings } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useSession, signOut } from 'next-auth/react';
+import InstallAppButton from './InstallAppButton';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,6 +82,8 @@ const Navigation = () => {
                     Upgrade
                   </Link>
                 )}
+                
+                <InstallAppButton />
                 
                 <div className="flex items-center space-x-2">
                   {session.user?.image && (
@@ -196,11 +199,15 @@ const Navigation = () => {
                   </div>
                 )}
                 
-                <div className="pt-2">
+                <div className="pt-2 space-y-2">
+                  <div onClick={() => setIsOpen(false)}>
+                    <InstallAppButton />
+                  </div>
+                  
                   <Link
                     href="/settings"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center w-full px-4 py-2 text-stone-600 border border-stone-200 rounded-full hover:bg-stone-50 transition-colors font-light mb-2"
+                    className="flex items-center justify-center w-full px-4 py-2 text-stone-600 border border-stone-200 rounded-full hover:bg-stone-50 transition-colors font-light"
                   >
                     <Settings className="h-4 w-4 mr-2" />
                     Settings

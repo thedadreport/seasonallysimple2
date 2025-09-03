@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, X, Smartphone, Monitor } from 'lucide-react';
+import { Download, X, Smartphone, Monitor, HelpCircle } from 'lucide-react';
+import InstallGuide from './InstallGuide';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -11,6 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 const PWAManager = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
@@ -112,22 +114,42 @@ const PWAManager = () => {
               }
             </p>
             
-            {isIOS ? (
-              <div className="text-white/90 text-xs leading-relaxed">
-                <p>Tap <strong>Share</strong> → <strong>Add to Home Screen</strong></p>
-              </div>
-            ) : (
-              <button
-                onClick={handleInstallClick}
-                className="bg-white text-sage-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-white/95 transition-colors flex items-center space-x-2"
-              >
-                <Download className="h-4 w-4" />
-                <span>Install App</span>
-              </button>
-            )}
+            <div className="flex space-x-2">
+              {isIOS ? (
+                <button
+                  onClick={() => setShowInstallGuide(true)}
+                  className="bg-white text-sage-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-white/95 transition-colors flex items-center space-x-2"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  <span>Show Me How</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleInstallClick}
+                    className="bg-white text-sage-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-white/95 transition-colors flex items-center space-x-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Install App</span>
+                  </button>
+                  <button
+                    onClick={() => setShowInstallGuide(true)}
+                    className="bg-white/20 text-white px-3 py-2 rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
+      
+      {/* Install Guide Modal */}
+      <InstallGuide 
+        isOpen={showInstallGuide} 
+        onClose={() => setShowInstallGuide(false)} 
+      />
     </div>
   );
 };
