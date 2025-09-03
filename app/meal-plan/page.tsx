@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { Calendar, ShoppingCart, Clock, DollarSign, Users, CheckCircle, Star, ChefHat, BookOpen, Lock, Crown, Loader2, Plus, Minus, ExternalLink, Cookie, Flame, Zap, Timer, Wind, Snowflake, Utensils, Leaf, Sparkles } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { getRemainingMealPlans, formatSubscriptionTier } from '../../lib/subscription';
-import SubscriptionUpgrade from '../../components/SubscriptionUpgrade';
 
 // Force this page to be dynamic
 export const dynamic = 'force-dynamic';
@@ -268,7 +267,6 @@ function MealPlanContent() {
 
   const canGenerate = canGenerateMealPlan();
   const remainingMealPlans = getRemainingMealPlans(subscription, usage);
-  const hasAccessToMealPlans = subscription.tier !== 'free';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-warmCream via-sage-50 to-cream-50 p-4">
@@ -338,9 +336,7 @@ function MealPlanContent() {
           </div>
         )}
         
-        {!hasAccessToMealPlans ? (
-          <SubscriptionUpgrade feature="meal planning" />
-        ) : !showMealPlan ? (
+        {!showMealPlan ? (
           // Meal Plan Generation Form
           <>
             {error && (
@@ -651,7 +647,7 @@ function MealPlanContent() {
                   <p className="font-medium text-gray-900">{formatSubscriptionTier(subscription.tier)}</p>
                 </div>
               </div>
-              {!canGenerate && hasAccessToMealPlans && (
+              {!canGenerate && (
                 <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                   <p className="text-sm text-orange-800">
                     <Lock className="h-4 w-4 inline mr-2" />
