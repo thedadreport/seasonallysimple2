@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { 
   ArrowRight, 
   Star, 
-  Sparkles
+  Sparkles,
+  Smartphone
 } from 'lucide-react';
+import InstallAppButton from '../components/InstallAppButton';
 
 export default function HomePage() {
   return (
@@ -41,6 +43,24 @@ export default function HomePage() {
             <p className="text-sm text-stone-500 mt-4 font-light">
               Create unlimited recipes instantly • Just sign in with Google
             </p>
+          </div>
+
+          {/* Mobile Install CTA */}
+          <div className="lg:hidden text-center mb-12">
+            <div className="bg-white/60 backdrop-blur-sm border border-stone-200/50 rounded-2xl p-6 max-w-sm mx-auto shadow-sm">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-stone-100 to-stone-200 rounded-full flex items-center justify-center">
+                  <Smartphone className="h-5 w-5 text-stone-600" />
+                </div>
+              </div>
+              <h3 className="text-lg font-serif font-light text-stone-700 mb-2 italic">Cook hands-free</h3>
+              <p className="text-sm text-stone-600 mb-4 font-light leading-relaxed">
+                Add to your home screen for easy access while cooking. Keep your recipes open even when your phone is locked!
+              </p>
+              <div className="flex justify-center">
+                <InstallAppButton />
+              </div>
+            </div>
           </div>
 
           {/* Quick Stats */}
