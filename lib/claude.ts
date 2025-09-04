@@ -53,7 +53,38 @@ export async function generateRecipeWithAI(formData: {
 **COOKING STYLE PREFERENCE:** ${formData.cookingStyle}
 Please incorporate this cooking philosophy and style into the recipe approach, techniques, and overall feel.` : '';
 
-  const prompt = `Create a detailed, family-friendly recipe based on these requirements:
+  // Protein guardrails logic
+  const proteinList = formData.protein.toLowerCase().split(/[,&+]|\sand\s/).map(p => p.trim()).filter(p => p.length > 0);
+  let proteinInstructions = '';
+  
+  if (proteinList.length > 1) {
+    // Multiple proteins detected - add guardrails
+    proteinInstructions = `
+
+🚨 **IMPORTANT PROTEIN GUIDELINES:**
+The user mentioned multiple proteins: "${formData.protein}"
+
+**CRITICAL RULES:**
+1. **CHOOSE ONE PRIMARY PROTEIN** - Select the MOST SUITABLE protein from their list for a single, cohesive recipe
+2. **NO MIXING MULTIPLE PROTEINS** - Never combine different proteins (like chicken AND ground beef) in one recipe - this creates terrible combinations
+3. **FOCUS ON ONE** - Build the entire recipe around ONE protein choice that works best with their cooking method and situation
+4. **EXPLAIN YOUR CHOICE** - In the recipe notes, briefly mention why you chose that particular protein for their needs
+
+**GOOD EXAMPLES:**
+✅ User says "chicken and beef" → Choose chicken thighs for stir-fry (faster cooking for weeknight)
+✅ User says "ground beef, chicken breast" → Choose ground beef for quick 30-minute meal
+✅ User says "salmon and pork" → Choose salmon for healthy weeknight dinner
+
+**NEVER DO:**
+❌ Chicken and beef stir-fry
+❌ Salmon and pork chops together  
+❌ Ground beef and chicken in same dish
+❌ Any recipe mixing multiple different proteins
+
+Choose the protein that best matches their time constraints, cooking method, and situation.`;
+  }
+
+  const prompt = `Create a detailed, family-friendly recipe that you'd find in a trusted cookbook - something practical, tested, and reliable.
 
 **Family Size:** ${formData.familySize}
 **Available Time:** ${formData.availableTime}
@@ -63,7 +94,9 @@ Please incorporate this cooking philosophy and style into the recipe approach, t
 **Cooking Method:** ${formData.cookingMethod}
 **Cuisine Style:** ${formData.cuisineType}
 **Difficulty Level:** ${formData.difficulty}
-**Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}${seasonalNote}${cookingStyleNote}
+**Dietary Restrictions:** ${formData.dietaryRestrictions.join(', ') || 'None'}${seasonalNote}${cookingStyleNote}${proteinInstructions}
+
+**RECIPE STYLE:** Create a recipe you'd find in a reputable cookbook - something that's been tested, works reliably, and uses classic techniques and well-balanced flavors. Avoid overly trendy or experimental combinations.
 
 Please generate a complete recipe with:
 1. A creative, descriptive title
@@ -106,7 +139,7 @@ Format the response as valid JSON with this exact structure:
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 2000,
       temperature: 0.7,
-      system: 'You are a professional chef and cookbook author who specializes in practical, family-friendly recipes. You understand real cooking situations and provide helpful, achievable recipes with clear instructions.',
+      system: 'You are a professional chef and cookbook author who creates recipes you\'d find in trusted cookbooks - practical, tested, and reliable. You specialize in classic, well-balanced recipes that families can count on. When users mention multiple proteins, you choose ONE protein that works best for their situation and never mix incompatible proteins in a single recipe. You create recipes with proven flavor combinations and time-tested techniques.',
       messages: [
         {
           role: 'user',

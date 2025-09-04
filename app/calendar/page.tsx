@@ -651,7 +651,7 @@ const CalendarPage = () => {
                           {/* Mobile: Compact add button */}
                           <button 
                             onClick={() => handleAddRecipe(date)}
-                            className="md:hidden flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                            className="md:hidden flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 min-h-[32px] min-w-[32px]"
                           >
                             <Plus className="h-4 w-4" />
                           </button>
@@ -699,12 +699,12 @@ const CalendarPage = () => {
 
         {/* Recipe Selection Modal */}
         {showRecipeModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
-              <div className="p-6 border-b border-gray-200">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden mx-4 sm:mx-0">
+              <div className="p-4 sm:p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Select a Recipe</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Select a Recipe</h2>
                     {selectedDate && (
                       <p className="text-gray-600 mt-1">
                         Adding dinner for {selectedDate.toLocaleDateString('en-US', { 
@@ -725,7 +725,7 @@ const CalendarPage = () => {
               </div>
 
               {/* Search and Filters */}
-              <div className="p-6 border-b border-gray-200">
+              <div className="p-4 sm:p-6 border-b border-gray-200">
                 <div className="flex flex-col space-y-4">
                   {/* Search Bar */}
                   <div className="relative">
@@ -787,7 +787,7 @@ const CalendarPage = () => {
                 </div>
               </div>
 
-              <div className="p-6 overflow-y-auto max-h-[50vh]">
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[50vh]">
                 {recipes.length === 0 ? (
                   <div className="text-center py-12">
                     <ChefHat className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -882,7 +882,7 @@ const CalendarPage = () => {
 
         {/* Recipe Details Modal for Mobile */}
         {showDetailsModal && selectedRecipe && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
             <div className="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
               {/* Header */}
               <div className="p-4 border-b border-gray-200">
@@ -979,7 +979,7 @@ const CalendarPage = () => {
 
         {/* Shopping List Modal */}
         {showShoppingListModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
             <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
               {/* Header */}
               <div className="p-6 border-b border-gray-200 flex-shrink-0">
