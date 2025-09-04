@@ -726,7 +726,7 @@ const RecipePage = () => {
             {/* Recipe Header */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-6 lg:p-8">
               {/* Mobile Layout */}
-              <div className="md:hidden">
+              <div className="lg:hidden">
                 <div className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-3">
                   <Utensils className="h-3 w-3 mr-2" />
                   {generatedRecipe?.situation}
@@ -761,7 +761,7 @@ const RecipePage = () => {
               </div>
 
               {/* Desktop Layout */}
-              <div className="hidden md:block">
+              <div className="hidden lg:block">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
                     <div className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-4">
