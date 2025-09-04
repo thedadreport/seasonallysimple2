@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate PNG Icons</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .download-link { display: block; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Generate PNG Icons from SVG</h1>
+    <p>This page will generate PNG versions of your SVG icons. Open this file in a browser and click the download links.</p>
+    
+    <div id="canvases"></div>
+    
+    <script>
+        const svgContent = `<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="192" height="192" rx="24" fill="#7c9885"/>
+            <circle cx="96" cy="76" r="32" fill="#f8f6f0"/>
+            <path d="M80 76c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="#7c9885" stroke-width="3" stroke-linecap="round"/>
+            <rect x="72" y="108" width="48" height="8" rx="4" fill="#f8f6f0"/>
+            <rect x="76" y="124" width="40" height="6" rx="3" fill="#f8f6f0"/>
+            <rect x="80" y="136" width="32" height="6" rx="3" fill="#f8f6f0"/>
+            <path d="M88 48l8-8 8 8" stroke="#f8f6f0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+
+        const sizes = [
+            { size: 180, filename: 'apple-touch-icon.png' },
+            { size: 192, filename: 'icon-192x192.png' },
+            { size: 512, filename: 'icon-512x512.png' }
+        ];
+
+        function createPNGFromSVG(svgString, size, filename) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            const img = new Image();
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, size, size);
+                URL.revokeObjectURL(url);
+                
+                // Create download link
+                canvas.toBlob(function(blob) {
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = filename;
+                    link.textContent = `Download ${filename} (${size}x${size})`;
+                    link.className = 'download-link';
+                    document.getElementById('canvases').appendChild(link);
+                    
+                    // Also add the canvas for preview
+                    const container = document.createElement('div');
+                    container.innerHTML = `<h3>${filename} (${size}x${size})</h3>`;
+                    container.appendChild(canvas);
+                    document.getElementById('canvases').appendChild(container);
+                });
+            };
+            
+            img.src = url;
+        }
+
+        // Generate all sizes
+        sizes.forEach(({ size, filename }) => {
+            const scaledSVG = svgContent.replace(/width="192"/g, `width="${size}"`).replace(/height="192"/g, `height="${size}"`);
+            createPNGFromSVG(scaledSVG, size, filename);
+        });
+    </script>
+</body>
+</html>

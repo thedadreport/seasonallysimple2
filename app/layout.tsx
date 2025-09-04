@@ -88,8 +88,10 @@ export default function RootLayout({
         
         {/* Icons */}
         <link rel="icon" type="image/svg+xml" href="/icon-192x192.svg" />
-        <link rel="apple-touch-icon" href="/icon-192x192.svg" />
-        <link rel="shortcut icon" href="/icon-192x192.svg" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="shortcut icon" href="/icon-192x192.png" />
       </head>
       <body className="font-light bg-gradient-to-br from-stone-50 via-rose-50/20 to-amber-50/30 text-stone-700">
         <AuthProvider>
