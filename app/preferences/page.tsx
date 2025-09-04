@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChefHat, Leaf, Save, Loader2, CheckCircle, ArrowRight, Calendar, BookOpen } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
+import OnboardingInstallPrompt from '../../components/OnboardingInstallPrompt';
 
 // Force this page to be dynamic
 export const dynamic = 'force-dynamic';
@@ -47,6 +48,7 @@ function PreferencesContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
   // Load preferences on component mount
   useEffect(() => {
@@ -93,6 +95,14 @@ function PreferencesContent() {
         // Refresh user data in context to update preferences
         await refreshUserData();
         setTimeout(() => setSaveSuccess(false), 3000);
+        
+        // Show install prompt during onboarding (but not if they already skipped)
+        if (isOnboarding) {
+          const alreadySkipped = localStorage.getItem('onboarding-install-skipped');
+          if (!alreadySkipped) {
+            setTimeout(() => setShowInstallPrompt(true), 1500); // Show after success message
+          }
+        }
       } else {
         setError(data.error || 'Failed to save preferences');
       }
@@ -432,6 +442,12 @@ function PreferencesContent() {
           </div>
         </div>
       </div>
+
+      {/* Onboarding Install Prompt */}
+      <OnboardingInstallPrompt 
+        isVisible={showInstallPrompt} 
+        onDismiss={() => setShowInstallPrompt(false)} 
+      />
     </div>
   );
 }
