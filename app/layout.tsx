@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import '../styles/globals.css';
 import Navigation from '../components/Navigation';
+import BottomNavigation from '../components/BottomNavigation';
 import Footer from '../components/Footer';
 import { AppProvider } from '../contexts/AppContext';
 import AuthProvider from '../components/AuthProvider';
@@ -97,10 +98,11 @@ export default function RootLayout({
         <AuthProvider>
           <AppProvider>
             <Navigation />
-            <main className="min-h-screen">
+            <main className="min-h-screen pb-16 md:pb-0">
               {children}
             </main>
             <Footer />
+            <BottomNavigation />
             <PWAManager />
             <OfflineIndicator />
           </AppProvider>
