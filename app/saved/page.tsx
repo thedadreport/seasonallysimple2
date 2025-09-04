@@ -682,10 +682,96 @@ const SavedPageContent = () => {
                 // Check if recipe was added recently (within last 5 minutes)
                 const isRecentlyAdded = new Date(recipe.dateAdded).getTime() > Date.now() - 5 * 60 * 1000;
                 return (
-                <div key={recipe.id} className={`bg-white rounded-2xl shadow-lg border p-6 hover:shadow-xl transition-shadow ${
+                <div key={recipe.id} className={`bg-white rounded-2xl shadow-lg border p-4 md:p-6 hover:shadow-xl transition-shadow ${
                   isRecentlyAdded ? 'border-green-300 bg-green-50' : 'border-gray-200'
                 }`}>
-                  <div className="flex items-start justify-between">
+                  {/* Mobile Layout */}
+                  <div className="md:hidden">
+                    <div className="flex items-center mb-3">
+                      <div className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mr-3">
+                        <ChefHat className="h-3 w-3 mr-1" />
+                        {recipe.situation}
+                      </div>
+                      <span className="text-xs text-gray-500">Saved {recipe.dateAdded}</span>
+                    </div>
+                    
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">{recipe.title}</h2>
+                    <p className="text-gray-600 mb-3 text-sm">{recipe.description}</p>
+                    
+                    <div className="flex items-center space-x-4 text-xs text-gray-600 mb-3">
+                      <div className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {recipe.cookTime}
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="h-3 w-3 mr-1" />
+                        {recipe.servings}
+                      </div>
+                      <div className="flex items-center">
+                        <Star className="h-3 w-3 mr-1" />
+                        {recipe.difficulty}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {recipe.tags.map((tag, index) => (
+                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {recipe.notes && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Your notes:</strong> {recipe.notes}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Mobile Action Buttons */}
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <button 
+                        onClick={() => handleViewRecipe(recipe)}
+                        className="px-2 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium flex items-center justify-center"
+                      >
+                        <BookOpen className="h-3 w-3 mr-1" />
+                        View
+                      </button>
+                      <button 
+                        onClick={() => handleEditRecipe(recipe)}
+                        disabled={!canEdit}
+                        className={`px-2 py-2 border rounded-lg transition-colors text-xs flex items-center justify-center ${
+                          canEdit 
+                            ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200' 
+                            : 'bg-orange-50 text-orange-700 border-orange-200 cursor-not-allowed'
+                        }`}
+                      >
+                        <Edit3 className="h-3 w-3 mr-1" />
+                        {canEdit ? 'Edit' : 'Pro'}
+                      </button>
+                      <button 
+                        onClick={() => deleteRecipe(recipe.id)}
+                        className="px-2 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-xs flex items-center justify-center"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Remove
+                      </button>
+                    </div>
+
+                    {/* Recipe Feedback - Mobile */}
+                    <div className="pt-3 border-t border-gray-100">
+                      <RecipeFeedback 
+                        recipeId={recipe.id}
+                        initialFeedback={recipe.feedback}
+                        size="sm"
+                        showLabel={true}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout */}
+                  <div className="hidden md:flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center mb-3">
                         <div className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mr-3">
@@ -729,7 +815,7 @@ const SavedPageContent = () => {
                         </div>
                       )}
 
-                      {/* Recipe Feedback */}
+                      {/* Recipe Feedback - Desktop */}
                       <div className="pt-4 border-t border-gray-100">
                         <RecipeFeedback 
                           recipeId={recipe.id}
@@ -740,10 +826,11 @@ const SavedPageContent = () => {
                       </div>
                     </div>
 
+                    {/* Desktop Action Buttons */}
                     <div className="ml-6 flex flex-col space-y-2">
                       <button 
                         onClick={() => handleViewRecipe(recipe)}
-                        className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                        className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium whitespace-nowrap"
                       >
                         <BookOpen className="h-4 w-4 inline mr-2" />
                         View Recipe
@@ -751,7 +838,7 @@ const SavedPageContent = () => {
                       <button 
                         onClick={() => handleEditRecipe(recipe)}
                         disabled={!canEdit}
-                        className={`px-4 py-2 border rounded-lg transition-colors text-sm ${
+                        className={`px-4 py-2 border rounded-lg transition-colors text-sm whitespace-nowrap ${
                           canEdit 
                             ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200' 
                             : 'bg-orange-50 text-orange-700 border-orange-200 cursor-not-allowed'
@@ -762,7 +849,7 @@ const SavedPageContent = () => {
                       </button>
                       <button 
                         onClick={() => deleteRecipe(recipe.id)}
-                        className="px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm"
+                        className="px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm whitespace-nowrap"
                       >
                         <Trash2 className="h-4 w-4 inline mr-2" />
                         Remove
@@ -784,8 +871,71 @@ const SavedPageContent = () => {
               </div>
             ) : (
               filteredMealPlans.map((plan) => (
-                <div key={plan.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow">
-                  <div className="flex items-start justify-between">
+                <div key={plan.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6 hover:shadow-xl transition-shadow">
+                  {/* Mobile Layout */}
+                  <div className="md:hidden">
+                    <div className="flex items-center mb-3">
+                      <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mr-3">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {plan.focus}
+                      </div>
+                      <span className="text-xs text-gray-500">Saved {plan.dateAdded}</span>
+                    </div>
+                    
+                    <h2 className="text-lg font-bold text-gray-900 mb-2">{plan.title}</h2>
+                    <p className="text-gray-600 mb-3 text-sm">{plan.description}</p>
+                    
+                    <div className="flex items-center space-x-4 text-xs text-gray-600 mb-3">
+                      <div className="flex items-center">
+                        <span className="font-medium text-green-600">{plan.totalCost}</span>
+                        <span className="ml-1">total cost</span>
+                      </div>
+                      <div className="flex items-center">
+                        <ChefHat className="h-3 w-3 mr-1" />
+                        {plan.numMeals} meals
+                      </div>
+                    </div>
+
+                    {plan.notes && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Your notes:</strong> {plan.notes}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Mobile Action Buttons */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <button 
+                        onClick={() => setViewingMealPlan(plan)}
+                        className="px-2 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium flex items-center justify-center"
+                      >
+                        <BookOpen className="h-3 w-3 mr-1" />
+                        View
+                      </button>
+                      <button 
+                        disabled={!canEdit}
+                        className={`px-2 py-2 border rounded-lg transition-colors text-xs flex items-center justify-center ${
+                          canEdit 
+                            ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200' 
+                            : 'bg-orange-50 text-orange-700 border-orange-200 cursor-not-allowed'
+                        }`}
+                      >
+                        <Edit3 className="h-3 w-3 mr-1" />
+                        {canEdit ? 'Edit' : 'Pro'}
+                      </button>
+                      <button 
+                        onClick={() => deleteMealPlan(plan.id)}
+                        className="px-2 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-xs flex items-center justify-center"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout */}
+                  <div className="hidden md:flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center mb-3">
                         <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mr-3">
@@ -818,17 +968,18 @@ const SavedPageContent = () => {
                       )}
                     </div>
 
+                    {/* Desktop Action Buttons */}
                     <div className="ml-6 flex flex-col space-y-2">
                       <button 
                         onClick={() => setViewingMealPlan(plan)}
-                        className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                        className="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium whitespace-nowrap"
                       >
                         <BookOpen className="h-4 w-4 inline mr-2" />
                         View Plan
                       </button>
                       <button 
                         disabled={!canEdit}
-                        className={`px-4 py-2 border rounded-lg transition-colors text-sm ${
+                        className={`px-4 py-2 border rounded-lg transition-colors text-sm whitespace-nowrap ${
                           canEdit 
                             ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200' 
                             : 'bg-orange-50 text-orange-700 border-orange-200 cursor-not-allowed'
@@ -839,7 +990,7 @@ const SavedPageContent = () => {
                       </button>
                       <button 
                         onClick={() => deleteMealPlan(plan.id)}
-                        className="px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm"
+                        className="px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm whitespace-nowrap"
                       >
                         <Trash2 className="h-4 w-4 inline mr-2" />
                         Remove

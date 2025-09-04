@@ -129,20 +129,29 @@ const Navigation = () => {
             {status === 'loading' ? (
               <div className="w-8 h-8 bg-stone-200 rounded-full animate-pulse"></div>
             ) : session ? (
-              <Link href="/subscription" className="flex items-center space-x-2">
-                {session.user?.image && (
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name || 'User'}
-                    className="w-8 h-8 rounded-full"
-                  />
-                )}
-                {subscription.tier === 'free' ? (
-                  <User className="h-4 w-4 text-stone-600" />
-                ) : (
-                  <Crown className="h-4 w-4 text-stone-600" />
-                )}
-              </Link>
+              <>
+                <Link 
+                  href="/settings"
+                  className="p-2 text-stone-600 hover:text-stone-800 transition-colors rounded-lg"
+                  title="Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Link>
+                <Link href="/subscription" className="flex items-center space-x-2">
+                  {session.user?.image && (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || 'User'}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  )}
+                  {subscription.tier === 'free' ? (
+                    <User className="h-4 w-4 text-stone-600" />
+                  ) : (
+                    <Crown className="h-4 w-4 text-stone-600" />
+                  )}
+                </Link>
+              </>
             ) : (
               <Link
                 href="/auth/signin"
