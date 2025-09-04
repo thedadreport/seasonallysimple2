@@ -3,17 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ChefHat, Calendar, BookOpen } from 'lucide-react';
+import { Home, ChefHat, Calendar, BookOpen, CalendarDays } from 'lucide-react';
 
 const BottomNavigation = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { 
-      href: '/', 
-      label: 'Home', 
-      icon: Home 
-    },
     { 
       href: '/recipe', 
       label: 'Recipe', 
@@ -23,6 +18,11 @@ const BottomNavigation = () => {
       href: '/meal-plan', 
       label: 'Meal Plan', 
       icon: Calendar 
+    },
+    { 
+      href: '/calendar', 
+      label: 'Calendar', 
+      icon: CalendarDays 
     },
     { 
       href: '/saved', 
