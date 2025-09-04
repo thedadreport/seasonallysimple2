@@ -724,37 +724,75 @@ const RecipePage = () => {
               </div>
             )}
             {/* Recipe Header */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  <div className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-4">
-                    <Utensils className="h-4 w-4 mr-2" />
-                    {generatedRecipe?.situation}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-6 lg:p-8">
+              {/* Mobile Layout */}
+              <div className="md:hidden">
+                <div className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-3">
+                  <Utensils className="h-3 w-3 mr-2" />
+                  {generatedRecipe?.situation}
+                </div>
+                <h1 className="text-xl font-bold text-gray-900 mb-3 leading-tight">{generatedRecipe?.title}</h1>
+                <p className="text-sm text-gray-700 mb-4 leading-relaxed">{generatedRecipe?.description}</p>
+                
+                {/* Mobile Recipe Stats */}
+                <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <Clock className="h-4 w-4 mx-auto text-gray-500 mb-1" />
+                    <div className="text-xs text-gray-600 font-medium">{generatedRecipe.cookTime}</div>
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{generatedRecipe?.title}</h1>
-                  <p className="text-lg text-gray-700 mb-6">{generatedRecipe?.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {generatedRecipe.tags?.map((tag, index) => (
-                      <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
-                        {tag}
-                      </span>
-                    ))}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <Users className="h-4 w-4 mx-auto text-gray-500 mb-1" />
+                    <div className="text-xs text-gray-600 font-medium">{generatedRecipe.servings}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <Star className="h-4 w-4 mx-auto text-green-500 mb-1" />
+                    <div className="text-xs text-gray-600 font-medium">{generatedRecipe.difficulty}</div>
                   </div>
                 </div>
                 
-                <div className="ml-6 text-right">
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <Clock className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedRecipe.cookTime}</span>
+                {/* Mobile Tags */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {generatedRecipe.tags?.map((tag, index) => (
+                    <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden md:block">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex-1">
+                    <div className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-4">
+                      <Utensils className="h-4 w-4 mr-2" />
+                      {generatedRecipe?.situation}
+                    </div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-3">{generatedRecipe?.title}</h1>
+                    <p className="text-lg text-gray-700 mb-6">{generatedRecipe?.description}</p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {generatedRecipe.tags?.map((tag, index) => (
+                        <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <Users className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedRecipe.servings}</span>
-                  </div>
-                  <div className="flex items-center text-green-600">
-                    <Star className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{generatedRecipe.difficulty}</span>
+                  
+                  <div className="ml-6 text-right">
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <Clock className="h-5 w-5 mr-2" />
+                      <span className="font-medium">{generatedRecipe.cookTime}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <Users className="h-5 w-5 mr-2" />
+                      <span className="font-medium">{generatedRecipe.servings}</span>
+                    </div>
+                    <div className="flex items-center text-green-600">
+                      <Star className="h-5 w-5 mr-2" />
+                      <span className="font-medium">{generatedRecipe.difficulty}</span>
+                    </div>
                   </div>
                 </div>
               </div>
